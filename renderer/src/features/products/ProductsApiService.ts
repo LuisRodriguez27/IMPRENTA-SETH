@@ -1,0 +1,62 @@
+import type { Product, CreateProductForm, EditProductForm, SimilarNameResult } from "./types";
+import type { ProductTemplate } from "@/features/productTemplates/types";
+
+export const ProductsApiService = {
+  findAll: async (): Promise<Product[]> => {
+    return window.api.getAllProducts();
+  },
+
+  findPaginated: async (
+    page: number,
+    limit: number,
+    searchTerm: string
+  ): Promise<{
+    data: (Product & { templates?: ProductTemplate[] })[];
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+      hasNext: boolean;
+      hasPrev: boolean;
+    };
+  }> => {
+    return window.api.getProductsPaginated(page, limit, searchTerm);
+  },
+
+  findById: async (id: number): Promise<Product> => {
+    return window.api.getProductById(id);
+  },
+
+  findWithTemplates: async (id: number): Promise<Product & { templates: ProductTemplate[] }> => {
+    return window.api.getProductWithTemplates(id);
+  },
+
+  findAllWithTemplates: async (): Promise<(Product & { templates?: ProductTemplate[] })[]> => {
+    return window.api.getAllProductsWithTemplates();
+  },
+
+  create: async (product: CreateProductForm): Promise<Product> => {
+    return window.api.createProduct(product);
+  },
+
+  update: async (id: number, product: EditProductForm): Promise<Product> => {
+    return window.api.updateProduct(id, product);
+  },
+
+  delete: async (id: number): Promise<void> => {
+    return window.api.deleteProduct(id);
+  },
+
+  search: async (searchTerm: string): Promise<Product[]> => {
+    return window.api.searchProducts(searchTerm);
+  },
+
+  searchWithTemplates: async (searchTerm: string): Promise<(Product & { templates?: ProductTemplate[] })[]> => {
+    return window.api.searchProductsWithTemplates(searchTerm);
+  },
+
+  findSimilarNames: async (): Promise<SimilarNameResult[]> => {
+    return window.api.findSimilarNames();
+  },
+};

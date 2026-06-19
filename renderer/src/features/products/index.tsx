@@ -1,0 +1,731 @@
+import { Button } from '@/components/ui/button';
+import { DollarSign, Edit3, Hash, Package, Plus, Search, Trash2, Printer, Layers, Loader2 } from 'lucide-react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { CreateProductModal, DeleteProductModal, EditProductModal, ProductDetailView, SimilarNamesModal } from './components';
+import ProductImageCarousel from './components/ProductImageCarousel';
+import { useImagePreloader } from './hooks/useImagePreloader';
+import { ProductsApiService } from './ProductsApiService';
+import type { Product } from './types';
+import type { ProductTemplate } from '@/features/productTemplates/types';
+import { usePermissions } from '@/hooks/use-permissions';
+import { formatDateMX, nowISO } from '@/utils/dateUtils';
+
+const ProductsPage: React.FC = () => {
+  const [products, setProducts] = useState<(Product & { templates?: ProductTemplate[] })[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [currentSearchTerm, setCurrentSearchTerm] = useState('');
+
+  const [pagination, setPagination] = useState<{
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+    hasNext: boolean;
+    hasPrev: boolean;
+  }>({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false
+  });
+
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  // Estados para vista detallada
+  const [currentView, setCurrentView] = useState<'list' | 'detail'>('list');
+  const [detailProductId, setDetailProductId] = useState<number | null>(null);
+
+  const [showSimilarModal, setShowSimilarModal] = useState(false);
+
+  const { checkPermission } = usePermissions();
+
+  // Precargar imágenes en background cuando la lista de productos esté disponible
+  useImagePreloader(products);
+
+  const [isSearching, setIsSearching] = useState(false);
+
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const lastProductElementRef = useCallback((node: HTMLDivElement) => {
+    if (loadingMore) return;
+    if (observerRef.current) observerRef.current.disconnect();
+    observerRef.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && pagination.hasNext) {
+        loadMoreProducts();
+      }
+    });
+    if (node) observerRef.current.observe(node);
+  }, [loadingMore, pagination.hasNext]);
+
+  // Update debounced search term
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  const loadProducts = async (page: number = 1, reset: boolean = true, searchQuery: string = '') => {
+    try {
+      if (page === 1) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      const response = await ProductsApiService.findPaginated(page, 10, searchQuery);
+
+      if (reset) {
+        setProducts(response.data);
+      } else {
+        setProducts(prev => [...prev, ...response.data]);
+      }
+
+      setPagination(response.pagination);
+      setCurrentSearchTerm(searchQuery);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching products:', err);
+      setError('Error al cargar productos');
+      toast.error('Error al cargar los productos');
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+      setIsSearching(false);
+    }
+  };
+
+  const loadMoreProducts = () => {
+    if (!loadingMore && pagination.hasNext) {
+      loadProducts(pagination.page + 1, false, currentSearchTerm);
+    }
+  };
+
+  // Carga inicial
+  useEffect(() => {
+    loadProducts(1, true, '');
+  }, []);
+
+  // Fetch products when debounced search term changes
+  useEffect(() => {
+    if (debouncedSearch !== currentSearchTerm) {
+      setIsSearching(true);
+      loadProducts(1, true, debouncedSearch);
+    }
+  }, [debouncedSearch]);
+
+  // Ya no filtramos localmente, la BD hace el trabajo pesado y mejorado
+  const filteredProducts = products.filter(product => {
+    if (!product || typeof product !== 'object' || !product.id || !product.name) {
+      console.warn('Producto inválido encontrado en la lista:', product);
+      return false;
+    }
+    return true; // Mostrar todo lo que devuelva la BD
+  });
+
+  const handleProductCreated = (newProduct: Product) => {
+    // Prepend the new product so it shows at the top of the list immediately
+    setProducts(prevProducts => [newProduct, ...prevProducts]);
+    setPagination(prev => ({
+      ...prev,
+      total: prev.total + 1
+    }));
+    toast.success('Producto creado exitosamente');
+  };
+
+  const handleProductUpdated = (updatedProduct: Product) => {
+    if (!updatedProduct || !updatedProduct.id) {
+      console.error('Producto actualizado no válido:', updatedProduct);
+      toast.error('Error: datos del producto inválidos');
+      return;
+    }
+
+    setProducts(prevProducts =>
+      prevProducts.map(product =>
+        product && product.id === updatedProduct.id
+          ? { ...updatedProduct, templates: product.templates }
+          : product
+      )
+    );
+  };
+
+  const handleProductDeleted = (deletedProductId: number) => {
+    const deletedProduct = products.find(p => p.id === deletedProductId);
+    setProducts(prevProducts =>
+      prevProducts.filter(product => product.id !== deletedProductId)
+    );
+    setPagination(prev => ({
+      ...prev,
+      total: Math.max(0, prev.total - 1)
+    }));
+    toast.success(`Producto ${deletedProduct?.name} eliminado exitosamente`);
+  };
+
+  const openCreateModal = () => {
+    if (!checkPermission("Crear Producto")) {
+      return;
+    }
+    setShowCreateModal(true);
+  };
+
+  const openEditModal = (product: Product) => {
+    if (!checkPermission("Editar Producto")) {
+      return;
+    }
+    setSelectedProduct(product);
+    setShowEditModal(true);
+  };
+
+  const openDeleteModal = (product: Product) => {
+    if (!checkPermission("Eliminar Producto")) {
+      return;
+    }
+    setSelectedProduct(product);
+    setShowDeleteModal(true);
+  };
+
+  const openProductDetail = (productId: number) => {
+    setDetailProductId(productId);
+    setCurrentView('detail');
+  };
+
+  const closeProductDetail = () => {
+    setCurrentView('list');
+    setDetailProductId(null);
+  };
+
+  const closeModals = () => {
+    setShowCreateModal(false);
+    setShowEditModal(false);
+    setShowDeleteModal(false);
+    setSelectedProduct(null);
+  };
+
+  const handlePrintInventory = async () => {
+    try {
+      const toastId = toast.loading(
+        searchTerm 
+          ? 'Preparando impresión de resultados filtrados...' 
+          : 'Preparando impresión del inventario completo...'
+      );
+
+      // Generar reporte (backend manda ya filtrado)
+      const filteredForPrint = products;
+
+      // Generar HTML
+      const printHTML = `
+        <!DOCTYPE html>
+        <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <title>Inventario de Productos</title>
+          <style>
+            @page {
+              size: letter;
+              margin: 1.5cm 1.5cm 2cm 1.5cm;
+              @bottom-right {
+                content: "Página " counter(page) " de " counter(pages);
+                font-family: 'Segoe UI', Arial, sans-serif;
+                font-size: 9px;
+                color: #6b7280;
+              }
+            }
+            body {
+              font-family: 'Segoe UI', Arial, sans-serif;
+              font-size: 12px;
+              line-height: 1.4;
+              color: #1f2937;
+              max-width: 100%;
+            }
+            h1 {
+              text-align: center;
+              font-size: 20px;
+              margin-bottom: 5px;
+              text-transform: uppercase;
+              color: #111827;
+            }
+            .subtitle {
+              text-align: center;
+              font-size: 12px;
+              color: #6b7280;
+              margin-bottom: 25px;
+            }
+            .date {
+              text-align: right;
+              font-size: 10px;
+              margin-bottom: 10px;
+              color: #6b7280;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 20px;
+            }
+            th {
+              background-color: #f3f4f6;
+              border-bottom: 2px solid #e5e7eb;
+              padding: 10px 8px;
+              text-align: left;
+              font-weight: 700;
+              color: #374151;
+              text-transform: uppercase;
+              font-size: 11px;
+            }
+            td {
+              border-bottom: 1px solid #e5e7eb;
+              padding: 8px;
+              vertical-align: top;
+            }
+            tr {
+              page-break-inside: avoid;
+            }
+            .product-row td {
+              font-weight: 600;
+              background-color: #f9fafb;
+              color: #111827;
+            }
+            .template-row td {
+              color: #4b5563;
+              font-size: 11px;
+            }
+            .sub-indicator {
+              display: inline-block;
+              width: 20px;
+              text-align: right;
+              margin-right: 5px;
+              color: #9ca3af;
+            }
+            .price-col {
+              text-align: right;
+              width: 100px;
+              font-family: 'Courier New', monospace;
+            }
+            .serial-col {
+              width: 120px;
+              font-family: 'Courier New', monospace;
+            }
+            .empty-templates {
+              font-style: italic;
+              color: #9ca3af;
+              font-size: 10px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="date">Generado el: ${formatDateMX(nowISO(), 'dddd, D [de] MMMM [de] YYYY')} a las ${formatDateMX(nowISO(), 'HH:mm:ss')}</div>
+          <h1>Inventario General</h1>
+          <div class="subtitle">SETH - LISTA DE PRODUCTOS Y SUBPRODUCTOS</div>
+          
+          <table>
+            <thead>
+              <tr>
+                <th>Producto / Variantes</th>
+                <th class="serial-col">Código</th>
+                <th class="price-col">Precio</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredForPrint.map((p, index) => {
+        const productRow = `
+                  <tr class="product-row">
+                    <td>${index + 1}. ${p.name}</td>
+                    <td class="serial-col">${p.serial_number || '-'}</td>
+                    <td class="price-col">$${p.price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                `;
+
+        let templateRows = '';
+        if (p.templates && p.templates.length > 0) {
+          templateRows = p.templates.map(t => {
+            // Construir descripción
+            let descParts = [];
+            if (t.colors) descParts.push(t.colors);
+            if (t.width && t.height) descParts.push(`${t.width}x${t.height}`);
+            if (t.position) descParts.push(t.position);
+
+            const variantName = t.description ? `${t.description}` : '';
+            const extraDesc = `<br><span style="color:#9ca3af; font-size:10px;">${descParts.join(' - ') || 'Variante'}</span>`;
+
+            const price = t.final_price !== undefined && t.final_price !== null
+              ? t.final_price
+              : p.price;
+
+            return `
+                      <tr class="template-row">
+                        <td style="padding-left: 20px;">
+                          <span class="sub-indicator">↳</span> 
+                          ${variantName} ${t.texts ? `"${t.texts}"` : ''} 
+                          ${extraDesc}
+                        </td>
+                        <td class="serial-col" style="font-size:10px;">${t.id}</td>
+                        <td class="price-col">$${price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</td>
+                      </tr>
+                     `;
+          }).join('');
+        } else {
+          // Opcional: mostrar mensaje si no tiene variantes? No, mejor limpiar para ahorrar tinta.
+        }
+
+        return productRow + templateRows;
+      }).join('')}
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const printWindow = window.open('', '_blank', 'width=1000,height=800');
+      if (printWindow) {
+        printWindow.document.write(printHTML);
+        printWindow.document.close();
+        printWindow.onload = () => {
+          // Pequeño timeout para asegurar que estilos carguen si hubiera externos (aquí no hay)
+          setTimeout(() => {
+            printWindow.focus();
+            printWindow.print();
+            // printWindow.close(); // Opcional, algunos navegadores bloquean el cierre inmediato
+          }, 500);
+        };
+      } else {
+        toast.error("No se pudo abrir la ventana de impresión. Verifique los bloqueadores de ventanas emergentes.");
+      }
+
+      toast.dismiss(toastId);
+    } catch (err) {
+      console.error(err);
+      toast.error('Error al generar reporte de inventario');
+    }
+  };
+
+  // Si estamos en vista detallada, mostrar el componente correspondiente
+  if (currentView === 'detail' && detailProductId) {
+    return (
+      <ProductDetailView
+        productId={detailProductId}
+        onBack={closeProductDetail}
+        onProductUpdated={handleProductUpdated}
+      />
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">{error}</p>
+          <Button
+            onClick={() => loadProducts(1, true, currentSearchTerm)}
+            className="mt-2"
+            size="sm"
+          >
+            Reintentar
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Gestión de Productos</h1>
+          <p className="text-gray-600 mt-2">
+            Administra tu catálogo de productos personalizados
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={handlePrintInventory}
+          >
+            <Printer size={16} />
+            {searchTerm ? 'Imprimir Resultados' : 'Imprimir Inventario'}
+          </Button>
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={() => setShowSimilarModal(true)}
+          >
+            <Layers size={16} />
+            Buscar Similares
+          </Button>
+          <Button
+            className="flex items-center gap-2"
+            onClick={openCreateModal}
+          >
+            <Plus size={16} />
+            Nuevo Producto
+          </Button>
+        </div>
+      </div>
+
+      {/* Filtros y búsqueda */}
+      <div className="bg-white rounded-lg shadow p-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              {isSearching ? (
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                </div>
+              ) : (
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              )}
+              <input
+                type="text"
+                placeholder="Buscar productos..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+            {searchTerm && (
+              <p className="text-xs text-blue-600 mt-2 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                Búsqueda activa: se imprimirán únicamente los {filteredProducts.length} productos filtrados.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Lista de productos */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Productos ({pagination.total})
+          </h2>
+        </div>
+        <div className="p-6">
+          {loading ? (
+            <div className="animate-pulse grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="h-48 bg-gray-200 rounded-lg"></div>
+              ))}
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-12">
+              <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No hay productos</h3>
+              <p className="text-gray-500 mb-4">
+                {currentSearchTerm 
+                  ? `No se encontraron productos que coincidan con "${currentSearchTerm}"`
+                  : 'Comienza agregando tu primer producto al catálogo'
+                }
+              </p>
+              {!currentSearchTerm && (
+                <Button
+                  className="flex items-center gap-2 mx-auto"
+                  onClick={openCreateModal}
+                >
+                  <Plus size={16} />
+                  Agregar Primer Producto
+                </Button>
+              )}
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                {filteredProducts.map((product, index) => (
+                  <div 
+                    key={product.id} 
+                    ref={index === filteredProducts.length - 1 ? lastProductElementRef : null}
+                    className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow flex"
+                  >
+
+                    {/* Columna izquierda — Información */}
+                    <div className="w-[60%] p-4 flex flex-col min-w-0">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex flex-col overflow-hidden mr-2">
+                          <h3 className="font-semibold text-gray-900 truncate" title={product.name}>
+                            <span className="text-gray-500 font-normal mr-2">#{product.id}</span>
+                            {product.name}
+                          </h3>
+                          <span className="inline-flex items-center text-xs text-gray-500 mt-1">
+                            <Layers size={12} className="mr-1" />
+                            {product.templates?.length || 0} {(product.templates?.length || 0) === 1 ? 'plantilla' : 'plantillas'}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEditModal(product)}
+                            className='p-1 h-8 w-8'
+                          >
+                            <Edit3 size={14} />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openDeleteModal(product)}
+                            className="p-1 h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 text-sm text-gray-600 flex-1">
+                        {product.serial_number && (
+                          <div className="flex items-center gap-2">
+                            <Hash size={14} />
+                            <span className="font-mono text-xs">{product.serial_number}</span>
+                          </div>
+                        )}
+
+                        {(() => {
+                          let activePrice = product.price;
+                          let isPromo = false;
+                          let isDiscount = false;
+
+                          if (product.promo_price !== null && product.promo_price !== undefined && product.promo_price < product.price) {
+                            activePrice = product.promo_price;
+                            isPromo = true;
+                          }
+
+                          if (product.discount_price !== null && product.discount_price !== undefined && product.discount_price < activePrice) {
+                            activePrice = product.discount_price;
+                            isPromo = false;
+                            isDiscount = true;
+                          }
+
+                          if (isPromo || isDiscount) {
+                            return (
+                              <div className="flex flex-col gap-1">
+                                <div className="flex items-center gap-2">
+                                  <DollarSign size={12} className="text-gray-400" />
+                                  <span className="text-gray-400 line-through text-xs">
+                                    ${product.price.toFixed(2)} MXN
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <DollarSign size={14} className={isPromo ? "text-blue-600" : "text-orange-600"} />
+                                  <span className={`font-semibold ${isPromo ? "text-blue-600" : "text-orange-600"}`}>
+                                    ${activePrice.toFixed(2)} MXN
+                                  </span>
+                                  <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${isPromo ? "bg-blue-100 text-blue-800" : "bg-orange-100 text-orange-800"}`}>
+                                    {isPromo ? 'Promo' : 'Desc'}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div className="flex items-center gap-2">
+                              <DollarSign size={14} />
+                              <span className="font-semibold text-green-600">
+                                ${product.price.toFixed(2)} MXN
+                              </span>
+                            </div>
+                          );
+                        })()}
+
+                        {product.description && (
+                          <p className="text-xs text-gray-500 line-clamp-2 mt-2">
+                            {product.description}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                        <span className={`px-2 py-1 text-xs rounded-full ${product.active === true
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                          }`}>
+                          {product.active === true ? 'Activo' : 'Inactivo'}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openProductDetail(product.id)}
+                        >
+                          Ver Detalles
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Columna derecha — Imagen (contenedor fijo) */}
+                    <div className="w-[40%] shrink-0 border-l border-gray-100 bg-gray-50">
+                      <ProductImageCarousel
+                        images={product.images}
+                        productName={product.name}
+                        height={undefined}
+                        showEmptyState
+                        fillContainer
+                      />
+                    </div>
+
+                  </div>
+                ))}
+              </div>
+
+              {/* Loading indicator para scroll infinito */}
+              {loadingMore && (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                  <span className="ml-2 text-gray-600">Cargando más productos...</span>
+                </div>
+              )}
+
+              {/* Mensaje cuando se han cargado todos los productos */}
+              {!loadingMore && !pagination.hasNext && filteredProducts.length > 0 && (
+                <div className="text-center py-8 border-t border-gray-100 mt-6">
+                  <p className="text-gray-500">
+                    {currentSearchTerm 
+                      ? `Se encontraron ${pagination.total} resultado${pagination.total !== 1 ? 's' : ''} para "${currentSearchTerm}"`
+                      : `Has visto todos los productos (${pagination.total})`
+                    }
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Modals */}
+      <CreateProductModal
+        isOpen={showCreateModal}
+        onClose={closeModals}
+        onProductCreated={handleProductCreated}
+      />
+
+      <EditProductModal
+        isOpen={showEditModal}
+        onClose={closeModals}
+        onProductUpdated={handleProductUpdated}
+        product={selectedProduct}
+      />
+
+      <DeleteProductModal
+        isOpen={showDeleteModal}
+        onClose={closeModals}
+        onProductDeleted={handleProductDeleted}
+        product={selectedProduct}
+      />
+
+      <SimilarNamesModal
+        isOpen={showSimilarModal}
+        onClose={() => setShowSimilarModal(false)}
+      />
+
+    </div>
+  );
+};
+
+export default ProductsPage;

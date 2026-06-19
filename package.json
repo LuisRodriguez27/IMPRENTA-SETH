@@ -1,0 +1,97 @@
+{
+  "name": "seth",
+  "version": "1.0.0",
+  "description": "Aplicación Seth Electron",
+  "main": "electron/dist-electron/index.js",
+  "author": "Luis Rodriguez",
+  "license": "ISC",
+  "scripts": {
+    "postinstall": "",
+    "build:electron": "tsc",
+    "build:renderer": "cd renderer && pnpm run build",
+    "build": "pnpm run build:electron && pnpm run build:renderer",
+    "watch:electron": "tsc -w",
+    "dev:electron": "electron ./electron/dist-electron --no-sandbox",
+    "dev": "tsc && concurrently -k --success first \"tsc -w\" \"pnpm run dev:electron\" \"cd renderer && pnpm run dev\"",
+    "dist": "pnpm run build && electron-builder",
+    "dist:win": "pnpm run build && electron-builder --win",
+    "dist:git": "pnpm run build && electron-builder --win -p always"
+  },
+  "keywords": [],
+  "packageManager": "pnpm@10.29.1",
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/fs-extra": "^11.0.4",
+    "@types/mime-types": "^3.0.1",
+    "@types/node": "^25.9.3",
+    "@types/pg": "^8.20.0",
+    "@types/uuid": "^11.0.0",
+    "concurrently": "^9.2.0",
+    "electron": "37.3.0",
+    "electron-builder": "^26.0.12",
+    "typescript": "~5.8.3"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^17.3.1",
+    "electron-log": "^5.4.3",
+    "electron-updater": "^6.8.3",
+    "fs-extra": "^11.3.4",
+    "mime-types": "^3.0.2",
+    "pg": "^8.19.0",
+    "uuid": "^13.0.0"
+  },
+  "build": {
+    "appId": "com.seth.electron",
+    "productName": "SETH",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "LuisRodriguez27",
+        "repo": "IMPRENTA-SETH"
+      }
+    ],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/dist-electron/**/*",
+      "renderer/dist/**/*",
+      "node_modules/**/*",
+      ".env",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "verifyUpdateCodeSignature": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "SETH"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Utility"
+    }
+  }
+}

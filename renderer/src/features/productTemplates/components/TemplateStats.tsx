@@ -17,7 +17,7 @@ const TemplateStats: React.FC<TemplateStatsProps> = ({ templates }) => {
   const maxPrice = totalTemplates > 0 
     ? Math.max(...templates.map(t => t.final_price)) 
     : 0;
-  const templatesWithDimensions = templates.filter(t => t.width && t.height).length;
+  const templatesWithDimensions = templates.filter(t => t.dimensions).length;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">

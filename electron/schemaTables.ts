@@ -44,19 +44,19 @@ const schemaTables: string = `
   );
 
   CREATE TABLE IF NOT EXISTS product_templates (
-    id             SERIAL        PRIMARY KEY,
-    product_id     INTEGER       NOT NULL REFERENCES products(id),
-    final_price    DECIMAL(10,2) NOT NULL,
-    promo_price    DECIMAL(10,2),
-    discount_price DECIMAL(10,2),
-    width          DECIMAL(10,2),
-    height         DECIMAL(10,2),
-    colors         TEXT,
-    position       TEXT,
-    texts          TEXT,
-    description    TEXT,
-    created_by     INTEGER       REFERENCES users(id),
-    active         BOOLEAN       NOT NULL DEFAULT TRUE
+    id               SERIAL        PRIMARY KEY,
+    product_id       INTEGER       NOT NULL REFERENCES products(id),
+    name             TEXT,
+    final_price      DECIMAL(10,2) NOT NULL,
+    promo_price      DECIMAL(10,2),
+    dimensions       TEXT,
+    category         TEXT,
+    model            TEXT,
+    package          BOOLEAN       NOT NULL DEFAULT FALSE,
+    pieces_per_pack  INTEGER,
+    description      TEXT,
+    created_by       INTEGER       REFERENCES users(id),
+    active           BOOLEAN       NOT NULL DEFAULT TRUE
   );
 
   CREATE TABLE IF NOT EXISTS budgets (

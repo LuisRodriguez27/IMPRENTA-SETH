@@ -263,7 +263,9 @@ export const useOrderItems = (): UseOrderItemsReturn => {
         const matchesSearch = !searchTerm ||
           templateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (template.description && template.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (template.colors && template.colors.toLowerCase().includes(searchTerm.toLowerCase()));
+          (template.dimensions && template.dimensions.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (template.category && template.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (template.model && template.model.toLowerCase().includes(searchTerm.toLowerCase()));
 
         if (matchesSearch) {
           items.push({
@@ -305,12 +307,12 @@ export const useOrderItems = (): UseOrderItemsReturn => {
         id: template.id,
         name: templateName,
         unit_price: template.final_price,
-        description: template.description,
-        width: template.width,
-        height: template.height,
-        colors: template.colors,
-        position: template.position,
-        texts: template.texts
+        description: template.description || undefined,
+        dimensions: template.dimensions || undefined,
+        category: template.category || undefined,
+        model: template.model || undefined,
+        package: template.package,
+        piecesPerPack: template.piecesPerPack
       });
       setSearchTerms(prev => ({ ...prev, [index]: templateName }));
     }

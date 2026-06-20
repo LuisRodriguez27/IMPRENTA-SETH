@@ -10,9 +10,7 @@ import {
   Edit3,
   FileText,
   Hash,
-  MapPin,
   Package,
-  Palette,
   Plus,
   Ruler,
   Search,
@@ -84,8 +82,10 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   }, [productId]);
 
 
-  // Corregir esto para que busque en los campos correctos
+  // Corregir esto para que busque en los campos correctos (Nombre, Descripción, Precio)
   const filteredTemplates = templates.filter(template =>
+    (template.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+    (template.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
     template.final_price?.toString().includes(searchTerm.toLowerCase())
   );
 
@@ -200,17 +200,6 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     } catch (err) {
       console.error(err);
       toast.error('Error al actualizar las imágenes en la base de datos');
-    }
-  };
-
-
-  const formatColors = (colors?: string) => {
-    if (!colors) return null;
-    try {
-      const colorArray = JSON.parse(colors);
-      return Array.isArray(colorArray) ? colorArray : [colors];
-    } catch {
-      return [colors];
     }
   };
 
@@ -446,25 +435,19 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           ) : (
             <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-2">
               {filteredTemplates.map((template) => {
-                const colors = formatColors(template.colors);
-
                 return (
                   <div key={template.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
-                        <h3 className="font-medium text-gray-900 mb-1">
-                          {template.description}
+                        <h3 className="font-semibold text-gray-900 mb-1">
+                          {template.name}
                         </h3>
-                        {/* <div className="flex items-center gap-2 text-xs text-gray-500">
-                          {template.created_by_username && (
-                            <div className="flex items-center gap-1">
-                              <User size={12} />
-                              <span>{template.created_by_username}</span>
-                            </div>
-                          )}
-                        </div> */}
+                        {template.description && (
+                          <p className="text-xs text-gray-500 mt-1 italic">
+                            {template.description}
+                          </p>
+                        )}
                       </div>
-
                     </div>
 
                     {/* Template Specifications */}
@@ -472,20 +455,13 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                       {(() => {
                         let activePrice = template.final_price;
                         let isPromo = false;
-                        let isDiscount = false;
 
                         if (template.promo_price !== null && template.promo_price !== undefined && template.promo_price < template.final_price) {
                           activePrice = template.promo_price;
                           isPromo = true;
                         }
 
-                        if (template.discount_price !== null && template.discount_price !== undefined && template.discount_price < activePrice) {
-                          activePrice = template.discount_price;
-                          isPromo = false;
-                          isDiscount = true;
-                        }
-
-                        if (isPromo || isDiscount) {
+                        if (isPromo) {
                           return (
                             <div className="flex flex-col gap-1">
                               <div className="flex items-center gap-2">
@@ -495,12 +471,12 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">
-                                <DollarSign size={14} className={isPromo ? "text-blue-600" : "text-orange-600"} />
-                                <span className={`font-semibold ${isPromo ? "text-blue-600" : "text-orange-600"}`}>
+                                <DollarSign size={14} className="text-blue-600" />
+                                <span className="font-semibold text-blue-600">
                                   ${activePrice.toFixed(2)} MXN
                                 </span>
-                                <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${isPromo ? "bg-blue-100 text-blue-800" : "bg-orange-100 text-orange-800"}`}>
-                                  {isPromo ? 'Promo' : 'Desc'}
+                                <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-blue-100 text-blue-800">
+                                  Promo
                                 </span>
                               </div>
                             </div>
@@ -509,7 +485,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
                         return (
                           <div className="flex items-center gap-2">
-                            <DollarSign size={14} />
+                            <DollarSign size={14} className="text-green-600" />
                             <span className="font-semibold text-green-600">
                               ${template.final_price.toFixed(2)} MXN
                             </span>
@@ -517,56 +493,37 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                         );
                       })()}
 
-                      {(template.width || template.height) && (
+                      {template.dimensions && (
                         <div className="flex items-center gap-2">
                           <Ruler size={14} />
-                          <span>
-                            {template.width && template.height
-                              ? `${template.width}m × ${template.height}m`
-                              : template.width
-                                ? `Ancho: ${template.width}m`
-                                : `Alto: ${template.height}m`
-                            }
+                          <span>{template.dimensions}</span>
+                        </div>
+                      )}
+
+                      {template.category && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-800">
+                            Categoría: {template.category}
                           </span>
                         </div>
                       )}
 
-                      {template.position && (
+                      {template.model && (
                         <div className="flex items-center gap-2">
-                          <MapPin size={14} />
-                          <span className="capitalize">{template.position}</span>
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-800">
+                            Modelo: {template.model}
+                          </span>
                         </div>
                       )}
 
-                      {template.texts && (
-                        <div className="flex items-start gap-2 max-w-full">
-                          <FileText size={14} className="shrink-0 mt-0.5" />
-                          <span className="text-sm truncate" title={template.texts}>
-                            {template.texts}
+                      {template.package && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-800">
+                            Paquete {template.piecesPerPack ? `(${template.piecesPerPack} uds)` : ''}
                           </span>
                         </div>
                       )}
                     </div>
-
-                    {/* Colors */}
-                    {colors && colors.length > 0 && (
-                      <div className="mb-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Palette size={14} className="text-gray-400" />
-                          <span className="text-xs text-gray-500">Colores:</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {colors.map((color, index) => (
-                            <span
-                              key={index}
-                              className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
-                            >
-                              {color}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 pt-3 border-t border-gray-100">

@@ -210,7 +210,8 @@ const BOOLEAN_KEYS = new Set([
   'converted_to_order',
   'maquila_completada',
   'mostrador_completado',
-  'all_completed'
+  'all_completed',
+  'package'
 ]);
 
 function convertBooleans(obj: any): any {
@@ -421,9 +422,17 @@ export async function initDb(): Promise<void> {
 
       const existingMigrations = await activeKnex.raw('SELECT version FROM schema_migrations');
       const appliedVersions = new Set(existingMigrations.map((r: any) => r.version));
-      const totalMigrations = 29;
+      const totalMigrations = 30;
       for (let i = 1; i <= totalMigrations; i++) {
         if (!appliedVersions.has(i)) {
+          if (i === 30) {
+            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN name TEXT'); } catch (e) {}
+            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN dimensions TEXT'); } catch (e) {}
+            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN category TEXT'); } catch (e) {}
+            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN model TEXT'); } catch (e) {}
+            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN package BOOLEAN NOT NULL DEFAULT FALSE'); } catch (e) {}
+            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN pieces_per_pack INTEGER'); } catch (e) {}
+          }
           await activeKnex.raw('INSERT INTO schema_migrations (version, name) VALUES (?, ?)', [i, `migration_v${i}`]);
         }
       }

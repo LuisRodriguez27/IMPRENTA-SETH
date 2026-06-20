@@ -2,53 +2,55 @@ import type { ProductTemplateRow } from '../types/domain';
 
 class ProductTemplate {
   id: number;
-  product_id: number;
+  productId: number;
+  name: string;
+  product_name: string;
   final_price: number;
   promo_price: number | null;
-  discount_price: number | null;
-  width: number | null;
-  height: number | null;
-  colors: string | null;
-  position: string | null;
-  texts: string | null;
+  dimensions: string;
+  category: string;
+  model: string;
+  package: boolean;
+  piecesPerPack: number | null;
   description: string | null;
   created_by: number | null;
   active: boolean;
-  product_name: string | null;
   serial_number: string | null;
   created_by_username: string | null;
 
-  constructor({ id, product_id, final_price, promo_price, discount_price, width, height, colors, position, texts, description, created_by, active = true, product_name, serial_number, created_by_username }: ProductTemplateRow & { serial_number?: string | null }) {
-    this.id = id;
-    this.product_id = product_id;
-    this.final_price = parseFloat(String(final_price)) || 0;
-    this.promo_price = promo_price !== null && promo_price !== undefined ? parseFloat(String(promo_price)) : null;
-    this.discount_price = discount_price !== null && discount_price !== undefined ? parseFloat(String(discount_price)) : null;
-    this.width = width ? parseFloat(String(width)) : null;
-    this.height = height ? parseFloat(String(height)) : null;
-    this.colors = colors || null;
-    this.position = position || null;
-    this.texts = texts || null;
-    this.description = description || null;
-    this.created_by = created_by || null;
-    this.active = active;
-    this.product_name = product_name || null;
-    this.serial_number = serial_number || null;
-    this.created_by_username = created_by_username || null;
+  constructor(row: ProductTemplateRow) {
+    this.id = row.id;
+    this.productId = row.productId !== undefined ? row.productId : row.product_id;
+    this.name = row.name || '';
+    this.product_name = row.product_name || '';
+    this.final_price = parseFloat(String(row.final_price)) || 0;
+    this.promo_price = row.promo_price !== null && row.promo_price !== undefined ? parseFloat(String(row.promo_price)) : null;
+    this.dimensions = row.dimensions || '';
+    this.category = row.category || '';
+    this.model = row.model || '';
+    this.package = row.package === 1 || row.package === true;
+    
+    const pzas = row.piecesPerPack !== undefined 
+      ? row.piecesPerPack 
+      : row.pieces_per_pack;
+    this.piecesPerPack = pzas !== null && pzas !== undefined ? parseInt(String(pzas), 10) : null;
+    
+    this.description = row.description || null;
+    this.created_by = row.created_by || null;
+    this.active = row.active === 1 || row.active === true;
+    this.serial_number = row.serial_number || null;
+    this.created_by_username = row.created_by_username || null;
   }
 
   isActive(): boolean { return this.active === true; }
-  hasCustomDimensions(): boolean { return this.width !== null && this.height !== null; }
-  hasColors(): boolean { return !!(this.colors && this.colors.trim().length > 0); }
-  hasPosition(): boolean { return !!(this.position && this.position.trim().length > 0); }
-  hasTexts(): boolean { return !!(this.texts && this.texts.trim().length > 0); }
+  hasCustomDimensions(): boolean { return !!(this.dimensions && this.dimensions.trim().length > 0); }
   hasDescription(): boolean { return !!(this.description && this.description.trim().length > 0); }
   isFree(): boolean { return this.final_price === 0; }
   isPaid(): boolean { return this.final_price > 0; }
 
   getDisplayName(): string {
-    if (this.hasDescription()) return `${this.product_name} - ${this.description}`;
-    return `${this.product_name} - Plantilla ${this.id}`;
+    if (this.hasDescription()) return `${this.name} - ${this.description}`;
+    return `${this.name} - Plantilla ${this.id}`;
   }
 
   getFormattedPrice(): string {
@@ -56,32 +58,45 @@ class ProductTemplate {
   }
 
   getDimensions(): string | null {
-    if (!this.hasCustomDimensions()) return null;
-    return `${this.width} × ${this.height}`;
+    return this.dimensions || null;
   }
 
-  getColorsText(): string { return this.colors || ''; }
-  getTextsText(): string { return this.texts || ''; }
-
   isValid(): boolean {
-    return !!(this.product_id && this.product_id > 0 && typeof this.final_price === 'number' && this.final_price >= 0 && !isNaN(this.final_price));
+    return !!(this.productId && this.productId > 0 && typeof this.final_price === 'number' && this.final_price >= 0 && !isNaN(this.final_price));
   }
 
   matchesSearchTerm(searchTerm: string): boolean {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return !!(
-      (this.product_name && this.product_name.toLowerCase().includes(term)) ||
+      (this.name && this.name.toLowerCase().includes(term)) ||
       (this.description && this.description.toLowerCase().includes(term)) ||
       (this.serial_number && this.serial_number.toLowerCase().includes(term)) ||
-      (this.position && this.position.toLowerCase().includes(term)) ||
-      (this.texts && this.texts.toLowerCase().includes(term)) ||
+      (this.category && this.category.toLowerCase().includes(term)) ||
+      (this.model && this.model.toLowerCase().includes(term)) ||
       (this.created_by_username && this.created_by_username.toLowerCase().includes(term))
     );
   }
 
   toPlainObject() {
-    return { id: this.id, product_id: this.product_id, final_price: this.final_price, promo_price: this.promo_price, discount_price: this.discount_price, width: this.width, height: this.height, colors: this.colors, position: this.position, texts: this.texts, description: this.description, created_by: this.created_by, active: this.active, product_name: this.product_name, serial_number: this.serial_number, created_by_username: this.created_by_username };
+    return {
+      id: this.id,
+      productId: this.productId,
+      name: this.name,
+      product_name: this.product_name,
+      final_price: this.final_price,
+      promo_price: this.promo_price,
+      dimensions: this.dimensions,
+      category: this.category,
+      model: this.model,
+      package: this.package,
+      piecesPerPack: this.piecesPerPack,
+      description: this.description,
+      created_by: this.created_by,
+      active: this.active,
+      serial_number: this.serial_number,
+      created_by_username: this.created_by_username
+    };
   }
 }
 

@@ -112,11 +112,11 @@ export const useOrderForm = ({
               quantity: op.quantity,
               unit_price: op.unit_price,
               description: op.template_description,
-              width: op.template_width,
-              height: op.template_height,
-              colors: op.template_colors,
-              position: op.template_position,
-              texts: op.template_texts,
+              dimensions: op.template_dimensions,
+              category: op.template_category,
+              model: op.template_model,
+              package: op.template_package === 1 || op.template_package === true,
+              piecesPerPack: op.template_pieces_per_pack,
               is_delivered: !!op.is_delivered,
               is_paid: !!op.is_paid
             };

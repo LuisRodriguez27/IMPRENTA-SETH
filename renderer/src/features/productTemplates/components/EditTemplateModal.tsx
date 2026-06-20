@@ -2,7 +2,7 @@ import { Button, Input, Label } from "@/components/ui";
 import { ProductTemplatesApiService } from "@/features/productTemplates/ProductTemplatesApiService";
 import { editProductTemplateSchema, type EditProductTemplateForm, type ProductTemplate } from "@/features/productTemplates/types";
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleDollarSign, FileText, Loader, MapPin, Package, Palette, Percent, Ruler, X } from "lucide-react";
+import { CircleDollarSign, FileText, Loader, Package, Percent, Ruler, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from 'react-hook-form';
 import { extractErrorMessage } from '@/utils/errorHandling';
@@ -19,18 +19,19 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [colorsInput, setColorsInput] = useState('');
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
-    setValue
+    setValue,
+    watch
   } = useForm<EditProductTemplateForm>({
     resolver: zodResolver(editProductTemplateSchema)
   });
 
+  const packageValue = watch('package');
   const [basePrice, setBasePrice] = useState<number>(0);
   const [percentage, setPercentage] = useState<number>(0);
 
@@ -53,25 +54,20 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
   // Set form values when template changes
   useEffect(() => {
     if (template && isOpen) {
+      setValue('name', template.name || '');
       setValue('final_price', template.final_price);
       setBasePrice(template.final_price);
       setPercentage(0);
 
       setValue('promo_price', template.promo_price ?? null);
-      setValue('discount_price', template.discount_price ?? null);
+      setValue('productId', template.productId || template.product_id);
 
       setValue('description', template.description || '');
-      setValue('texts', template.texts || '');
-      setValue('width', template.width);
-      setValue('height', template.height);
-      setValue('position', template.position || '');
-
-      // Handle colors - ahora es texto plano
-      if (template.colors) {
-        setColorsInput(template.colors);
-      } else {
-        setColorsInput('');
-      }
+      setValue('dimensions', template.dimensions || '');
+      setValue('category', template.category || '');
+      setValue('model', template.model || '');
+      setValue('package', template.package || false);
+      setValue('piecesPerPack', template.piecesPerPack ?? null);
     }
   }, [template, isOpen, setValue]);
 
@@ -82,10 +78,9 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
       setIsSubmitting(true);
       setError(null);
 
-      let processedData = {
+      const processedData = {
         ...data,
-        colors: colorsInput.trim() || undefined,
-        product_id: template.product_id
+        productId: template.productId || template.product_id
       };
 
       const updatedTemplate = await ProductTemplatesApiService.update(template.id, processedData);
@@ -102,7 +97,6 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
 
   const handleClose = () => {
     reset();
-    setColorsInput('');
     setError(null);
     onClose();
   };
@@ -124,7 +118,7 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Editar Plantilla</h2>
               <p className="text-sm text-gray-500">
-                Producto: <span className="font-medium">{template.product_name}</span>
+                Producto: <span className="font-medium">{template.name || template.product_name}</span>
               </p>
             </div>
           </div>
@@ -148,17 +142,37 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
 
           {/* Template Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Description */}
+            {/* Nombre de la Plantilla */}
+            <div>
+              <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+                Nombre de la Plantilla *
+              </Label>
+              <div className="mt-1 relative">
+                <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Ej: Lona comercial roja"
+                  className="pl-10"
+                  {...register('name')}
+                />
+              </div>
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+              )}
+            </div>
+
+            {/* Descripción */}
             <div>
               <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                Nombre de la Plantilla *
+                Descripción
               </Label>
               <div className="mt-1 relative">
                 <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                 <Input
                   id="description"
                   type="text"
-                  placeholder="Ej: PROMOCIONES - Lona roja comercial"
+                  placeholder="Ej: Detalles opcionales de la plantilla"
                   className="pl-10"
                   {...register('description')}
                 />
@@ -168,23 +182,23 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
               )}
             </div>
 
-            {/* Texts */}
+            {/* Dimensiones */}
             <div>
-              <Label htmlFor="texts" className="text-sm font-medium text-gray-700">
-                Descripción
+              <Label htmlFor="dimensions" className="text-sm font-medium text-gray-700">
+                Dimensiones
               </Label>
               <div className="mt-1 relative">
-                <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <Ruler className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                 <Input
-                  id="texts"
+                  id="dimensions"
                   type="text"
-                  placeholder="Ej: SE RENTA - VENTA - PROMOCIONES"
+                  placeholder="Ej: 2.0m x 3.0m o Carta"
                   className="pl-10"
-                  {...register('texts')}
+                  {...register('dimensions')}
                 />
               </div>
-              {errors.texts && (
-                <p className="mt-1 text-sm text-red-600">{errors.texts.message}</p>
+              {errors.dimensions && (
+                <p className="mt-1 text-sm text-red-600">{errors.dimensions.message}</p>
               )}
             </div>
 
@@ -237,27 +251,43 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
               )}
             </div>
 
-            {/* Discount Price */}
+            {/* Categoría */}
             <div>
-              <Label htmlFor="discount_price" className="text-sm font-medium text-gray-700">
-                Precio Descuento
+              <Label htmlFor="category" className="text-sm font-medium text-gray-700">
+                Categoría
               </Label>
               <div className="mt-1 relative">
-                <CircleDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                 <Input
-                  id="discount_price"
-                  type="number"
-                  step='0.01'
-                  min='0'
-                  placeholder="0.00"
+                  id="category"
+                  type="text"
+                  placeholder="Ej: Impresión o Tazas"
                   className="pl-10"
-                  {...register('discount_price', {
-                    setValueAs: v => (v === '' || v === null || v === undefined || Number.isNaN(Number(v))) ? null : parseFloat(v as string)
-                  })}
+                  {...register('category')}
                 />
               </div>
-              {errors.discount_price && (
-                <p className="mt-1 text-sm text-red-600">{errors.discount_price.message}</p>
+              {errors.category && (
+                <p className="mt-1 text-sm text-red-600">{errors.category.message}</p>
+              )}
+            </div>
+
+            {/* Modelo */}
+            <div>
+              <Label htmlFor="model" className="text-sm font-medium text-gray-700">
+                Modelo
+              </Label>
+              <div className="mt-1 relative">
+                <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <Input
+                  id="model"
+                  type="text"
+                  placeholder="Ej: Premium o Blanco"
+                  className="pl-10"
+                  {...register('model')}
+                />
+              </div>
+              {errors.model && (
+                <p className="mt-1 text-sm text-red-600">{errors.model.message}</p>
               )}
             </div>
 
@@ -280,96 +310,41 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
               </div>
             </div>
 
-            {/* Width */}
-            <div>
-              <Label htmlFor="width" className="text-sm font-medium text-gray-700">
-                Ancho (m)
+            {/* Es Paquete */}
+            <div className="flex items-center gap-2 pt-8">
+              <input
+                id="package"
+                type="checkbox"
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                {...register('package')}
+              />
+              <Label htmlFor="package" className="text-sm font-medium text-gray-700 select-none">
+                Es un Paquete
               </Label>
-              <div className="mt-1 relative">
-                <Ruler className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                <Input
-                  id="width"
-                  type="number"
-                  step='0.01'
-                  min='0'
-                  placeholder="Ej: 2.0"
-                  className="pl-10"
-                  {...register('width', { valueAsNumber: true })}
-                />
-              </div>
-              {errors.width && (
-                <p className="mt-1 text-sm text-red-600">{errors.width.message}</p>
-              )}
             </div>
 
-            {/* Height */}
-            <div>
-              <Label htmlFor="height" className="text-sm font-medium text-gray-700">
-                Alto (m)
-              </Label>
-              <div className="mt-1 relative">
-                <Ruler className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                <Input
-                  id="height"
-                  type="number"
-                  step='0.01'
-                  min='0'
-                  placeholder="Ej: 3.0"
-                  className="pl-10"
-                  {...register('height', { valueAsNumber: true })}
-                />
+            {/* Piezas por Paquete */}
+            {packageValue && (
+              <div>
+                <Label htmlFor="piecesPerPack" className="text-sm font-medium text-gray-700">
+                  Piezas por Paquete
+                </Label>
+                <div className="mt-1 relative">
+                  <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                  <Input
+                    id="piecesPerPack"
+                    type="number"
+                    min="0"
+                    placeholder="Ej: 10"
+                    className="pl-10"
+                    {...register('piecesPerPack', { valueAsNumber: true })}
+                  />
+                </div>
+                {errors.piecesPerPack && (
+                  <p className="mt-1 text-sm text-red-600">{errors.piecesPerPack.message}</p>
+                )}
               </div>
-              {errors.height && (
-                <p className="mt-1 text-sm text-red-600">{errors.height.message}</p>
-              )}
-            </div>
-
-            {/* Colors */}
-            <div>
-              <Label htmlFor="colors" className="text-sm font-medium text-gray-700">
-                Colores
-              </Label>
-              <div className="mt-1 relative">
-                <Palette className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                <Input
-                  id="colors"
-                  type="text"
-                  placeholder="rojo, azul, blanco"
-                  className="pl-10"
-                  value={colorsInput}
-                  onChange={(e) => setColorsInput(e.target.value)}
-                />
-              </div>
-              <p className="mt-1 text-xs text-gray-500">Separa los colores con comas</p>
-            </div>
-
-            {/* Position */}
-            <div>
-              <Label htmlFor="position" className="text-sm font-medium text-gray-700">
-                Posición
-              </Label>
-              <div className="mt-1 relative">
-                <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
-                <select
-                  id="position"
-                  className="pl-10 w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  {...register('position')}
-                >
-                  <option value="">Seleccionar posición</option>
-                  <option value="centro">Centro</option>
-                  <option value="superior">Superior</option>
-                  <option value="inferior">Inferior</option>
-                  <option value="izquierda">Izquierda</option>
-                  <option value="derecha">Derecha</option>
-                  <option value="completo">Completo</option>
-                  <option value="contorno">Contorno</option>
-                  <option value="frontal">Frontal</option>
-                </select>
-              </div>
-              {errors.position && (
-                <p className="mt-1 text-sm text-red-600">{errors.position.message}</p>
-              )}
-            </div>
+            )}
           </div>
 
           {/* Actions */}

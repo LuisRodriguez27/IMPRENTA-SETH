@@ -8,35 +8,39 @@
 export interface ProductTemplateRow {
   id: number;
   product_id: number;
-  width: number | null;
-  height: number | null;
-  colors: string | null;
-  position: string | null;
-  texts: string | null;
-  description: string | null;
-  final_price: number | null;
+  productId?: number;
+  final_price: number;
   promo_price: number | null;
-  discount_price: number | null;
+  dimensions?: string | null;
+  category?: string | null;
+  model?: string | null;
+  package?: boolean | number;
+  pieces_per_pack?: number | null;
+  piecesPerPack?: number | null;
+  description: string | null;
   created_by: number | null;
-  active: boolean;
-  /** Joined desde products */
+  active: boolean | number;
+  // Joined fields
+  name?: string;
   product_name?: string | null;
-  /** Joined desde users */
+  serial_number?: string | null;
   created_by_username?: string | null;
 }
 
 // ─── Input / DTO types ─────────────────────────────────────────────────────
 
 export interface TemplateData {
-  product_id: number;
+  product_id?: number;
+  productId?: number;
+  name?: string | null;
   final_price: number | string;
   promo_price?: number | string | null;
-  discount_price?: number | string | null;
-  width?: number | string | null;
-  height?: number | string | null;
-  colors?: string | null;
-  position?: string | null;
-  texts?: string | null;
+  dimensions?: string | null;
+  category?: string | null;
+  model?: string | null;
+  package?: boolean | number;
+  pieces_per_pack?: number | string | null;
+  piecesPerPack?: number | string | null;
   description?: string | null;
   created_by?: number | string | null;
 }

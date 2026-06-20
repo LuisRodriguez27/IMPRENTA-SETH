@@ -86,11 +86,11 @@ export interface BudgetProduct {
   product_description?: string;
 
   // Datos añadidos por JOIN con templates
-  template_width?: number;
-  template_height?: number;
-  template_colors?: string;
-  template_position?: string;
-  template_texts?: string;
+  template_dimensions?: string;
+  template_category?: string;
+  template_model?: string;
+  template_package?: boolean | number;
+  template_pieces_per_pack?: number | null;
   template_description?: string;
   template_final_price?: number;
   template_created_by_username?: string;
@@ -107,11 +107,11 @@ export interface BudgetFormItem {
   // Datos adicionales según el tipo
   description?: string;
   serial_number?: string; // solo productos
-  width?: number; // solo plantillas
-  height?: number; // solo plantillas
-  colors?: string; // solo plantillas
-  position?: string; // solo plantillas
-  texts?: string; // solo plantillas
+  dimensions?: string; // solo plantillas
+  category?: string; // solo plantillas
+  model?: string; // solo plantillas
+  package?: boolean; // solo plantillas
+  piecesPerPack?: number | null; // solo plantillas
 }
 
 // Funciones de utilidad

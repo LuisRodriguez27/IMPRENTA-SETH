@@ -249,22 +249,30 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({
                   <p className="text-gray-700">{item.serial_number}</p>
                 </div>
               )}
-              {item.width && item.height && (
+              {item.dimensions && (
                 <div>
                   <span className="font-medium text-gray-600">Dimensiones:</span>
-                  <p className="text-gray-700">{item.width} x {item.height} cm</p>
+                  <p className="text-gray-700">{item.dimensions}</p>
                 </div>
               )}
-              {item.colors && (
+              {item.category && (
                 <div>
-                  <span className="font-medium text-gray-600">Colores:</span>
-                  <p className="text-gray-700">{item.colors}</p>
+                  <span className="font-medium text-gray-600">Categoría:</span>
+                  <p className="text-gray-700">{item.category}</p>
                 </div>
               )}
-              {item.position && (
+              {item.model && (
                 <div>
-                  <span className="font-medium text-gray-600">Posición:</span>
-                  <p className="text-gray-700">{item.position}</p>
+                  <span className="font-medium text-gray-600">Modelo:</span>
+                  <p className="text-gray-700">{item.model}</p>
+                </div>
+              )}
+              {item.package && (
+                <div>
+                  <span className="font-medium text-gray-600">Presentación:</span>
+                  <p className="text-gray-700">
+                    Paquete {item.piecesPerPack ? `(${item.piecesPerPack} uds)` : ''}
+                  </p>
                 </div>
               )}
               {item.description && (

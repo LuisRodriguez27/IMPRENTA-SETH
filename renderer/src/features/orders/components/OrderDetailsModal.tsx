@@ -706,28 +706,30 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                           {/* Información adicional para plantillas */}
                           {getOrderItemType(product) === 'template' && (
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-gray-100 text-sm">
-                              {product.template_width && product.template_height && (
+                              {product.template_dimensions && (
                                 <div>
                                   <span className="font-medium text-gray-600">Dimensiones:</span>
-                                  <p className="text-gray-700">{product.template_width} × {product.template_height} cm</p>
+                                  <p className="text-gray-700">{product.template_dimensions}</p>
                                 </div>
                               )}
-                              {product.template_colors && (
+                              {product.template_category && (
                                 <div>
-                                  <span className="font-medium text-gray-600">Colores:</span>
-                                  <p className="text-gray-700">{product.template_colors}</p>
+                                  <span className="font-medium text-gray-600">Categoría:</span>
+                                  <p className="text-gray-700">{product.template_category}</p>
                                 </div>
                               )}
-                              {product.template_position && (
+                              {product.template_model && (
                                 <div>
-                                  <span className="font-medium text-gray-600">Posición:</span>
-                                  <p className="text-gray-700">{product.template_position}</p>
+                                  <span className="font-medium text-gray-600">Modelo:</span>
+                                  <p className="text-gray-700">{product.template_model}</p>
                                 </div>
                               )}
-                              {product.template_texts && (
-                                <div className="md:col-span-3">
-                                  <span className="font-medium text-gray-600">Textos:</span>
-                                  <p className="text-gray-700">{product.template_texts}</p>
+                              {product.template_package && (
+                                <div>
+                                  <span className="font-medium text-gray-600">Presentación:</span>
+                                  <p className="text-gray-700">
+                                    Paquete {product.template_pieces_per_pack ? `(${product.template_pieces_per_pack} uds)` : ''}
+                                  </p>
                                 </div>
                               )}
                               {product.template_description && (

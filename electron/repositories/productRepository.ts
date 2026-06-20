@@ -1,6 +1,8 @@
 import db from '../db';
 import Product from '../domain/product';
 import type { ProductRow } from '../types/product';
+import ProductTemplate from '../domain/productTemplate';
+import type { ProductTemplateRow } from '../types/productTemplate';
 
 class ProductRepository {
   async findAll() {
@@ -78,10 +80,22 @@ class ProductRepository {
     return products.map((p) => new Product(p));
   }
 
+  private async _getTemplatesForProduct(productId: number) {
+    const templatesRaw = await db.getAll<ProductTemplateRow>(
+      `SELECT pt.*, p.name as name, p.name as product_name, p.serial_number, u.username as created_by_username
+       FROM product_templates pt
+       JOIN products p ON pt.product_id = p.id
+       LEFT JOIN users u ON pt.created_by = u.id
+       WHERE pt.product_id = $1 AND pt.active = true`,
+      [productId]
+    );
+    return templatesRaw.map((t) => new ProductTemplate(t).toPlainObject());
+  }
+
   async findWithTemplates(productId: number) {
     const product = await this.findById(productId);
     if (!product) return null;
-    const templates = await db.getAll(`SELECT pt.*, u.username as created_by_username FROM product_templates pt LEFT JOIN users u ON pt.created_by = u.id WHERE pt.product_id = $1 AND pt.active = true`, [productId]);
+    const templates = await this._getTemplatesForProduct(productId);
     return { ...product.toPlainObject(), templates };
   }
 
@@ -98,7 +112,7 @@ class ProductRepository {
   async findAllWithTemplates() {
     const products = await this.findAll();
     return await Promise.all(products.map(async (product) => {
-      const templates = await db.getAll(`SELECT pt.*, u.username as created_by_username FROM product_templates pt LEFT JOIN users u ON pt.created_by = u.id WHERE pt.product_id = $1 AND pt.active = true`, [product.id]);
+      const templates = await this._getTemplatesForProduct(product.id);
       return { ...product.toPlainObject(), templates };
     }));
   }
@@ -106,7 +120,7 @@ class ProductRepository {
   async searchWithTemplates(searchTerm: string) {
     const products = await this.searchByTerm(searchTerm);
     return await Promise.all(products.map(async (product) => {
-      const templates = await db.getAll(`SELECT pt.*, u.username as created_by_username FROM product_templates pt LEFT JOIN users u ON pt.created_by = u.id WHERE pt.product_id = $1 AND pt.active = true`, [product.id]);
+      const templates = await this._getTemplatesForProduct(product.id);
       return { ...product.toPlainObject(), templates };
     }));
   }
@@ -144,7 +158,7 @@ class ProductRepository {
     }
 
     const withTemplates = await Promise.all(products.map(async (product) => {
-      const templates = await db.getAll(`SELECT pt.*, u.username as created_by_username FROM product_templates pt LEFT JOIN users u ON pt.created_by = u.id WHERE pt.product_id = $1 AND pt.active = true`, [product.id]);
+      const templates = await this._getTemplatesForProduct(product.id);
       return { ...product.toPlainObject(), templates };
     }));
 

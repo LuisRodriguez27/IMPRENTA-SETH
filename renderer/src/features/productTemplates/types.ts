@@ -1,30 +1,30 @@
 import { z } from 'zod';
 
 export const createProductTemplateSchema = z.object({
-  product_id: z.number().int().min(1, 'El ID del producto es obligatorio'),
+  productId: z.number().int().min(1, 'El ID del producto es obligatorio'),
+  name: z.string().min(1, 'El nombre de la plantilla es obligatorio'),
   final_price: z.number().min(0, 'El precio final debe ser un número positivo').optional().or(z.nan().transform(() => undefined)),
   promo_price: z.number().min(0).optional().nullable(),
-  discount_price: z.number().min(0).optional().nullable(),
-  width: z.number().min(0, 'El ancho debe ser un número positivo').nullable().optional().or(z.nan().transform(() => undefined)),
-  height: z.number().min(0, 'El alto debe ser un número positivo').nullable().optional().or(z.nan().transform(() => undefined)),
-  colors: z.string().optional(),
-  position: z.string().optional(),
-  texts: z.string().optional(),
-  description: z.string().min(1, 'El nombre de la plantilla es obligatorio'),
+  dimensions: z.string().optional(),
+  category: z.string().optional(),
+  model: z.string().optional(),
+  package: z.boolean(),
+  piecesPerPack: z.number().int().min(0).nullable().optional().or(z.nan().transform(() => undefined)),
+  description: z.string().optional().nullable(),
   created_by: z.number().int().optional()
 });
 
 export const editProductTemplateSchema = z.object({
-  product_id: z.number().int().min(1, 'El ID del producto es obligatorio').optional(),
+  productId: z.number().int().min(1, 'El ID del producto es obligatorio').optional(),
+  name: z.string().min(1, 'El nombre de la plantilla es obligatorio'),
   final_price: z.number().min(0, 'El precio final debe ser un número positivo').optional().or(z.nan().transform(() => undefined)),
   promo_price: z.number().min(0).optional().nullable(),
-  discount_price: z.number().min(0).optional().nullable(),
-  width: z.number().min(0, 'El ancho debe ser un número positivo').nullable().optional().or(z.nan().transform(() => undefined)),
-  height: z.number().min(0, 'El alto debe ser un número positivo').nullable().optional().or(z.nan().transform(() => undefined)),
-  colors: z.string().optional(),
-  position: z.string().optional(),
-  texts: z.string().optional(),
-  description: z.string().min(1, 'El nombre de la plantilla es obligatorio'),
+  dimensions: z.string().optional(),
+  category: z.string().optional(),
+  model: z.string().optional(),
+  package: z.boolean(),
+  piecesPerPack: z.number().int().min(0).nullable().optional().or(z.nan().transform(() => undefined)),
+  description: z.string().optional().nullable(),
   created_by: z.number().int().optional()
 });
 
@@ -33,21 +33,21 @@ export type EditProductTemplateForm = z.infer<typeof editProductTemplateSchema>;
 
 export interface ProductTemplate {
   id: number;
-  product_id: number;
+  productId: number;
+  product_id?: number; // fallback
+  name: string; // Nombre de la plantilla
+  product_name?: string; // Nombre del producto padre
   final_price: number;
   promo_price?: number | null;
-  discount_price?: number | null;
-  width?: number;
-  height?: number;
-  colors?: string;
-  position?: string;
-  texts?: string;
-  description: string;
-  created_by?: number;
+  dimensions: string;
+  category: string;
+  model: string;
+  package: boolean;
+  piecesPerPack?: number | null;
+  description: string | null; // Descripción de la plantilla
+  created_by?: number | null;
   active: boolean;
 
-  product_name?: string;
-  serial_number?: string;
-
-  created_by_username?: string;
+  serial_number?: string | null;
+  created_by_username?: string | null;
 }

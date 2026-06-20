@@ -55,11 +55,11 @@ export interface OrderProductRow {
   product_price: number | null;
   product_description: string | null;
   /** Joined desde product_templates */
-  template_width: number | null;
-  template_height: number | null;
-  template_colors: string | null;
-  template_position: string | null;
-  template_texts: string | null;
+  template_dimensions: string | null;
+  template_category: string | null;
+  template_model: string | null;
+  template_package: boolean | null;
+  template_pieces_per_pack: number | null;
   template_description: string | null;
   template_final_price: number | null;
   template_created_by_username: string | null;

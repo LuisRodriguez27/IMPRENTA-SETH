@@ -158,8 +158,8 @@ class OrderRepository {
     return await db.getAll<OrderProductRow>(`
       SELECT op.*,
              p.name as product_name, p.serial_number, p.price as product_price, p.description as product_description,
-             pt.width as template_width, pt.height as template_height, pt.colors as template_colors,
-             pt.position as template_position, pt.texts as template_texts, pt.description as template_description,
+             pt.dimensions as template_dimensions, pt.category as template_category, pt.model as template_model,
+             pt.package as template_package, pt.pieces_per_pack as template_pieces_per_pack, pt.description as template_description,
              pt.final_price as template_final_price, u.username as template_created_by_username,
              p_template.name as template_base_product_name
       FROM order_products op

@@ -756,6 +756,27 @@ const MIGRATIONS: Migration[] = [
       await client.query(`ALTER TABLE users DROP CONSTRAINT IF EXISTS users_username_key`);
       await client.query(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_active ON users(username) WHERE active = true`);
     }
+  },
+
+  // v30: Cambiar columnas de product_templates al inglés
+  {
+    version: 30,
+    name: 'update_template_columns_to_english',
+    isApplied: async (client: PoolClient) => {
+      const { rows } = await client.query<{ count: string }>(`
+        SELECT COUNT(*) FROM information_schema.columns
+        WHERE table_name = 'product_templates' AND column_name = 'category'
+      `);
+      return rows.length > 0 && parseInt(rows[0].count) === 1;
+    },
+    up: async (client: PoolClient) => {
+      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS name TEXT`);
+      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS dimensions TEXT`);
+      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS category TEXT`);
+      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS model TEXT`);
+      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS package BOOLEAN NOT NULL DEFAULT FALSE`);
+      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS pieces_per_pack INTEGER`);
+    }
   }
 ];
 

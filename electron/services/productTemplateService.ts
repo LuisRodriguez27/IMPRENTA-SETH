@@ -36,30 +36,33 @@ class ProductTemplateService {
     }
   }
 
-  async createTemplate({ product_id, final_price, promo_price, discount_price, width, height, colors, position, texts, description, created_by }: TemplateData) {
+  async createTemplate(data: TemplateData) {
     try {
-      if (!product_id || isNaN(Number(product_id))) throw new Error('ID de producto inválido');
-      if (final_price === undefined || final_price === null || isNaN(Number(final_price))) throw new Error('El precio final es requerido y debe ser un número válido');
+      const productId = data.productId !== undefined ? data.productId : data.product_id;
+      if (!productId || isNaN(Number(productId))) throw new Error('ID de producto inválido');
+      if (data.final_price === undefined || data.final_price === null || isNaN(Number(data.final_price))) throw new Error('El precio final es requerido y debe ser un número válido');
 
-      const numericFinalPrice = parseFloat(String(final_price));
+      const numericFinalPrice = parseFloat(String(data.final_price));
       if (numericFinalPrice < 0) throw new Error('El precio final debe ser mayor o igual a cero');
 
-      const product = await productRepository.findById(parseInt(String(product_id)));
+      const product = await productRepository.findById(parseInt(String(productId)));
       if (!product) throw new Error('El producto especificado no existe');
 
-      if (width !== undefined && width !== null && (isNaN(Number(width)) || Number(width) < 0)) throw new Error('El ancho debe ser un número válido mayor o igual a cero');
-      if (height !== undefined && height !== null && (isNaN(Number(height)) || Number(height) < 0)) throw new Error('El alto debe ser un número válido mayor o igual a cero');
-
-      const processedColors = colors && typeof colors === 'string' && colors.trim() ? colors.trim() : null;
-      const processedTexts = texts && typeof texts === 'string' && texts.trim() ? texts.trim() : null;
+      const dimensions = data.dimensions;
+      const pzas = data.piecesPerPack !== undefined ? data.piecesPerPack : data.pieces_per_pack;
 
       const template = await productTemplateRepository.create({
-        product_id: parseInt(String(product_id)), final_price: numericFinalPrice,
-        promo_price: promo_price !== undefined ? (promo_price !== null ? parseFloat(String(promo_price)) : null) : null,
-        discount_price: discount_price !== undefined ? (discount_price !== null ? parseFloat(String(discount_price)) : null) : null,
-        width: width ? parseFloat(String(width)) : null, height: height ? parseFloat(String(height)) : null,
-        colors: processedColors, position: position?.trim() || null, texts: processedTexts,
-        description: description?.trim() || null, created_by: created_by ? parseInt(String(created_by)) : null
+        product_id: parseInt(String(productId)),
+        name: data.name?.trim() || null,
+        final_price: numericFinalPrice,
+        promo_price: data.promo_price !== undefined ? (data.promo_price !== null ? parseFloat(String(data.promo_price)) : null) : null,
+        dimensions: dimensions ? String(dimensions).trim() : '',
+        category: data.category ? String(data.category).trim() : '',
+        model: data.model ? String(data.model).trim() : '',
+        package: data.package === true || data.package === 1 || String(data.package) === 'true',
+        piecesPerPack: pzas !== undefined && pzas !== null ? parseInt(String(pzas), 10) : null,
+        description: data.description?.trim() || null, 
+        created_by: data.created_by ? parseInt(String(data.created_by)) : null
       });
       if (!template) throw new Error('Error al crear plantilla');
       return template.toPlainObject();
@@ -69,42 +72,44 @@ class ProductTemplateService {
     }
   }
 
-  async updateTemplate(id: number, { product_id, final_price, promo_price, discount_price, width, height, colors, position, texts, description }: Omit<TemplateData, 'created_by'>) {
+  async updateTemplate(id: number, data: Omit<TemplateData, 'created_by'>) {
     try {
       if (!id || isNaN(Number(id))) throw new Error('ID de plantilla inválido');
-      if (!product_id || isNaN(Number(product_id))) throw new Error('ID de producto inválido');
-      if (final_price === undefined || final_price === null || isNaN(Number(final_price))) throw new Error('El precio final es requerido y debe ser un número válido');
+      const productId = data.productId !== undefined ? data.productId : data.product_id;
+      if (!productId || isNaN(Number(productId))) throw new Error('ID de producto inválido');
+      if (data.final_price === undefined || data.final_price === null || isNaN(Number(data.final_price))) throw new Error('El precio final es requerido y debe ser un número válido');
 
       const templateId = id;
       const existingTemplate = await productTemplateRepository.findById(templateId);
       if (!existingTemplate) throw new Error('Plantilla no encontrada');
 
-      const product = await productRepository.findById(parseInt(String(product_id)));
+      const product = await productRepository.findById(parseInt(String(productId)));
       if (!product) throw new Error('El producto especificado no existe');
 
-      const numericFinalPrice = parseFloat(String(final_price));
+      const numericFinalPrice = parseFloat(String(data.final_price));
       if (numericFinalPrice < 0) throw new Error('El precio final debe ser mayor o igual a cero');
-      if (width !== undefined && width !== null && (isNaN(Number(width)) || Number(width) < 0)) throw new Error('El ancho debe ser un número válido mayor o igual a cero');
-      if (height !== undefined && height !== null && (isNaN(Number(height)) || Number(height) < 0)) throw new Error('El alto debe ser un número válido mayor o igual a cero');
 
-      const processedColors = colors && typeof colors === 'string' && colors.trim() ? colors.trim() : null;
-      const processedTexts = texts && typeof texts === 'string' && texts.trim() ? texts.trim() : null;
+      const dimensions = data.dimensions;
+      const pzas = data.piecesPerPack !== undefined ? data.piecesPerPack : data.pieces_per_pack;
 
       const updated = await productTemplateRepository.update(templateId, {
-        product_id: parseInt(String(product_id)), final_price: numericFinalPrice,
-        promo_price: promo_price !== undefined ? (promo_price !== null ? parseFloat(String(promo_price)) : null) : null,
-        discount_price: discount_price !== undefined ? (discount_price !== null ? parseFloat(String(discount_price)) : null) : null,
-        width: width ? parseFloat(String(width)) : null, height: height ? parseFloat(String(height)) : null,
-        colors: processedColors, position: position?.trim() || null, texts: processedTexts, description: description?.trim() || null
+        product_id: parseInt(String(productId)),
+        name: data.name?.trim() || null,
+        final_price: numericFinalPrice,
+        promo_price: data.promo_price !== undefined ? (data.promo_price !== null ? parseFloat(String(data.promo_price)) : null) : null,
+        dimensions: dimensions ? String(dimensions).trim() : '',
+        category: data.category ? String(data.category).trim() : '',
+        model: data.model ? String(data.model).trim() : '',
+        package: data.package === true || data.package === 1 || String(data.package) === 'true',
+        piecesPerPack: pzas !== undefined && pzas !== null ? parseInt(String(pzas), 10) : null,
+        description: data.description?.trim() || null
       });
       if (!updated) throw new Error('Error al actualizar plantilla');
 
       const updatedTemplate = await productTemplateRepository.findById(templateId);
       if (!updatedTemplate) throw new Error('Error: no se pudo recuperar la plantilla actualizada');
 
-      const result = updatedTemplate.toPlainObject();
-      if (!result.id || !result.product_id) { console.error('Plantilla actualizada inválida:', result); throw new Error('Datos de la plantilla actualizada inválidos'); }
-      return result;
+      return updatedTemplate.toPlainObject();
     } catch (error) {
       console.error('Error al actualizar plantilla:', error);
       throw error;

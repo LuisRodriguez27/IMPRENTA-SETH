@@ -101,16 +101,11 @@ const DeleteTemplateModal: React.FC<DeleteTemplateModalProps> = ({
                       ${template.final_price.toFixed(2)} MXN
                     </p>
                   </div>
-                  {(template.width || template.height) && (
+                  {template.dimensions && (
                     <div>
                       <p className="text-xs text-gray-500">Dimensiones</p>
                       <p className="text-sm font-medium text-gray-900">
-                        {template.width && template.height
-                          ? `${template.width}m × ${template.height}m`
-                          : template.width 
-                            ? `${template.width}m ancho`
-                            : `${template.height}m alto`
-                        }
+                        {template.dimensions}
                       </p>
                     </div>
                   )}

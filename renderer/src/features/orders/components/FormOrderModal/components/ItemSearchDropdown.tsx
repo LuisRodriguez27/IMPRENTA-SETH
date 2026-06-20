@@ -70,8 +70,8 @@ const ItemSearchDropdown: React.FC<ItemSearchDropdownProps> = ({
                         {(filteredItem.item as ProductTemplate).description && (
                           <span>{(filteredItem.item as ProductTemplate).description}</span>
                         )}
-                        {(filteredItem.item as ProductTemplate).width && (filteredItem.item as ProductTemplate).height && (
-                          <span className="ml-2">{(filteredItem.item as ProductTemplate).width}x{(filteredItem.item as ProductTemplate).height}cm</span>
+                        {(filteredItem.item as ProductTemplate).dimensions && (
+                          <span className="ml-2">{(filteredItem.item as ProductTemplate).dimensions}</span>
                         )}
                       </div>
                     )}

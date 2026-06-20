@@ -4,13 +4,11 @@ import type { Product } from '@/features/products/types';
 import {
   DollarSign,
   Grid, List,
-  MapPin,
   Package,
-  Palette, Ruler,
+  Ruler,
   Search,
   Trash2,
   User,
-  FileText,
   Loader2
 } from 'lucide-react';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
@@ -130,7 +128,8 @@ const ProductTemplatesPage: React.FC = () => {
   }, [debouncedSearch]);
 
   const filteredTemplates = templates.filter(template => {
-    const matchesProduct = selectedProduct === 'all' || template.product_id.toString() === selectedProduct;
+    const prodId = template.productId !== undefined ? template.productId : template.product_id;
+    const matchesProduct = selectedProduct === 'all' || prodId?.toString() === selectedProduct;
     const matchesUser = selectedUser === 'all' || template.created_by_username === selectedUser;
 
     return matchesProduct && matchesUser;
@@ -154,18 +153,8 @@ const ProductTemplatesPage: React.FC = () => {
     toast.success('Plantilla eliminada exitosamente');
   };
 
-  const formatColors = (colors?: string) => {
-    if (!colors) return null;
-    try {
-      const colorArray = JSON.parse(colors);
-      return Array.isArray(colorArray) ? colorArray : [colors];
-    } catch {
-      return [colors];
-    }
-  };
-
   const getUniqueUsers = () => {
-    const users = templates.map(t => t.created_by_username).filter(Boolean);
+    const users = templates.map(t => t.created_by_username).filter((u): u is string => !!u);
     return [...new Set(users)];
   };
 
@@ -318,8 +307,6 @@ const ProductTemplatesPage: React.FC = () => {
                 : 'grid-cols-1'
                 }`}>
                 {filteredTemplates.map((template, index) => {
-                  const colors = formatColors(template.colors);
-
                   return (
                     <div
                       key={template.id}
@@ -331,11 +318,16 @@ const ProductTemplatesPage: React.FC = () => {
                         {/* Header */}
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
-                            <h3 className="font-medium text-gray-900 mb-1">
-                              {template.description}
+                            <h3 className="font-semibold text-gray-900 mb-1 text-base">
+                              {template.name}
                             </h3>
-                            <p className="text-sm font-medium text-blue-600 mb-1">
-                              {template.product_name}
+                            {template.description && (
+                              <p className="text-xs text-gray-500 mb-2 italic">
+                                {template.description}
+                              </p>
+                            )}
+                            <p className="text-xs font-medium text-blue-600 mb-2">
+                              Producto: {template.product_name}
                             </p>
                             <div className="flex items-center gap-3 text-xs text-gray-500">
                               {template.created_by_username && (
@@ -353,20 +345,13 @@ const ProductTemplatesPage: React.FC = () => {
                           {(() => {
                             let activePrice = template.final_price;
                             let isPromo = false;
-                            let isDiscount = false;
 
                             if (template.promo_price !== null && template.promo_price !== undefined && template.promo_price < template.final_price) {
                               activePrice = template.promo_price;
                               isPromo = true;
                             }
 
-                            if (template.discount_price !== null && template.discount_price !== undefined && template.discount_price < activePrice) {
-                              activePrice = template.discount_price;
-                              isPromo = false;
-                              isDiscount = true;
-                            }
-
-                            if (isPromo || isDiscount) {
+                            if (isPromo) {
                               return (
                                 <div className="flex flex-col gap-1">
                                   <div className="flex items-center gap-2">
@@ -376,12 +361,12 @@ const ProductTemplatesPage: React.FC = () => {
                                     </span>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <DollarSign size={14} className={isPromo ? "text-blue-600" : "text-orange-600"} />
-                                    <span className={`font-semibold ${isPromo ? "text-blue-600" : "text-orange-600"}`}>
+                                    <DollarSign size={14} className="text-blue-600" />
+                                    <span className="font-semibold text-blue-600">
                                       ${activePrice.toFixed(2)} MXN
                                     </span>
-                                    <span className={`px-1.5 py-0.5 text-[10px] font-medium rounded ${isPromo ? "bg-blue-100 text-blue-800" : "bg-orange-100 text-orange-800"}`}>
-                                      {isPromo ? 'Promo' : 'Desc'}
+                                    <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-blue-100 text-blue-800">
+                                      Promo
                                     </span>
                                   </div>
                                 </div>
@@ -398,56 +383,37 @@ const ProductTemplatesPage: React.FC = () => {
                             );
                           })()}
 
-                          {(template.width || template.height) && (
+                          {template.dimensions && (
                             <div className="flex items-center gap-2">
                               <Ruler size={14} />
-                              <span>
-                                {template.width && template.height
-                                  ? `${template.width}m × ${template.height}m`
-                                  : template.width
-                                    ? `Ancho: ${template.width}m`
-                                    : `Alto: ${template.height}m`
-                                }
+                              <span>{template.dimensions}</span>
+                            </div>
+                          )}
+
+                          {template.category && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-800">
+                                Categoría: {template.category}
                               </span>
                             </div>
                           )}
 
-                          {template.position && (
+                          {template.model && (
                             <div className="flex items-center gap-2">
-                              <MapPin size={14} />
-                              <span className="capitalize">{template.position}</span>
+                              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-gray-100 text-gray-800">
+                                Modelo: {template.model}
+                              </span>
                             </div>
                           )}
 
-                          {template.texts && (
-                            <div className="flex items-start gap-2 max-w-full">
-                              <FileText size={14} className="shrink-0 mt-0.5" />
-                              <span className="text-sm truncate" title={template.texts}>
-                                {template.texts}
+                          {template.package && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-800">
+                                Paquete {template.piecesPerPack ? `(${template.piecesPerPack} uds)` : ''}
                               </span>
                             </div>
                           )}
                         </div>
-
-                        {/* Colors */}
-                        {colors && colors.length > 0 && (
-                          <div className="mb-4">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Palette size={14} className="text-gray-400" />
-                              <span className="text-xs text-gray-500">Colores:</span>
-                            </div>
-                            <div className="flex flex-wrap gap-1">
-                              {colors.map((color, index) => (
-                                <span
-                                  key={index}
-                                  className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
-                                >
-                                  {color}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
                       </div>
 
                       {/* Actions */}

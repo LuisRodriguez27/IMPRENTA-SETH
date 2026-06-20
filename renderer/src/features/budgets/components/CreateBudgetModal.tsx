@@ -116,11 +116,12 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
               name: bp.template_base_product_name ? `${bp.template_base_product_name} (Plantilla)` : (bp.product_name ? `${bp.product_name} (Plantilla)` : 'Plantilla'),
               quantity: bp.quantity,
               unit_price: bp.unit_price,
-              width: bp.template_width,
-              height: bp.template_height,
-              colors: bp.template_colors,
-              texts: bp.template_texts,
-              description: bp.template_description
+              dimensions: bp.template_dimensions || undefined,
+              category: bp.template_category || undefined,
+              model: bp.template_model || undefined,
+              package: bp.template_package === 1 || bp.template_package === true,
+              piecesPerPack: bp.template_pieces_per_pack,
+              description: bp.template_description || undefined
             };
           }
         });
@@ -402,7 +403,9 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
         const matchesSearch = !searchTerm ||
           templateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
           (template.description && template.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          (template.colors && template.colors.toLowerCase().includes(searchTerm.toLowerCase()));
+          (template.dimensions && template.dimensions.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (template.category && template.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (template.model && template.model.toLowerCase().includes(searchTerm.toLowerCase()));
 
         if (matchesSearch) {
           items.push({
@@ -444,12 +447,12 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
         id: template.id,
         name: templateName,
         unit_price: template.final_price,
-        description: template.description,
-        width: template.width,
-        height: template.height,
-        colors: template.colors,
-        position: template.position,
-        texts: template.texts
+        description: template.description || undefined,
+        dimensions: template.dimensions || undefined,
+        category: template.category || undefined,
+        model: template.model || undefined,
+        package: template.package,
+        piecesPerPack: template.piecesPerPack
       });
       setSearchTerms(prev => ({ ...prev, [index]: templateName }));
     }
@@ -888,8 +891,8 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
                                                     {(filteredItem.item as ProductTemplate).description && (
                                                       <span>{(filteredItem.item as ProductTemplate).description}</span>
                                                     )}
-                                                    {(filteredItem.item as ProductTemplate).width && (filteredItem.item as ProductTemplate).height && (
-                                                      <span className="ml-2">{(filteredItem.item as ProductTemplate).width}x{(filteredItem.item as ProductTemplate).height}cm</span>
+                                                    {(filteredItem.item as ProductTemplate).dimensions && (
+                                                      <span className="ml-2">{(filteredItem.item as ProductTemplate).dimensions}</span>
                                                     )}
                                                   </div>
                                                 )}
@@ -989,22 +992,30 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
                                     <p className="text-gray-700">{item.serial_number}</p>
                                   </div>
                                 )}
-                                {item.width && item.height && (
+                                {item.dimensions && (
                                   <div>
                                     <span className="font-medium text-gray-600">Dimensiones:</span>
-                                    <p className="text-gray-700">{item.width} x {item.height} cm</p>
+                                    <p className="text-gray-700">{item.dimensions}</p>
                                   </div>
                                 )}
-                                {item.colors && (
+                                {item.category && (
                                   <div>
-                                    <span className="font-medium text-gray-600">Colores:</span>
-                                    <p className="text-gray-700">{item.colors}</p>
+                                    <span className="font-medium text-gray-600">Categoría:</span>
+                                    <p className="text-gray-700">{item.category}</p>
                                   </div>
                                 )}
-                                {item.position && (
+                                {item.model && (
                                   <div>
-                                    <span className="font-medium text-gray-600">Posición:</span>
-                                    <p className="text-gray-700">{item.position}</p>
+                                    <span className="font-medium text-gray-600">Modelo:</span>
+                                    <p className="text-gray-700">{item.model}</p>
+                                  </div>
+                                )}
+                                {item.package && (
+                                  <div>
+                                    <span className="font-medium text-gray-600">Presentación:</span>
+                                    <p className="text-gray-700">
+                                      Paquete {item.piecesPerPack ? `(${item.piecesPerPack} uds)` : ''}
+                                    </p>
                                   </div>
                                 )}
                                 {item.description && (

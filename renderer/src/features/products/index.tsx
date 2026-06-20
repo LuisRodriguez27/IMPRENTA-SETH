@@ -349,9 +349,10 @@ const ProductsPage: React.FC = () => {
           templateRows = p.templates.map(t => {
             // Construir descripción
             let descParts = [];
-            if (t.colors) descParts.push(t.colors);
-            if (t.width && t.height) descParts.push(`${t.width}x${t.height}`);
-            if (t.position) descParts.push(t.position);
+            if (t.dimensions) descParts.push(t.dimensions);
+            if (t.category) descParts.push(t.category);
+            if (t.model) descParts.push(t.model);
+            if (t.package) descParts.push(t.piecesPerPack ? `Paquete (${t.piecesPerPack} uds)` : 'Paquete');
 
             const variantName = t.description ? `${t.description}` : '';
             const extraDesc = `<br><span style="color:#9ca3af; font-size:10px;">${descParts.join(' - ') || 'Variante'}</span>`;
@@ -364,7 +365,7 @@ const ProductsPage: React.FC = () => {
                       <tr class="template-row">
                         <td style="padding-left: 20px;">
                           <span class="sub-indicator">↳</span> 
-                          ${variantName} ${t.texts ? `"${t.texts}"` : ''} 
+                          ${variantName} 
                           ${extraDesc}
                         </td>
                         <td class="serial-col" style="font-size:10px;">${t.id}</td>

@@ -15,4 +15,8 @@ export function registerProductIpc(): void {
   ipcMain.handle('products:getPaginated', async (_event, page: number, limit: number, searchTerm: string) =>
     await productService.getProductsPaginated(page, limit, searchTerm));
   ipcMain.handle('products:findSimilarNames', async () => await productService.getProductsWithSimilarNames());
+  ipcMain.handle('products:addStock', async (_event, productId: number, data: any) =>
+    await productService.addStock(productId, data)
+  );
 }
+

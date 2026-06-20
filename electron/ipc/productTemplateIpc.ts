@@ -12,4 +12,8 @@ export function registerProductTemplateIpc(): void {
   ipcMain.handle('templates:search', async (_event, searchTerm: string) => await productTemplatesService.searchTemplates(searchTerm));
   ipcMain.handle('templates:getPaginated', async (_event, page: number, limit: number, searchTerm: string) =>
     await productTemplatesService.getTemplatesPaginated(page, limit, searchTerm));
+  ipcMain.handle('templates:addStock', async (_event, templateId: number, data: any) =>
+    await productTemplatesService.addStock(templateId, data)
+  );
 }
+

@@ -4,4 +4,5 @@ export { default as DeleteProductModal } from './DeleteProductModal';
 export { default as ProductDetailView } from './ProductDetailView';
 export { default as CreateTemplateModal } from '../../productTemplates/components/CreateTemplateModal';
 export { default as EditTemplateModal } from '../../productTemplates/components/EditTemplateModal';
-export * from './SimilarNamesModal';
+export { default as AddStockModal } from './AddStockModal';
+export * from './SimilarNamesModal';

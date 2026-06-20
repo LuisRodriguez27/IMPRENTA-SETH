@@ -93,6 +93,7 @@ declare global {
       searchProductsWithTemplates: (searchTerm: string) => Promise<(Product & { templates?: ProductTemplate[] })[]>;
       getProductsPaginated: (page: number, limit: number, searchTerm: string) => Promise<{ data: (Product & { templates?: ProductTemplate[] })[], pagination: { page: number, limit: number, total: number, totalPages: number, hasNext: boolean, hasPrev: boolean } }>;
       findSimilarNames: () => Promise<SimilarNameResult[]>;
+      addStockToProduct: (productId: number, data: { quantity: number; cost: number; description?: string; userId: number }) => Promise<Product>;
 
       // Plantillas de productos
       getAllTemplates: () => Promise<ProductTemplate[]>;
@@ -103,6 +104,8 @@ declare global {
       deleteTemplate: (id: number) => Promise<void>;
       searchTemplates: (searchTerm: string) => Promise<ProductTemplate[]>;
       getTemplatesPaginated: (page: number, limit: number, searchTerm: string) => Promise<{ data: ProductTemplate[], pagination: { page: number, limit: number, total: number, totalPages: number, hasNext: boolean, hasPrev: boolean } }>;
+      addStockToTemplate: (templateId: number, data: { quantity: number; cost: number; description?: string; userId: number }) => Promise<ProductTemplate>;
+
 
       // Ordenes
       getAllOrders: () => Promise<Order[]>;

@@ -18,10 +18,11 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { CreateTemplateModal, EditProductModal, EditTemplateModal } from '../components';
+import { CreateTemplateModal, EditProductModal, EditTemplateModal, AddStockModal } from '../components';
 import ImageGallery from './ImageGallery';
 import { ProductsApiService } from '../ProductsApiService';
 import type { Product } from '../types';
+
 
 interface ProductDetailViewProps {
   productId: number;
@@ -49,6 +50,25 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
   // Estados para modal de producto
   const [showEditProductModal, setShowEditProductModal] = useState(false);
+
+  // Estados para modal de adición de stock
+  const [showAddStockModal, setShowAddStockModal] = useState(false);
+  const [addStockItem, setAddStockItem] = useState<{ id: number; name: string; currentStock: number } | null>(null);
+  const [addStockType, setAddStockType] = useState<'product' | 'template'>('product');
+
+  const handleAddStockSuccess = (updatedItem: any, type: 'product' | 'template') => {
+    if (type === 'product') {
+      setProduct(updatedItem);
+      if (onProductUpdated) {
+        onProductUpdated(updatedItem);
+      }
+    } else {
+      setTemplates(prev =>
+        prev.map(t => t.id === updatedItem.id ? updatedItem : t)
+      );
+    }
+  };
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -286,12 +306,28 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 </div>
               )}
 
-              <div className="flex items-center gap-3">
-                <Package className="text-gray-400" size={16} />
-                <span className="text-sm text-gray-600">
-                  Stock disponible: <strong className={product.stock !== undefined && product.stock > 0 ? "text-green-600 font-semibold" : "text-red-500 font-semibold"}>{product.stock ?? 0}</strong>
-                </span>
+              <div className="flex items-center justify-between gap-3 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                <div className="flex items-center gap-3">
+                  <Package className="text-gray-400" size={16} />
+                  <span className="text-sm text-gray-600">
+                    Stock disponible: <strong className={product.stock !== undefined && product.stock > 0 ? "text-green-600 font-semibold" : "text-red-500 font-semibold"}>{product.stock ?? 0}</strong>
+                  </span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setAddStockItem({ id: product.id, name: product.name, currentStock: product.stock ?? 0 });
+                    setAddStockType('product');
+                    setShowAddStockModal(true);
+                  }}
+                  className="h-7 px-2.5 text-xs flex items-center gap-1 bg-white hover:bg-gray-100"
+                >
+                  <Plus size={12} />
+                  Surtir Stock
+                </Button>
               </div>
+
 
               {(() => {
                 let activePrice = product.price;
@@ -500,10 +536,26 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                         );
                       })()}
 
-                      <div className="flex items-center gap-2">
-                        <Package size={14} className="text-gray-400" />
-                        <span>Stock disponible: <strong className={template.stock !== undefined && template.stock > 0 ? "text-green-600 font-semibold" : "text-red-500 font-semibold"}>{template.stock ?? 0}</strong></span>
+                      <div className="flex items-center justify-between gap-2 bg-gray-50 p-1.5 rounded border border-gray-100">
+                        <div className="flex items-center gap-2">
+                          <Package size={14} className="text-gray-400" />
+                          <span>Stock disponible: <strong className={template.stock !== undefined && template.stock > 0 ? "text-green-600 font-semibold" : "text-red-500 font-semibold"}>{template.stock ?? 0}</strong></span>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setAddStockItem({ id: template.id, name: template.name || template.description || `Plantilla #${template.id}`, currentStock: template.stock ?? 0 });
+                            setAddStockType('template');
+                            setShowAddStockModal(true);
+                          }}
+                          className="h-6 px-2 text-[10px] flex items-center gap-1 bg-white hover:bg-gray-100 shrink-0"
+                        >
+                          <Plus size={10} />
+                          Surtir
+                        </Button>
                       </div>
+
 
                       {template.dimensions && (
                         <div className="flex items-center gap-2">
@@ -597,8 +649,20 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
         onProductUpdated={handleProductUpdated}
         product={product}
       />
+
+      <AddStockModal
+        isOpen={showAddStockModal}
+        onClose={() => {
+          setShowAddStockModal(false);
+          setAddStockItem(null);
+        }}
+        onSuccess={handleAddStockSuccess}
+        item={addStockItem}
+        type={addStockType}
+      />
     </div>
   );
+
 };
 
 export default ProductDetailView;

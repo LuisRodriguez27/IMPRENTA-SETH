@@ -268,7 +268,7 @@ const db: Db = {
             }
           } else if (isUpdate) {
             const updateMatch = sql.trim().match(/^UPDATE\s+([a-zA-Z0-9_]+)/i);
-            const whereMatch = sql.match(/\bWHERE\b([\s\S]+?)(?:\bRETURNING\b|$)/i);
+            const whereMatch = sql.match(/\bWHERE\b([\s\S]+?)(?=\bRETURNING\b|$)/i);
             if (updateMatch && whereMatch) {
               const tableName = updateMatch[1];
               const whereClause = whereMatch[0];

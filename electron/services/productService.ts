@@ -1,6 +1,10 @@
 import productRepository from '../repositories/productRepository';
 import SimilarProductNames from '../domain/similarProductNames';
 import type { ProductData } from '../types/product';
+import db from '../db';
+import cashSessionRepository from '../repositories/cashSessionRepository';
+import expensesRepository from '../repositories/expensesRepository';
+
 
 class ProductService {
   async getAllProducts() {
@@ -221,6 +225,63 @@ class ProductService {
       throw new Error('Error al obtener productos paginados');
     }
   }
+
+
+
+  async addStock(productId: number, data: { quantity: number; cost: number; description?: string; userId: number }) {
+    try {
+      const activeSession = await cashSessionRepository.getActive();
+      if (!activeSession) {
+        throw new Error('No hay una sesión de caja activa. Debes abrir la caja antes de registrar gastos y stock.');
+      }
+
+      if (isNaN(data.quantity) || data.quantity <= 0) {
+        throw new Error('La cantidad a agregar debe ser un número mayor a 0');
+      }
+
+      if (isNaN(data.cost) || data.cost < 0) {
+        throw new Error('El costo debe ser un número mayor o igual a 0');
+      }
+
+      const result = await db.transaction(async () => {
+        // 1. Incrementar stock
+        const updated = await productRepository.incrementStock(productId, data.quantity);
+        if (!updated) {
+          throw new Error('No se pudo actualizar el stock del producto.');
+        }
+
+        // 2. Obtener producto para su nombre
+        const product = await productRepository.findById(productId);
+        if (!product) {
+          throw new Error('Producto no encontrado.');
+        }
+
+        // 3. Crear el gasto si el costo es mayor a 0
+        if (data.cost > 0) {
+          const defaultDesc = `Adición de stock: +${data.quantity} pzas de ${product.name}`;
+          const finalDesc = data.description?.trim()
+            ? `${data.description.trim()} (${defaultDesc})`
+            : defaultDesc;
+
+          await expensesRepository.create({
+            cash_session_id: activeSession.id,
+            user_id: data.userId,
+            amount: data.cost,
+            description: finalDesc,
+            date: new Date().toISOString()
+          });
+        }
+
+        return product.toPlainObject();
+      })();
+
+      return result;
+    } catch (error) {
+      console.error('Error al agregar stock de producto:', error);
+      throw error;
+    }
+  }
 }
+
 
 export default new ProductService();

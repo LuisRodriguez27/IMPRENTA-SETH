@@ -59,4 +59,9 @@ export const ProductsApiService = {
   findSimilarNames: async (): Promise<SimilarNameResult[]> => {
     return window.api.findSimilarNames();
   },
+
+  addStock: async (id: number, data: { quantity: number; cost: number; description?: string; userId: number }): Promise<Product> => {
+    return window.api.addStockToProduct(id, data);
+  },
 };
+

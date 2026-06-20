@@ -59,6 +59,8 @@ contextBridge.exposeInMainWorld('api', {
   getProductsPaginated: (page: number, limit: number, searchTerm: string): Promise<unknown> =>
     ipcRenderer.invoke('products:getPaginated', page, limit, searchTerm),
   findSimilarNames: (): Promise<unknown> => ipcRenderer.invoke('products:findSimilarNames'),
+  addStockToProduct: (productId: number, data: unknown): Promise<unknown> =>
+    ipcRenderer.invoke('products:addStock', productId, data),
 
   // Plantillas de productos
   getAllTemplates: (): Promise<unknown> => ipcRenderer.invoke('templates:getAll'),
@@ -73,6 +75,9 @@ contextBridge.exposeInMainWorld('api', {
   searchTemplates: (searchTerm: string): Promise<unknown> => ipcRenderer.invoke('templates:search', searchTerm),
   getTemplatesPaginated: (page: number, limit: number, searchTerm: string): Promise<unknown> =>
     ipcRenderer.invoke('templates:getPaginated', page, limit, searchTerm),
+  addStockToTemplate: (templateId: number, data: unknown): Promise<unknown> =>
+    ipcRenderer.invoke('templates:addStock', templateId, data),
+
 
   // Ordenes
   getAllOrders: (): Promise<unknown> => ipcRenderer.invoke('orders:getAll'),

@@ -108,6 +108,15 @@ class ProductTemplateRepository {
     return (result.changes ?? 0) > 0;
   }
 
+  async incrementStock(id: number, quantity: number): Promise<boolean> {
+    const result = await db.execute(
+      `UPDATE product_templates SET stock = stock + $1 WHERE id = $2 AND active = true`,
+      [parseFloat(String(quantity)), id]
+    );
+    return (result.changes ?? 0) > 0;
+  }
+
+
   async delete(id: number): Promise<boolean> {
     const result = await db.execute('UPDATE product_templates SET active = false WHERE id = $1', [id]);
     return (result.changes ?? 0) > 0;

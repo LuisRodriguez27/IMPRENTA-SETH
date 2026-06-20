@@ -1,6 +1,10 @@
 import productTemplateRepository from '../repositories/productTemplateRepository';
 import productRepository from '../repositories/productRepository';
 import type { TemplateData } from '../types/productTemplate';
+import db from '../db';
+import cashSessionRepository from '../repositories/cashSessionRepository';
+import expensesRepository from '../repositories/expensesRepository';
+
 
 class ProductTemplateService {
   async getAllTemplates() {
@@ -152,6 +156,63 @@ class ProductTemplateService {
       throw new Error('Error al obtener plantillas paginadas');
     }
   }
+
+
+  async addStock(templateId: number, data: { quantity: number; cost: number; description?: string; userId: number }) {
+    try {
+      const activeSession = await cashSessionRepository.getActive();
+      if (!activeSession) {
+        throw new Error('No hay una sesión de caja activa. Debes abrir la caja antes de registrar gastos y stock.');
+      }
+
+      if (isNaN(data.quantity) || data.quantity <= 0) {
+        throw new Error('La cantidad a agregar debe ser un número mayor a 0');
+      }
+
+      if (isNaN(data.cost) || data.cost < 0) {
+        throw new Error('El costo debe ser un número mayor o igual a 0');
+      }
+
+      const result = await db.transaction(async () => {
+        // 1. Incrementar stock
+        const updated = await productTemplateRepository.incrementStock(templateId, data.quantity);
+        if (!updated) {
+          throw new Error('No se pudo actualizar el stock de la plantilla.');
+        }
+
+        // 2. Obtener plantilla para su nombre
+        const template = await productTemplateRepository.findById(templateId);
+        if (!template) {
+          throw new Error('Plantilla no encontrada.');
+        }
+
+        // 3. Crear el gasto si el costo es mayor a 0
+        if (data.cost > 0) {
+          const nameToUse = template.name || template.description || `Plantilla #${template.id}`;
+          const defaultDesc = `Adición de stock: +${data.quantity} pzas de la plantilla ${nameToUse}`;
+          const finalDesc = data.description?.trim()
+            ? `${data.description.trim()} (${defaultDesc})`
+            : defaultDesc;
+
+          await expensesRepository.create({
+            cash_session_id: activeSession.id,
+            user_id: data.userId,
+            amount: data.cost,
+            description: finalDesc,
+            date: new Date().toISOString()
+          });
+        }
+
+        return template.toPlainObject();
+      })();
+
+      return result;
+    } catch (error) {
+      console.error('Error al agregar stock de plantilla:', error);
+      throw error;
+    }
+  }
 }
+
 
 export default new ProductTemplateService();

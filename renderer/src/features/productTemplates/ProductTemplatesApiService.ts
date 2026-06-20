@@ -51,4 +51,9 @@ export const ProductTemplatesApiService = {
   }> => {
     return window.api.getTemplatesPaginated(page, limit, searchTerm);
   },
+
+  addStock: async (id: number, data: { quantity: number; cost: number; description?: string; userId: number }): Promise<ProductTemplate> => {
+    return window.api.addStockToTemplate(id, data);
+  },
 };
+

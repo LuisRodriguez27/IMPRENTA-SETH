@@ -14,6 +14,7 @@ class ProductTemplate {
   piecesPerPack: number | null;
   description: string | null;
   created_by: number | null;
+  stock: number;
   active: boolean;
   serial_number: string | null;
   created_by_username: string | null;
@@ -37,6 +38,7 @@ class ProductTemplate {
     
     this.description = row.description || null;
     this.created_by = row.created_by || null;
+    this.stock = parseFloat(String(row.stock)) || 0;
     this.active = row.active === 1 || row.active === true;
     this.serial_number = row.serial_number || null;
     this.created_by_username = row.created_by_username || null;
@@ -94,6 +96,7 @@ class ProductTemplate {
       description: this.description,
       created_by: this.created_by,
       active: this.active,
+      stock: this.stock,
       serial_number: this.serial_number,
       created_by_username: this.created_by_username
     };

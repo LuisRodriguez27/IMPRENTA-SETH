@@ -9,6 +9,7 @@ export const createProductSchema = z.object({
 	discount_price: z.number().min(0).optional().nullable(),
 	description: z.string().optional().or(z.literal('')),
 	images: z.array(z.string()).optional().nullable(),
+	stock: z.number({ error: 'El stock debe ser un número' }).min(0, 'El stock no puede ser negativo').optional().or(z.nan().transform(() => undefined)),
 });
 
 export const editProductSchema = createProductSchema.partial();
@@ -25,6 +26,7 @@ export interface Product {
 	discount_price?: number | null;
 	description?: string;
 	images?: string[] | null;
+	stock?: number;
 	active: boolean; 
 
 	templates?: ProductTemplate[];

@@ -20,6 +20,7 @@ export interface ProductTemplateRow {
   description: string | null;
   created_by: number | null;
   active: boolean | number;
+  stock?: number | null;
   // Joined fields
   name?: string;
   product_name?: string | null;
@@ -43,4 +44,5 @@ export interface TemplateData {
   piecesPerPack?: number | string | null;
   description?: string | null;
   created_by?: number | string | null;
+  stock?: number | string | null;
 }

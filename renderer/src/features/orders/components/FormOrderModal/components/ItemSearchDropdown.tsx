@@ -78,7 +78,10 @@ const ItemSearchDropdown: React.FC<ItemSearchDropdownProps> = ({
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
+                <div className="text-xs text-gray-500">
+                  Stock: <span className={filteredItem.item.stock !== undefined && filteredItem.item.stock > 0 ? "text-green-600 font-semibold" : "text-red-500 font-semibold"}>{filteredItem.item.stock ?? 0}</span>
+                </div>
                 <div className="text-sm font-semibold text-green-600">
                   ${filteredItem.type === 'product'
                     ? (filteredItem.item as Product).price.toFixed(2)

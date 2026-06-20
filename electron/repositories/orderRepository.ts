@@ -78,6 +78,20 @@ class OrderRepository {
     return { data: ordersWithProducts, pagination: { page, limit, total, totalPages: Math.ceil(total / limit), hasNext: page < Math.ceil(total / limit), hasPrev: page > 1 }, searchTerm };
   }
 
+  async adjustStockForItems(items: { product_id?: number | null; template_id?: number | null; quantity: number | string }[], action: 'add' | 'subtract'): Promise<void> {
+    const sign = action === 'subtract' ? '-' : '+';
+    for (const item of items) {
+      const quantity = parseFloat(String(item.quantity));
+      if (isNaN(quantity) || quantity <= 0) continue;
+
+      if (item.product_id) {
+        await db.execute(`UPDATE products SET stock = stock ${sign} $1 WHERE id = $2`, [quantity, item.product_id]);
+      } else if (item.template_id) {
+        await db.execute(`UPDATE product_templates SET stock = stock ${sign} $1 WHERE id = $2`, [quantity, item.template_id]);
+      }
+    }
+  }
+
   async create(orderData: OrderData & { items: OrderItem[] }) {
     if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
       throw new Error('Una orden debe tener al menos un producto o plantilla');
@@ -88,6 +102,10 @@ class OrderRepository {
     const orderId = orderResult.lastInsertRowid!;
     await this.addItemsToOrder(orderId, orderData.items);
     await this.recalculateTotal(orderId);
+
+    if (orderData.status !== 'Cancelado') {
+      await this.adjustStockForItems(orderData.items, 'subtract');
+    }
 
     return await this.findById(orderId);
   }
@@ -121,6 +139,15 @@ class OrderRepository {
     if (!existingOrder) throw new Error('La orden no existe');
     if (existingOrder.isCancelled()) throw new Error('No se puede editar una orden cancelada');
 
+    const oldProducts = await this.getOrderProducts(id);
+    const oldStatus = existingOrder.status;
+    const newStatus = orderData.status !== undefined ? orderData.status : oldStatus;
+
+    // 1. Restore stock of old items if old status was NOT Cancelado
+    if (oldStatus !== 'Cancelado') {
+      await this.adjustStockForItems(oldProducts, 'add');
+    }
+
     const fieldsToUpdate: Partial<OrderRow> = {};
     if (orderData.client_id !== undefined) fieldsToUpdate.client_id = orderData.client_id;
     if (orderData.date !== undefined) fieldsToUpdate.date = orderData.date;
@@ -139,17 +166,35 @@ class OrderRepository {
       await db.execute(`UPDATE orders SET ${setClause} WHERE id = $${values.length} AND active = true`, values);
     }
 
+    let finalItems: { product_id?: number | null; template_id?: number | null; quantity: number | string }[] = [];
     if (orderData.items && Array.isArray(orderData.items)) {
       await this.validateOrderItems(orderData.items);
       await db.execute('DELETE FROM order_products WHERE order_id = $1', [id]);
       await this.addItemsToOrder(id, orderData.items);
       await this.recalculateTotal(id);
+      finalItems = orderData.items;
+    } else {
+      finalItems = oldProducts;
+    }
+
+    // 2. Subtract stock of new items if new status is NOT Cancelado
+    if (newStatus !== 'Cancelado') {
+      await this.adjustStockForItems(finalItems, 'subtract');
     }
 
     return await this.findById(id);
   }
 
   async delete(id: number): Promise<boolean> {
+    const existingOrder = await this.findById(id);
+    if (!existingOrder) return false;
+
+    // Restore stock if the order status was NOT Cancelado
+    if (existingOrder.status !== 'Cancelado') {
+      const products = await this.getOrderProducts(id);
+      await this.adjustStockForItems(products, 'add');
+    }
+
     const result = await db.execute('UPDATE orders SET active = false WHERE id = $1', [id]);
     return (result.changes ?? 0) > 0;
   }

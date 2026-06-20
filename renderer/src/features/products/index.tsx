@@ -331,6 +331,7 @@ const ProductsPage: React.FC = () => {
               <tr>
                 <th>Producto / Variantes</th>
                 <th class="serial-col">Código</th>
+                <th class="price-col">Stock</th>
                 <th class="price-col">Precio</th>
               </tr>
             </thead>
@@ -340,6 +341,7 @@ const ProductsPage: React.FC = () => {
                   <tr class="product-row">
                     <td>${index + 1}. ${p.name}</td>
                     <td class="serial-col">${p.serial_number || '-'}</td>
+                    <td class="price-col" style="font-family: inherit;">${p.stock ?? 0}</td>
                     <td class="price-col">$${p.price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</td>
                   </tr>
                 `;
@@ -369,6 +371,7 @@ const ProductsPage: React.FC = () => {
                           ${extraDesc}
                         </td>
                         <td class="serial-col" style="font-size:10px;">${t.id}</td>
+                        <td class="price-col" style="font-size:10px; font-weight:normal; color:#4b5563; font-family: inherit;">${t.stock ?? 0}</td>
                         <td class="price-col">$${price.toLocaleString('es-MX', { minimumFractionDigits: 2 })}</td>
                       </tr>
                      `;
@@ -635,6 +638,13 @@ const ProductsPage: React.FC = () => {
                             </div>
                           );
                         })()}
+
+                        <div className="flex items-center gap-2 mt-1">
+                          <Package size={14} className="text-gray-400" />
+                          <span className="text-xs text-gray-600">
+                            Stock: <strong className={product.stock !== undefined && product.stock > 0 ? "text-green-600 font-semibold" : "text-red-500 font-semibold"}>{product.stock ?? 0}</strong>
+                          </span>
+                        </div>
 
                         {product.description && (
                           <p className="text-xs text-gray-500 line-clamp-2 mt-2">

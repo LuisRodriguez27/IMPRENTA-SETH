@@ -14,6 +14,7 @@ export interface ProductRow {
   discount_price: number | null;
   serial_number: string | null;
   images: string | null;
+  stock: number;
   active: boolean;
 }
 
@@ -27,4 +28,5 @@ export interface ProductData {
   discount_price?: number | string | null;
   description?: string | null;
   images?: string[] | null;
+  stock?: number | string | null;
 }

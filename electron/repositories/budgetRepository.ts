@@ -143,6 +143,15 @@ class BudgetRepository {
     const orderId = orderResult.lastInsertRowid!;
     for (const item of budgetProducts) {
       await db.execute(`INSERT INTO order_products (order_id, product_id, template_id, quantity, unit_price, total_price) VALUES ($1, $2, $3, $4, $5, $6)`, [orderId, item.product_id || null, item.template_id || null, item.quantity, item.unit_price, item.total_price]);
+      
+      const quantity = parseFloat(String(item.quantity));
+      if (!isNaN(quantity) && quantity > 0) {
+        if (item.product_id) {
+          await db.execute(`UPDATE products SET stock = stock - $1 WHERE id = $2`, [quantity, item.product_id]);
+        } else if (item.template_id) {
+          await db.execute(`UPDATE product_templates SET stock = stock - $1 WHERE id = $2`, [quantity, item.template_id]);
+        }
+      }
     }
     await db.execute(`UPDATE budgets SET converted_to_order = true, converted_to_order_id = $1 WHERE id = $2`, [orderId, budgetId]);
     return orderId;

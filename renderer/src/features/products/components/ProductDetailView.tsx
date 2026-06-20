@@ -286,6 +286,13 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 </div>
               )}
 
+              <div className="flex items-center gap-3">
+                <Package className="text-gray-400" size={16} />
+                <span className="text-sm text-gray-600">
+                  Stock disponible: <strong className={product.stock !== undefined && product.stock > 0 ? "text-green-600 font-semibold" : "text-red-500 font-semibold"}>{product.stock ?? 0}</strong>
+                </span>
+              </div>
+
               {(() => {
                 let activePrice = product.price;
                 let isPromo = false;
@@ -492,6 +499,11 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                           </div>
                         );
                       })()}
+
+                      <div className="flex items-center gap-2">
+                        <Package size={14} className="text-gray-400" />
+                        <span>Stock disponible: <strong className={template.stock !== undefined && template.stock > 0 ? "text-green-600 font-semibold" : "text-red-500 font-semibold"}>{template.stock ?? 0}</strong></span>
+                      </div>
 
                       {template.dimensions && (
                         <div className="flex items-center gap-2">

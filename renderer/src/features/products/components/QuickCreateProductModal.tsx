@@ -159,6 +159,25 @@ const QuickCreateProductModal: React.FC<QuickCreateProductModalProps> = ({
               )}
             </div>
 
+            {/* Stock */}
+            <div>
+              <Label htmlFor="stock" className="text-sm font-medium text-gray-700">
+                Stock Inicial
+              </Label>
+              <Input
+                id="stock"
+                type="number"
+                step="0.0001"
+                min="0"
+                className="mt-1"
+                placeholder="0"
+                {...register('stock', { valueAsNumber: true })}
+              />
+              {errors.stock && (
+                <p className="mt-1 text-sm text-red-600">{errors.stock.message}</p>
+              )}
+            </div>
+
             {/* Precio Promoción */}
             <div>
               <Label htmlFor="promo_price" className="text-sm font-medium text-gray-700">

@@ -68,6 +68,7 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
       setValue('model', template.model || '');
       setValue('package', template.package || false);
       setValue('piecesPerPack', template.piecesPerPack ?? null);
+      setValue('stock', template.stock ?? 0);
     }
   }, [template, isOpen, setValue]);
 
@@ -224,6 +225,30 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
               </div>
               {errors.final_price && (
                 <p className="mt-1 text-sm text-red-600">{errors.final_price.message}</p>
+              )}
+            </div>
+
+            {/* Stock */}
+            <div>
+              <Label htmlFor="stock" className="text-sm font-medium text-gray-700">
+                Stock
+              </Label>
+              <div className="mt-1 relative">
+                <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <Input
+                  id="stock"
+                  type="number"
+                  step="0.0001"
+                  min="0"
+                  placeholder="0"
+                  className="pl-10"
+                  {...register('stock', {
+                    valueAsNumber: true
+                  })}
+                />
+              </div>
+              {errors.stock && (
+                <p className="mt-1 text-sm text-red-600">{errors.stock.message}</p>
               )}
             </div>
 

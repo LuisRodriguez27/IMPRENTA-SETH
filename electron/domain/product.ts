@@ -9,9 +9,10 @@ class Product {
   discount_price: number | null;
   description: string | null;
   images: string[];
+  stock: number;
   active: boolean;
 
-  constructor({ id, name, serial_number, price, promo_price, discount_price, description, images, active = true }: ProductRow) {
+  constructor({ id, name, serial_number, price, promo_price, discount_price, description, images, stock = 0, active = true }: ProductRow) {
     this.id = id;
     this.name = name;
     this.serial_number = serial_number || null;
@@ -19,6 +20,7 @@ class Product {
     this.promo_price = promo_price !== null && promo_price !== undefined ? parseFloat(String(promo_price)) : null;
     this.discount_price = discount_price !== null && discount_price !== undefined ? parseFloat(String(discount_price)) : null;
     this.description = description || null;
+    this.stock = parseFloat(String(stock)) || 0;
 
     let parsedImages: string[] = [];
     if (images) {
@@ -60,7 +62,7 @@ class Product {
   }
 
   toPlainObject() {
-    return { id: this.id, name: this.name, serial_number: this.serial_number, price: this.price, promo_price: this.promo_price, discount_price: this.discount_price, description: this.description, images: this.images, active: this.active };
+    return { id: this.id, name: this.name, serial_number: this.serial_number, price: this.price, promo_price: this.promo_price, discount_price: this.discount_price, description: this.description, images: this.images, stock: this.stock, active: this.active };
   }
 }
 

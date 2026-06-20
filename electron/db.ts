@@ -422,7 +422,7 @@ export async function initDb(): Promise<void> {
 
       const existingMigrations = await activeKnex.raw('SELECT version FROM schema_migrations');
       const appliedVersions = new Set(existingMigrations.map((r: any) => r.version));
-      const totalMigrations = 30;
+      const totalMigrations = 31;
       for (let i = 1; i <= totalMigrations; i++) {
         if (!appliedVersions.has(i)) {
           if (i === 30) {
@@ -432,6 +432,10 @@ export async function initDb(): Promise<void> {
             try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN model TEXT'); } catch (e) {}
             try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN package BOOLEAN NOT NULL DEFAULT FALSE'); } catch (e) {}
             try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN pieces_per_pack INTEGER'); } catch (e) {}
+          }
+          if (i === 31) {
+            try { await activeKnex.raw('ALTER TABLE products ADD COLUMN stock NUMERIC DEFAULT 0'); } catch (e) {}
+            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN stock NUMERIC DEFAULT 0'); } catch (e) {}
           }
           await activeKnex.raw('INSERT INTO schema_migrations (version, name) VALUES (?, ?)', [i, `migration_v${i}`]);
         }

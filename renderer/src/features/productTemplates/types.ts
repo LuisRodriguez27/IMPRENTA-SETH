@@ -11,7 +11,8 @@ export const createProductTemplateSchema = z.object({
   package: z.boolean(),
   piecesPerPack: z.number().int().min(0).nullable().optional().or(z.nan().transform(() => undefined)),
   description: z.string().optional().nullable(),
-  created_by: z.number().int().optional()
+  created_by: z.number().int().optional(),
+  stock: z.number({ error: 'El stock debe ser un número' }).min(0, 'El stock no puede ser negativo').optional().or(z.nan().transform(() => undefined))
 });
 
 export const editProductTemplateSchema = z.object({
@@ -25,7 +26,8 @@ export const editProductTemplateSchema = z.object({
   package: z.boolean(),
   piecesPerPack: z.number().int().min(0).nullable().optional().or(z.nan().transform(() => undefined)),
   description: z.string().optional().nullable(),
-  created_by: z.number().int().optional()
+  created_by: z.number().int().optional(),
+  stock: z.number({ error: 'El stock debe ser un número' }).min(0, 'El stock no puede ser negativo').optional().or(z.nan().transform(() => undefined))
 });
 
 export type CreateProductTemplateForm = z.infer<typeof createProductTemplateSchema>;
@@ -46,6 +48,7 @@ export interface ProductTemplate {
   piecesPerPack?: number | null;
   description: string | null; // Descripción de la plantilla
   created_by?: number | null;
+  stock?: number;
   active: boolean;
 
   serial_number?: string | null;

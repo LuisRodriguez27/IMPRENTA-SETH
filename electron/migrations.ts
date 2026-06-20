@@ -777,6 +777,24 @@ const MIGRATIONS: Migration[] = [
       await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS package BOOLEAN NOT NULL DEFAULT FALSE`);
       await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS pieces_per_pack INTEGER`);
     }
+  },
+
+  // v31: Agregar stock a products y product_templates
+  {
+    version: 31,
+    name: 'add_stock_to_products_and_templates',
+    isApplied: async (client: PoolClient) => {
+      const { rows } = await client.query<{ count: string }>(`
+        SELECT COUNT(*) FROM information_schema.columns
+        WHERE (table_name = 'products' AND column_name = 'stock')
+           OR (table_name = 'product_templates' AND column_name = 'stock')
+      `);
+      return rows.length > 0 && parseInt(rows[0].count) === 2;
+    },
+    up: async (client: PoolClient) => {
+      await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS stock DECIMAL(10,4) DEFAULT 0`);
+      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS stock DECIMAL(10,4) DEFAULT 0`);
+    }
   }
 ];
 

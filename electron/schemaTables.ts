@@ -40,6 +40,7 @@ const schemaTables: string = `
     discount_price DECIMAL(10,2),
     images         TEXT,
     description    TEXT,
+    stock          DECIMAL(10,4) DEFAULT 0,
     active         BOOLEAN       NOT NULL DEFAULT TRUE
   );
 
@@ -56,6 +57,7 @@ const schemaTables: string = `
     pieces_per_pack  INTEGER,
     description      TEXT,
     created_by       INTEGER       REFERENCES users(id),
+    stock            DECIMAL(10,4) DEFAULT 0,
     active           BOOLEAN       NOT NULL DEFAULT TRUE
   );
 

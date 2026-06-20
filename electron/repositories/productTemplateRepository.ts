@@ -39,14 +39,17 @@ class ProductTemplateRepository {
     pieces_per_pack?: number | null;
     description?: string | null;
     created_by?: number | null;
+    stock?: number | string | null;
   }) {
     const pzas = templateData.piecesPerPack !== undefined 
       ? templateData.piecesPerPack 
       : templateData.pieces_per_pack;
 
+    const stockVal = templateData.stock !== undefined && templateData.stock !== null ? parseFloat(String(templateData.stock)) : 0;
+
     const result = await db.execute(`
-      INSERT INTO product_templates (product_id, name, final_price, promo_price, dimensions, category, model, package, pieces_per_pack, description, created_by)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      INSERT INTO product_templates (product_id, name, final_price, promo_price, dimensions, category, model, package, pieces_per_pack, description, created_by, stock)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
     `, [
       templateData.product_id,
       templateData.name || null,
@@ -58,7 +61,8 @@ class ProductTemplateRepository {
       templateData.package === true || templateData.package === 1 ? 1 : 0,
       pzas !== undefined && pzas !== null ? pzas : null,
       templateData.description || null,
-      templateData.created_by || null
+      templateData.created_by || null,
+      stockVal
     ]);
     return await this.findById(result.lastInsertRowid!);
   }
@@ -75,15 +79,18 @@ class ProductTemplateRepository {
     piecesPerPack?: number | null;
     pieces_per_pack?: number | null;
     description?: string | null;
+    stock?: number | string | null;
   }): Promise<boolean> {
     const pzas = templateData.piecesPerPack !== undefined 
       ? templateData.piecesPerPack 
       : templateData.pieces_per_pack;
 
+    const stockVal = templateData.stock !== undefined && templateData.stock !== null ? parseFloat(String(templateData.stock)) : 0;
+
     const result = await db.execute(`
       UPDATE product_templates
-      SET product_id = $1, name = $2, final_price = $3, promo_price = $4, dimensions = $5, category = $6, model = $7, package = $8, pieces_per_pack = $9, description = $10
-      WHERE id = $11
+      SET product_id = $1, name = $2, final_price = $3, promo_price = $4, dimensions = $5, category = $6, model = $7, package = $8, pieces_per_pack = $9, description = $10, stock = $11
+      WHERE id = $12
     `, [
       templateData.product_id,
       templateData.name || null,
@@ -95,6 +102,7 @@ class ProductTemplateRepository {
       templateData.package === true || templateData.package === 1 ? 1 : 0,
       pzas !== undefined && pzas !== null ? pzas : null,
       templateData.description || null,
+      stockVal,
       id
     ]);
     return (result.changes ?? 0) > 0;

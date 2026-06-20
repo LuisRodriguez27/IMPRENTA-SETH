@@ -1,7 +1,7 @@
 import { Button, Input, Label } from '@/components/ui';
 import { extractErrorMessage } from '@/utils/errorHandling';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleDollarSign, FileText, Loader, Percent, ScanBarcode, ShoppingBag, X } from 'lucide-react';
+import { CircleDollarSign, FileText, Loader, Package, Percent, ScanBarcode, ShoppingBag, X } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ProductsApiService } from '../ProductsApiService';
@@ -63,6 +63,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
       setValue('promo_price', product.promo_price ?? null);
       setValue('discount_price', product.discount_price ?? null);
       setValue('description', product.description || '');
+      setValue('stock', product.stock ?? 0);
 
       setError(null);
     }
@@ -176,6 +177,30 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
               </div>
               {errors.serial_number && (
                 <p className='mt-1 text-sm text-red-600'>{errors.serial_number.message}</p>
+              )}
+            </div>
+
+            {/* Stock */}
+            <div>
+              <Label htmlFor="stock" className="text-sm font-medium text-gray-700">
+                Stock
+              </Label>
+              <div className="mt-1 relative">
+                <Package className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" size={16} />
+                <Input
+                  id="stock"
+                  type="number"
+                  step="0.0001"
+                  min="0"
+                  placeholder="0"
+                  className="pl-10"
+                  {...register('stock', {
+                    valueAsNumber: true
+                  })}
+                />
+              </div>
+              {errors.stock && (
+                <p className="mt-1 text-sm text-red-600">{errors.stock.message}</p>
               )}
             </div>
 

@@ -94,7 +94,7 @@ async function seed(): Promise<void> {
     ['Editar Presupuestos', 'Permite editar los presupuestos registrados', true],
 
     // Pagos
-    ['Ver pagos', 'Permite ver los pagos registrados', true],
+    ['Ver Pagos', 'Permite ver los pagos registrados', true],
     ['Registrar Pagos', 'Permite registrar pagos en órdenes', true],
     ['Eliminar Pagos', 'Permite eliminar o anular pagos', true],
 
@@ -111,6 +111,10 @@ async function seed(): Promise<void> {
     // Proveedores / Mayoristas
     ['Ver Mayoristas', 'Permite ver el módulo de mayoristas/proveedores', true],
     ['Crear Orden Mayorista', 'Permite crear una orden para un mayorista', true],
+
+    // Bitácora de impresión
+    ['Ver Bitacora de Impresion', 'Permite ver la bitácora de impresión', true],
+    ['Gestionar Bitacora de Impresion', 'Permite crear, editar y eliminar registros de la bitácora de impresión', true],
   ];
 
   for (const perm of permissions) {

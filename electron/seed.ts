@@ -1,8 +1,6 @@
 import * as path from 'path';
 import * as bcrypt from 'bcryptjs';
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const db = require('./db'); // asegura la creación de tablas
+import db, { initDb } from './db';
 
 // Configuración
 const saltRounds = 10;
@@ -12,21 +10,38 @@ void path;
 
 async function seed(): Promise<void> {
   console.log('Inicializando base de datos...');
+  await initDb();
 
-  // -------------------------
-  // 1. Limpiar datos (en orden por FK)
-  // -------------------------
+  if (process.env.DB_TYPE !== 'postgres') {
+    await db.exec('PRAGMA foreign_keys = OFF;');
+  }
+
   await db.exec(`
     DELETE FROM user_permissions;
-    DELETE FROM payments;
+    DELETE FROM budget_products;
     DELETE FROM order_products;
+    DELETE FROM payments;
+    DELETE FROM simple_order_payments;
+    DELETE FROM expenses;
+    DELETE FROM print_logs;
+    DELETE FROM supplier_order_items;
+    DELETE FROM supplier_orders;
+    DELETE FROM budgets;
     DELETE FROM orders;
+    DELETE FROM simple_orders;
+    DELETE FROM cash_sessions;
     DELETE FROM product_templates;
     DELETE FROM products;
     DELETE FROM clients;
+    DELETE FROM suppliers;
     DELETE FROM users;
     DELETE FROM permissions;
   `);
+
+  if (process.env.DB_TYPE !== 'postgres') {
+    await db.exec('DELETE FROM sqlite_sequence;');
+    await db.exec('PRAGMA foreign_keys = ON;');
+  }
 
   // -------------------------
   // 2. Insertar usuario admin
@@ -36,14 +51,14 @@ async function seed(): Promise<void> {
     INSERT INTO users (username, password, active)
     VALUES ($1, $2, $3)
   `, ['admin', passwordHash, true]);
-  const adminId: number = adminInfo.lastInsertRowid;
+  const adminId: number = adminInfo.lastInsertRowid as number;
 
   const passwordHash2 = bcrypt.hashSync('user123', saltRounds);
   const userInfo = await db.execute(`
     INSERT INTO users (username, password, active)
     VALUES ($1, $2, $3)
   `, ['user', passwordHash2, true]);
-  const userId: number = userInfo.lastInsertRowid;
+  const userId: number = userInfo.lastInsertRowid as number;
 
   // -------------------------
   // 3. Insertar permisos

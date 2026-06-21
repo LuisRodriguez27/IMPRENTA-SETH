@@ -412,38 +412,22 @@ export async function initDb(): Promise<void> {
         await activeKnex.raw(statement);
       }
 
-      await activeKnex.raw(`
-        CREATE TABLE IF NOT EXISTS schema_migrations (
-          version    INTEGER      PRIMARY KEY,
-          name       VARCHAR(255) NOT NULL,
-          applied_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
-
-      const existingMigrations = await activeKnex.raw('SELECT version FROM schema_migrations');
-      const appliedVersions = new Set(existingMigrations.map((r: any) => r.version));
-      const totalMigrations = 32;
-      for (let i = 1; i <= totalMigrations; i++) {
-        if (!appliedVersions.has(i)) {
-          if (i === 30) {
-            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN name TEXT'); } catch (e) {}
-            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN dimensions TEXT'); } catch (e) {}
-            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN category TEXT'); } catch (e) {}
-            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN model TEXT'); } catch (e) {}
-            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN package BOOLEAN NOT NULL DEFAULT FALSE'); } catch (e) {}
-            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN pieces_per_pack INTEGER'); } catch (e) {}
+      const adapter = {
+        query: async (querySql: string, queryParams: any[] = []) => {
+          const { sql: sqlT, params: paramsT } = translatePgToSqlite(querySql, queryParams);
+          const res = await activeKnex.raw(sqlT, paramsT as any[]);
+          
+          let rows: any[] = [];
+          if (Array.isArray(res)) {
+            rows = res;
+          } else if (res && typeof res === 'object') {
+            rows = [res];
           }
-          if (i === 31) {
-            try { await activeKnex.raw('ALTER TABLE products ADD COLUMN stock NUMERIC DEFAULT 0'); } catch (e) {}
-            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN stock NUMERIC DEFAULT 0'); } catch (e) {}
-          }
-          if (i === 32) {
-            try { await activeKnex.raw('ALTER TABLE products ADD COLUMN purchase_price NUMERIC'); } catch (e) {}
-            try { await activeKnex.raw('ALTER TABLE product_templates ADD COLUMN purchase_price NUMERIC'); } catch (e) {}
-          }
-          await activeKnex.raw('INSERT INTO schema_migrations (version, name) VALUES (?, ?)', [i, `migration_v${i}`]);
+          return { rows };
         }
-      }
+      };
+
+      await runMigrations(db, adapter as any);
 
       console.log('✅ Base de datos SQLite Inicializada');
     } else {

@@ -763,19 +763,37 @@ const MIGRATIONS: Migration[] = [
     version: 30,
     name: 'update_template_columns_to_english',
     isApplied: async (client: PoolClient) => {
-      const { rows } = await client.query<{ count: string }>(`
-        SELECT COUNT(*) FROM information_schema.columns
-        WHERE table_name = 'product_templates' AND column_name = 'category'
-      `);
-      return rows.length > 0 && parseInt(rows[0].count) === 1;
+      const dbType = (process.env.DB_TYPE || 'sqlite').toLowerCase();
+      if (dbType === 'sqlite') {
+        const { rows } = await client.query(`PRAGMA table_info(product_templates)`);
+        return rows.some((col: any) => col.name === 'category');
+      } else {
+        const { rows } = await client.query<{ count: string }>(`
+          SELECT COUNT(*) FROM information_schema.columns
+          WHERE table_name = 'product_templates' AND column_name = 'category'
+        `);
+        return rows.length > 0 && parseInt(rows[0].count) === 1;
+      }
     },
     up: async (client: PoolClient) => {
-      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS name TEXT`);
-      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS dimensions TEXT`);
-      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS category TEXT`);
-      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS model TEXT`);
-      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS package BOOLEAN NOT NULL DEFAULT FALSE`);
-      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS pieces_per_pack INTEGER`);
+      const dbType = (process.env.DB_TYPE || 'sqlite').toLowerCase();
+      if (dbType === 'sqlite') {
+        const { rows: cols } = await client.query(`PRAGMA table_info(product_templates)`);
+        const existingCols = new Set(cols.map((col: any) => col.name));
+        if (!existingCols.has('name')) await client.query(`ALTER TABLE product_templates ADD COLUMN name TEXT`);
+        if (!existingCols.has('dimensions')) await client.query(`ALTER TABLE product_templates ADD COLUMN dimensions TEXT`);
+        if (!existingCols.has('category')) await client.query(`ALTER TABLE product_templates ADD COLUMN category TEXT`);
+        if (!existingCols.has('model')) await client.query(`ALTER TABLE product_templates ADD COLUMN model TEXT`);
+        if (!existingCols.has('package')) await client.query(`ALTER TABLE product_templates ADD COLUMN package BOOLEAN NOT NULL DEFAULT FALSE`);
+        if (!existingCols.has('pieces_per_pack')) await client.query(`ALTER TABLE product_templates ADD COLUMN pieces_per_pack INTEGER`);
+      } else {
+        await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS name TEXT`);
+        await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS dimensions TEXT`);
+        await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS category TEXT`);
+        await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS model TEXT`);
+        await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS package BOOLEAN NOT NULL DEFAULT FALSE`);
+        await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS pieces_per_pack INTEGER`);
+      }
     }
   },
 
@@ -784,16 +802,36 @@ const MIGRATIONS: Migration[] = [
     version: 31,
     name: 'add_stock_to_products_and_templates',
     isApplied: async (client: PoolClient) => {
-      const { rows } = await client.query<{ count: string }>(`
-        SELECT COUNT(*) FROM information_schema.columns
-        WHERE (table_name = 'products' AND column_name = 'stock')
-           OR (table_name = 'product_templates' AND column_name = 'stock')
-      `);
-      return rows.length > 0 && parseInt(rows[0].count) === 2;
+      const dbType = (process.env.DB_TYPE || 'sqlite').toLowerCase();
+      if (dbType === 'sqlite') {
+        const { rows: prodCols } = await client.query(`PRAGMA table_info(products)`);
+        const { rows: tempCols } = await client.query(`PRAGMA table_info(product_templates)`);
+        return prodCols.some((col: any) => col.name === 'stock') &&
+               tempCols.some((col: any) => col.name === 'stock');
+      } else {
+        const { rows } = await client.query<{ count: string }>(`
+          SELECT COUNT(*) FROM information_schema.columns
+          WHERE (table_name = 'products' AND column_name = 'stock')
+             OR (table_name = 'product_templates' AND column_name = 'stock')
+        `);
+        return rows.length > 0 && parseInt(rows[0].count) === 2;
+      }
     },
     up: async (client: PoolClient) => {
-      await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS stock DECIMAL(10,4) DEFAULT 0`);
-      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS stock DECIMAL(10,4) DEFAULT 0`);
+      const dbType = (process.env.DB_TYPE || 'sqlite').toLowerCase();
+      if (dbType === 'sqlite') {
+        const { rows: prodCols } = await client.query(`PRAGMA table_info(products)`);
+        const { rows: tempCols } = await client.query(`PRAGMA table_info(product_templates)`);
+        if (!prodCols.some((col: any) => col.name === 'stock')) {
+          await client.query(`ALTER TABLE products ADD COLUMN stock NUMERIC DEFAULT 0`);
+        }
+        if (!tempCols.some((col: any) => col.name === 'stock')) {
+          await client.query(`ALTER TABLE product_templates ADD COLUMN stock NUMERIC DEFAULT 0`);
+        }
+      } else {
+        await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS stock DECIMAL(10,4) DEFAULT 0`);
+        await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS stock DECIMAL(10,4) DEFAULT 0`);
+      }
     }
   },
 
@@ -802,16 +840,36 @@ const MIGRATIONS: Migration[] = [
     version: 32,
     name: 'add_purchase_price_to_products_and_templates',
     isApplied: async (client: PoolClient) => {
-      const { rows } = await client.query<{ count: string }>(`
-        SELECT COUNT(*) FROM information_schema.columns
-        WHERE (table_name = 'products' AND column_name = 'purchase_price')
-           OR (table_name = 'product_templates' AND column_name = 'purchase_price')
-      `);
-      return rows.length > 0 && parseInt(rows[0].count) === 2;
+      const dbType = (process.env.DB_TYPE || 'sqlite').toLowerCase();
+      if (dbType === 'sqlite') {
+        const { rows: prodCols } = await client.query(`PRAGMA table_info(products)`);
+        const { rows: tempCols } = await client.query(`PRAGMA table_info(product_templates)`);
+        return prodCols.some((col: any) => col.name === 'purchase_price') &&
+               tempCols.some((col: any) => col.name === 'purchase_price');
+      } else {
+        const { rows } = await client.query<{ count: string }>(`
+          SELECT COUNT(*) FROM information_schema.columns
+          WHERE (table_name = 'products' AND column_name = 'purchase_price')
+             OR (table_name = 'product_templates' AND column_name = 'purchase_price')
+        `);
+        return rows.length > 0 && parseInt(rows[0].count) === 2;
+      }
     },
     up: async (client: PoolClient) => {
-      await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS purchase_price DECIMAL(10,2)`);
-      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS purchase_price DECIMAL(10,2)`);
+      const dbType = (process.env.DB_TYPE || 'sqlite').toLowerCase();
+      if (dbType === 'sqlite') {
+        const { rows: prodCols } = await client.query(`PRAGMA table_info(products)`);
+        const { rows: tempCols } = await client.query(`PRAGMA table_info(product_templates)`);
+        if (!prodCols.some((col: any) => col.name === 'purchase_price')) {
+          await client.query(`ALTER TABLE products ADD COLUMN purchase_price NUMERIC`);
+        }
+        if (!tempCols.some((col: any) => col.name === 'purchase_price')) {
+          await client.query(`ALTER TABLE product_templates ADD COLUMN purchase_price NUMERIC`);
+        }
+      } else {
+        await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS purchase_price DECIMAL(10,2)`);
+        await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS purchase_price DECIMAL(10,2)`);
+      }
     }
   }
 ];
@@ -833,6 +891,22 @@ export async function runMigrations(db: Db, client: PoolClient): Promise<void> {
     `SELECT version FROM schema_migrations ORDER BY version ASC`
   );
   const appliedVersions = new Set(appliedRows.map(r => r.version));
+
+  // SQLite: El baseline de SQLite generado por schemaTables ya incluye todas las
+  // tablas e índices hasta la versión 29. Por tanto, consideramos las versiones 1 a 29
+  // como aplicadas automáticamente en SQLite para evitar ejecutar queries incompatibles de Postgres.
+  const dbType = (process.env.DB_TYPE || 'sqlite').toLowerCase();
+  if (dbType === 'sqlite') {
+    for (let i = 1; i <= 29; i++) {
+      if (!appliedVersions.has(i)) {
+        await client.query(
+          `INSERT INTO schema_migrations (version, name) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+          [i, `migration_v${i}`]
+        );
+        appliedVersions.add(i);
+      }
+    }
+  }
 
   // 3. Bootstrap: BD existente sin registro de versiones.
   //    Llama a isApplied() por migración para detectar el estado

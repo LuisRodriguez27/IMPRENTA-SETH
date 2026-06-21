@@ -60,6 +60,7 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
       setPercentage(0);
 
       setValue('promo_price', template.promo_price ?? null);
+      setValue('purchase_price', template.purchase_price ?? null);
       setValue('productId', template.productId || template.product_id);
 
       setValue('description', template.description || '');
@@ -273,6 +274,30 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
               </div>
               {errors.promo_price && (
                 <p className="mt-1 text-sm text-red-600">{errors.promo_price.message}</p>
+              )}
+            </div>
+
+            {/* Purchase Price */}
+            <div>
+              <Label htmlFor="purchase_price" className="text-sm font-medium text-gray-700">
+                Precio de Compra
+              </Label>
+              <div className="mt-1 relative">
+                <CircleDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <Input
+                  id="purchase_price"
+                  type="number"
+                  step='0.01'
+                  min='0'
+                  placeholder="0.00"
+                  className="pl-10"
+                  {...register('purchase_price', {
+                    setValueAs: v => (v === '' || v === null || v === undefined || Number.isNaN(Number(v))) ? null : parseFloat(v as string)
+                  })}
+                />
+              </div>
+              {errors.purchase_price && (
+                <p className="mt-1 text-sm text-red-600">{errors.purchase_price.message}</p>
               )}
             </div>
 

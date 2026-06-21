@@ -5,8 +5,9 @@ export const createProductSchema = z.object({
 	name: z.string().min(1, 'El nombre del producto es obligatorio'),
 	serial_number: z.string().optional().or(z.literal('')),
 	price: z.number({ error: 'El precio debe ser un número' }).min(0, 'El precio debe ser mayor o igual a 0'),
-	promo_price: z.number().min(0).optional().nullable(),
-	discount_price: z.number().min(0).optional().nullable(),
+	promo_price: z.number().min(0).optional().nullable().or(z.nan().transform(() => null)),
+	discount_price: z.number().min(0).optional().nullable().or(z.nan().transform(() => null)),
+	purchase_price: z.number().min(0).optional().nullable().or(z.nan().transform(() => null)),
 	description: z.string().optional().or(z.literal('')),
 	images: z.array(z.string()).optional().nullable(),
 	stock: z.number({ error: 'El stock debe ser un número' }).min(0, 'El stock no puede ser negativo').optional().or(z.nan().transform(() => undefined)),
@@ -24,6 +25,7 @@ export interface Product {
 	price: number;
 	promo_price?: number | null;
 	discount_price?: number | null;
+	purchase_price?: number | null;
 	description?: string;
 	images?: string[] | null;
 	stock?: number;

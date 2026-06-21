@@ -60,6 +60,7 @@ class ProductTemplateService {
         name: data.name?.trim() || null,
         final_price: numericFinalPrice,
         promo_price: data.promo_price !== undefined ? (data.promo_price !== null ? parseFloat(String(data.promo_price)) : null) : null,
+        purchase_price: data.purchase_price !== undefined ? (data.purchase_price !== null && data.purchase_price !== '' ? parseFloat(String(data.purchase_price)) : null) : null,
         dimensions: dimensions ? String(dimensions).trim() : '',
         category: data.category ? String(data.category).trim() : '',
         model: data.model ? String(data.model).trim() : '',
@@ -96,17 +97,23 @@ class ProductTemplateService {
       const dimensions = data.dimensions;
       const pzas = data.piecesPerPack !== undefined ? data.piecesPerPack : data.pieces_per_pack;
 
+      const finalStock = (data.stock !== undefined && data.stock !== null && data.stock !== '')
+        ? parseFloat(String(data.stock))
+        : existingTemplate.stock;
+
       const updated = await productTemplateRepository.update(templateId, {
         product_id: parseInt(String(productId)),
         name: data.name?.trim() || null,
         final_price: numericFinalPrice,
         promo_price: data.promo_price !== undefined ? (data.promo_price !== null ? parseFloat(String(data.promo_price)) : null) : null,
+        purchase_price: data.purchase_price !== undefined ? (data.purchase_price !== null && data.purchase_price !== '' ? parseFloat(String(data.purchase_price)) : null) : null,
         dimensions: dimensions ? String(dimensions).trim() : '',
         category: data.category ? String(data.category).trim() : '',
         model: data.model ? String(data.model).trim() : '',
         package: data.package === true || data.package === 1 || String(data.package) === 'true',
         piecesPerPack: pzas !== undefined && pzas !== null ? parseInt(String(pzas), 10) : null,
-        description: data.description?.trim() || null
+        description: data.description?.trim() || null,
+        stock: finalStock
       });
       if (!updated) throw new Error('Error al actualizar plantilla');
 

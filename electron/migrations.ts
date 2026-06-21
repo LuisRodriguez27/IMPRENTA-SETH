@@ -795,6 +795,24 @@ const MIGRATIONS: Migration[] = [
       await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS stock DECIMAL(10,4) DEFAULT 0`);
       await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS stock DECIMAL(10,4) DEFAULT 0`);
     }
+  },
+
+  // v32: Agregar purchase_price a products y product_templates
+  {
+    version: 32,
+    name: 'add_purchase_price_to_products_and_templates',
+    isApplied: async (client: PoolClient) => {
+      const { rows } = await client.query<{ count: string }>(`
+        SELECT COUNT(*) FROM information_schema.columns
+        WHERE (table_name = 'products' AND column_name = 'purchase_price')
+           OR (table_name = 'product_templates' AND column_name = 'purchase_price')
+      `);
+      return rows.length > 0 && parseInt(rows[0].count) === 2;
+    },
+    up: async (client: PoolClient) => {
+      await client.query(`ALTER TABLE products ADD COLUMN IF NOT EXISTS purchase_price DECIMAL(10,2)`);
+      await client.query(`ALTER TABLE product_templates ADD COLUMN IF NOT EXISTS purchase_price DECIMAL(10,2)`);
+    }
   }
 ];
 

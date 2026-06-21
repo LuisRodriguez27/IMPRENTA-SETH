@@ -7,18 +7,20 @@ class Product {
   price: number;
   promo_price: number | null;
   discount_price: number | null;
+  purchase_price: number | null;
   description: string | null;
   images: string[];
   stock: number;
   active: boolean;
 
-  constructor({ id, name, serial_number, price, promo_price, discount_price, description, images, stock = 0, active = true }: ProductRow) {
+  constructor({ id, name, serial_number, price, promo_price, discount_price, purchase_price, description, images, stock = 0, active = true }: ProductRow) {
     this.id = id;
     this.name = name;
     this.serial_number = serial_number || null;
     this.price = parseFloat(String(price)) || 0;
     this.promo_price = promo_price !== null && promo_price !== undefined ? parseFloat(String(promo_price)) : null;
     this.discount_price = discount_price !== null && discount_price !== undefined ? parseFloat(String(discount_price)) : null;
+    this.purchase_price = purchase_price !== null && purchase_price !== undefined ? parseFloat(String(purchase_price)) : null;
     this.description = description || null;
     this.stock = parseFloat(String(stock)) || 0;
 
@@ -62,7 +64,7 @@ class Product {
   }
 
   toPlainObject() {
-    return { id: this.id, name: this.name, serial_number: this.serial_number, price: this.price, promo_price: this.promo_price, discount_price: this.discount_price, description: this.description, images: this.images, stock: this.stock, active: this.active };
+    return { id: this.id, name: this.name, serial_number: this.serial_number, price: this.price, promo_price: this.promo_price, discount_price: this.discount_price, purchase_price: this.purchase_price, description: this.description, images: this.images, stock: this.stock, active: this.active };
   }
 }
 

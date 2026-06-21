@@ -29,7 +29,7 @@ class ProductService {
     }
   }
 
-  async createProduct({ name, serial_number, price, promo_price, discount_price, description, images }: ProductData) {
+  async createProduct({ name, serial_number, price, promo_price, discount_price, purchase_price, description, images }: ProductData) {
     try {
       if (!name) throw new Error('El nombre del producto es requerido');
       if (name.trim().length < 1) throw new Error('El nombre del producto no puede estar vacío');
@@ -45,6 +45,7 @@ class ProductService {
         name: name.trim(), serial_number: serial_number?.trim() || null, price: numericPrice,
         promo_price: promo_price !== undefined && promo_price !== null && promo_price !== '' ? parseFloat(String(promo_price)) : null,
         discount_price: discount_price !== undefined && discount_price !== null && discount_price !== '' ? parseFloat(String(discount_price)) : null,
+        purchase_price: purchase_price !== undefined && purchase_price !== null && purchase_price !== '' ? parseFloat(String(purchase_price)) : null,
         description: description?.trim() || null, images: Array.isArray(images) ? images : []
       });
       return product.toPlainObject();
@@ -54,7 +55,7 @@ class ProductService {
     }
   }
 
-  async updateProduct(id: number, { name, serial_number, price, promo_price, discount_price, description, images }: ProductData) {
+  async updateProduct(id: number, { name, serial_number, price, promo_price, discount_price, purchase_price, description, images, stock }: ProductData) {
     try {
       if (!id || isNaN(Number(id))) throw new Error('ID de producto inválido');
       if (!name) throw new Error('El nombre del producto es requerido');
@@ -71,11 +72,17 @@ class ProductService {
         if (await productRepository.existsBySerialNumber(serial_number.trim(), productId)) throw new Error('Ya existe otro producto con este número de serie');
       }
 
+      const finalStock = (stock !== undefined && stock !== null && stock !== '') 
+        ? parseFloat(String(stock)) 
+        : existingProduct.stock;
+
       const updated = await productRepository.update(productId, {
         name: name.trim(), serial_number: serial_number?.trim() || null, price: numericPrice,
         promo_price: promo_price !== undefined && promo_price !== null && promo_price !== '' ? parseFloat(String(promo_price)) : null,
         discount_price: discount_price !== undefined && discount_price !== null && discount_price !== '' ? parseFloat(String(discount_price)) : null,
-        description: description?.trim() || null, images: Array.isArray(images) ? images : []
+        purchase_price: purchase_price !== undefined && purchase_price !== null && purchase_price !== '' ? parseFloat(String(purchase_price)) : null,
+        description: description?.trim() || null, images: Array.isArray(images) ? images : [],
+        stock: finalStock
       });
       if (!updated) throw new Error('Error al actualizar producto');
 

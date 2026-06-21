@@ -31,6 +31,7 @@ class ProductTemplateRepository {
     name?: string | null;
     final_price: number;
     promo_price?: number | null;
+    purchase_price?: number | null;
     dimensions?: string | null;
     category?: string | null;
     model?: string | null;
@@ -48,13 +49,14 @@ class ProductTemplateRepository {
     const stockVal = templateData.stock !== undefined && templateData.stock !== null ? parseFloat(String(templateData.stock)) : 0;
 
     const result = await db.execute(`
-      INSERT INTO product_templates (product_id, name, final_price, promo_price, dimensions, category, model, package, pieces_per_pack, description, created_by, stock)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      INSERT INTO product_templates (product_id, name, final_price, promo_price, purchase_price, dimensions, category, model, package, pieces_per_pack, description, created_by, stock)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
     `, [
       templateData.product_id,
       templateData.name || null,
       templateData.final_price,
       templateData.promo_price !== undefined ? templateData.promo_price : null,
+      templateData.purchase_price !== undefined ? templateData.purchase_price : null,
       templateData.dimensions || null,
       templateData.category || null,
       templateData.model || null,
@@ -72,6 +74,7 @@ class ProductTemplateRepository {
     name?: string | null;
     final_price: number;
     promo_price?: number | null;
+    purchase_price?: number | null;
     dimensions?: string | null;
     category?: string | null;
     model?: string | null;
@@ -89,13 +92,14 @@ class ProductTemplateRepository {
 
     const result = await db.execute(`
       UPDATE product_templates
-      SET product_id = $1, name = $2, final_price = $3, promo_price = $4, dimensions = $5, category = $6, model = $7, package = $8, pieces_per_pack = $9, description = $10, stock = $11
-      WHERE id = $12
+      SET product_id = $1, name = $2, final_price = $3, promo_price = $4, purchase_price = $5, dimensions = $6, category = $7, model = $8, package = $9, pieces_per_pack = $10, description = $11, stock = $12
+      WHERE id = $13
     `, [
       templateData.product_id,
       templateData.name || null,
       templateData.final_price,
       templateData.promo_price !== undefined ? templateData.promo_price : null,
+      templateData.purchase_price !== undefined ? templateData.purchase_price : null,
       templateData.dimensions || null,
       templateData.category || null,
       templateData.model || null,

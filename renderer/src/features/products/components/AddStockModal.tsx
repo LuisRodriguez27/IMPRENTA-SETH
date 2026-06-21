@@ -11,7 +11,7 @@ interface AddStockModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: (updatedItem: any, type: 'product' | 'template') => void;
-  item: { id: number; name: string; currentStock: number } | null;
+  item: { id: number; name: string; currentStock: number; purchasePrice?: number } | null;
   type: 'product' | 'template';
 }
 
@@ -24,11 +24,42 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
 }) => {
   const { user } = useAuth();
   const [quantity, setQuantity] = useState<string>('');
+  const [purchasePrice, setPurchasePrice] = useState<string>('');
   const [cost, setCost] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (isOpen && item) {
+      if (item.purchasePrice !== undefined && item.purchasePrice !== null) {
+        setPurchasePrice(item.purchasePrice.toString());
+      } else {
+        setPurchasePrice('');
+      }
+    }
+  }, [isOpen, item]);
+
+  const calculateAndSetCost = (qtyStr: string, priceStr: string) => {
+    const qty = parseFloat(qtyStr);
+    const price = parseFloat(priceStr);
+    if (!isNaN(qty) && !isNaN(price)) {
+      setCost((qty * price).toFixed(2));
+    } else {
+      setCost('');
+    }
+  };
+
+  const handleQuantityChange = (val: string) => {
+    setQuantity(val);
+    calculateAndSetCost(val, purchasePrice);
+  };
+
+  const handlePurchasePriceChange = (val: string) => {
+    setPurchasePrice(val);
+    calculateAndSetCost(quantity, val);
+  };
 
   if (!isOpen || !item) return null;
 
@@ -85,6 +116,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
 
   const handleClose = () => {
     setQuantity('');
+    setPurchasePrice('');
     setCost('');
     setDescription('');
     setError(null);
@@ -146,11 +178,33 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
                   required
                   placeholder="Ej: 50"
                   value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
+                  onChange={(e) => handleQuantityChange(e.target.value)}
                   className="pl-10"
                   disabled={loading}
                 />
               </div>
+            </div>
+
+            {/* Precio de Compra Unitario */}
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                Precio de Compra Unitario
+              </label>
+              <div className="relative">
+                <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="Ej: 5.00"
+                  value={purchasePrice}
+                  onChange={(e) => handlePurchasePriceChange(e.target.value)}
+                  className="pl-10"
+                  disabled={loading}
+                />
+              </div>
+              <p className="text-[10px] text-gray-500 mt-1">
+                Precio de compra por unidad establecido en el producto. Se puede modificar.
+              </p>
             </div>
 
             {/* Costo total */}

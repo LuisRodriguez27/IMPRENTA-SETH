@@ -7,6 +7,7 @@ class ProductTemplate {
   product_name: string;
   final_price: number;
   promo_price: number | null;
+  purchase_price: number | null;
   dimensions: string;
   category: string;
   model: string;
@@ -26,6 +27,7 @@ class ProductTemplate {
     this.product_name = row.product_name || '';
     this.final_price = parseFloat(String(row.final_price)) || 0;
     this.promo_price = row.promo_price !== null && row.promo_price !== undefined ? parseFloat(String(row.promo_price)) : null;
+    this.purchase_price = row.purchase_price !== null && row.purchase_price !== undefined ? parseFloat(String(row.purchase_price)) : null;
     this.dimensions = row.dimensions || '';
     this.category = row.category || '';
     this.model = row.model || '';
@@ -88,6 +90,7 @@ class ProductTemplate {
       product_name: this.product_name,
       final_price: this.final_price,
       promo_price: this.promo_price,
+      purchase_price: this.purchase_price,
       dimensions: this.dimensions,
       category: this.category,
       model: this.model,

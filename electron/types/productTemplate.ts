@@ -11,6 +11,7 @@ export interface ProductTemplateRow {
   productId?: number;
   final_price: number;
   promo_price: number | null;
+  purchase_price?: number | null;
   dimensions?: string | null;
   category?: string | null;
   model?: string | null;
@@ -36,6 +37,7 @@ export interface TemplateData {
   name?: string | null;
   final_price: number | string;
   promo_price?: number | string | null;
+  purchase_price?: number | string | null;
   dimensions?: string | null;
   category?: string | null;
   model?: string | null;

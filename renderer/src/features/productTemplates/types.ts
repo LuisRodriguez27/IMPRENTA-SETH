@@ -4,7 +4,8 @@ export const createProductTemplateSchema = z.object({
   productId: z.number().int().min(1, 'El ID del producto es obligatorio'),
   name: z.string().min(1, 'El nombre de la plantilla es obligatorio'),
   final_price: z.number().min(0, 'El precio final debe ser un número positivo').optional().or(z.nan().transform(() => undefined)),
-  promo_price: z.number().min(0).optional().nullable(),
+  promo_price: z.number().min(0).optional().nullable().or(z.nan().transform(() => null)),
+  purchase_price: z.number().min(0).optional().nullable().or(z.nan().transform(() => null)),
   dimensions: z.string().optional(),
   category: z.string().optional(),
   model: z.string().optional(),
@@ -19,7 +20,8 @@ export const editProductTemplateSchema = z.object({
   productId: z.number().int().min(1, 'El ID del producto es obligatorio').optional(),
   name: z.string().min(1, 'El nombre de la plantilla es obligatorio'),
   final_price: z.number().min(0, 'El precio final debe ser un número positivo').optional().or(z.nan().transform(() => undefined)),
-  promo_price: z.number().min(0).optional().nullable(),
+  promo_price: z.number().min(0).optional().nullable().or(z.nan().transform(() => null)),
+  purchase_price: z.number().min(0).optional().nullable().or(z.nan().transform(() => null)),
   dimensions: z.string().optional(),
   category: z.string().optional(),
   model: z.string().optional(),
@@ -41,6 +43,7 @@ export interface ProductTemplate {
   product_name?: string; // Nombre del producto padre
   final_price: number;
   promo_price?: number | null;
+  purchase_price?: number | null;
   dimensions: string;
   category: string;
   model: string;

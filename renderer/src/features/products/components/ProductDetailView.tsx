@@ -53,7 +53,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
 
   // Estados para modal de adición de stock
   const [showAddStockModal, setShowAddStockModal] = useState(false);
-  const [addStockItem, setAddStockItem] = useState<{ id: number; name: string; currentStock: number } | null>(null);
+  const [addStockItem, setAddStockItem] = useState<{ id: number; name: string; currentStock: number; purchasePrice?: number } | null>(null);
   const [addStockType, setAddStockType] = useState<'product' | 'template'>('product');
 
   const handleAddStockSuccess = (updatedItem: any, type: 'product' | 'template') => {
@@ -317,7 +317,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    setAddStockItem({ id: product.id, name: product.name, currentStock: product.stock ?? 0 });
+                    setAddStockItem({ id: product.id, name: product.name, currentStock: product.stock ?? 0, purchasePrice: product.purchase_price ?? undefined });
                     setAddStockType('product');
                     setShowAddStockModal(true);
                   }}
@@ -376,6 +376,15 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                   </div>
                 );
               })()}
+
+              {product.purchase_price !== null && product.purchase_price !== undefined && (
+                <div className="flex items-center gap-3 bg-blue-50/50 p-2 rounded-lg border border-blue-100/50">
+                  <DollarSign className="text-blue-500" size={16} />
+                  <span className="text-sm text-gray-600">
+                    Precio de compra: <strong className="text-blue-700 font-semibold">${product.purchase_price.toFixed(2)} MXN</strong>
+                  </span>
+                </div>
+              )}
 
               {product.description && (
                 <div className="flex items-start gap-3">
@@ -536,6 +545,13 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                         );
                       })()}
 
+                      {template.purchase_price !== null && template.purchase_price !== undefined && (
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <DollarSign size={12} className="text-blue-500" />
+                          <span>Costo de compra: <strong className="text-blue-600 font-semibold">${template.purchase_price.toFixed(2)} MXN</strong></span>
+                        </div>
+                      )}
+
                       <div className="flex items-center justify-between gap-2 bg-gray-50 p-1.5 rounded border border-gray-100">
                         <div className="flex items-center gap-2">
                           <Package size={14} className="text-gray-400" />
@@ -545,7 +561,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            setAddStockItem({ id: template.id, name: template.name || template.description || `Plantilla #${template.id}`, currentStock: template.stock ?? 0 });
+                            setAddStockItem({ id: template.id, name: template.name || template.description || `Plantilla #${template.id}`, currentStock: template.stock ?? 0, purchasePrice: template.purchase_price ?? undefined });
                             setAddStockType('template');
                             setShowAddStockModal(true);
                           }}

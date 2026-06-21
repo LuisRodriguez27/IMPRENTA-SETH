@@ -12,6 +12,7 @@ export interface ProductRow {
   price: number;
   promo_price: number | null;
   discount_price: number | null;
+  purchase_price: number | null;
   serial_number: string | null;
   images: string | null;
   stock: number;
@@ -26,6 +27,7 @@ export interface ProductData {
   price: number | string;
   promo_price?: number | string | null;
   discount_price?: number | string | null;
+  purchase_price?: number | string | null;
   description?: string | null;
   images?: string[] | null;
   stock?: number | string | null;

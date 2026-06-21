@@ -1,425 +1,445 @@
 # Manual de Usuario del Sistema de Gestión Comercial y Producción SETH
 
-Bienvenido al manual oficial del sistema de gestión SETH. Este documento tiene como objetivo guiarte detalladamente a través de todas las pantallas, opciones y flujos de trabajo de la aplicación. Ha sido diseñado para ser consultado siempre que tengas dudas sobre el comportamiento de un botón, campo o proceso dentro del sistema.
+¡Bienvenido al manual oficial de **SETH**! Este documento está diseñado para acompañarte en el uso diario de la aplicación. Aquí encontrarás explicaciones sencillas, paso a paso, de cada pantalla y botón. No necesitas ser un experto en computación para entenderlo: hemos redactado esta guía con explicaciones muy claras y prácticas para que tú y tu equipo dominen el sistema en poco tiempo.
 
 ---
 
 ## Índice General
 
-1. [Acceso al Sistema y Gestión de Permisos (Módulo Base)](#1-acceso-al-sistema-y-gestión-de-permisos-módulo-base)
+1. [Acceso al Sistema y Gestión de Permisos](#1-acceso-al-sistema-y-gestión-de-permisos)
    - [Pantalla de Inicio de Sesión](#pantalla-de-inicio-de-sesión)
    - [Directorio de Usuarios](#directorio-de-usuarios)
    - [Matriz y Gestión de Permisos](#matriz-y-gestión-de-permisos)
 2. [Catálogos Principales](#2-catálogos-principales)
    - [Catálogo de Clientes](#catálogo-de-clientes)
    - [Catálogo de Productos](#catálogo-de-productos)
-   - [Catálogo de Proveedores / Mayoristas](#catálogo-de-proveedores--mayoristas)
-3. [Control de Flujo de Efectivo: Sesiones de Caja](#3-control-de-flujo-de-efectivo-sesiones-de-caja)
-   - [Apertura de Caja](#apertura-de-caja)
-   - [Operación Diaria e Indicadores](#operación-diaria-e-indicadores)
-   - [Cierre de Caja y Arqueo](#cierre-de-caja-y-arqueo)
-   - [Historial y Reapertura de Turnos](#historial-y-reapertura-de-turnos)
-4. [Plantillas de Producto](#4-plantillas-de-producto)
-5. [Gestión de Presupuestos (Cotizaciones)](#5-gestión-de-presupuestos-cotizaciones)
-   - [Creación y Edición de Presupuestos](#creación-y-edición-de-presupuestos)
-   - [Envío de Presupuesto por WhatsApp (Generación de Imagen en Portapapeles)](#envío-de-presupuesto-por-whatsapp-generación-de-imagen-en-portapapeles)
+   - [Catálogo de Proveedores y Columnas Dinámicas](#catálogo-de-proveedores-y-columnas-dinámicas)
+3. [Control de Inventario y Stock (¡Nuevo!)](#3-control-de-inventario-y-stock)
+   - [¿Cómo funciona el stock en el sistema?](#cómo-funciona-el-stock-en-el-sistema)
+   - [Surtir Inventario y Registrar Gasto Automático](#surtir-inventario-y-registrar-gasto-automático)
+4. [Plantillas de Producto (Configuraciones Especiales)](#4-plantillas-de-producto-configuraciones-especiales)
+5. [Control de Efectivo: Sesiones de Caja](#5-control-de-efectivo-sesiones-de-caja)
+   - [Apertura de Turno (Saldo Inicial)](#apertura-de-turno-saldo-inicial)
+   - [Operación Diaria y Caja Chica](#operación-diaria-y-caja-chica)
+   - [Cierre de Caja y Arqueo (Cuadre de Dinero)](#cierre-de-caja-y-arqueo-cuadre-de-dinero)
+6. [Gestión de Presupuestos (Cotizaciones)](#6-gestión-de-presupuestos-cotizaciones)
+   - [Creación y Edición de Cotizaciones](#creación-y-edición-de-cotizaciones)
+   - [Envío de Presupuesto por WhatsApp (Generación de Imagen)](#envío-de-presupuesto-por-whatsapp-generación-de-imagen)
    - [Conversión Directa a Orden de Trabajo](#conversión-directa-a-orden-de-trabajo)
-6. [Órdenes de Trabajo](#6-órdenes-de-trabajo)
-   - [Creación y Flujo de Trabajo](#creación-y-flujo-de-trabajo)
+7. [Órdenes de Trabajo (Pedidos Formales)](#7-órdenes-de-trabajo-pedidos-formales)
+   - [Registro de Orden y Cálculo de Medidas ($m^2$)](#registro-de-orden-y-cálculo-de-medidas-m2)
    - [Historial de Órdenes Completadas](#historial-de-órdenes-completadas)
-7. [Órdenes Rápidas (Mostrador y Ventas de Paso)](#7-órdenes-rápidas-mostrador-y-ventas-de-paso)
-   - [Registro de Venta Rápida](#registro-de-venta-rápida)
-   - [Atajos de Teclado del Formulario](#atajos-de-teclado-del-formulario)
-   - [Impresión de Pendientes Rápidas](#impresión-de-pendientes-rápidas)
-8. [Gestión de Pagos y Abonos](#8-gestión-de-pagos-y-abonos)
-   - [Registro de Pagos (Vínculo de Órdenes o Pago Libre)](#registro-de-pagos-vínculo-de-órdenes-o-pago-libre)
-   - [Impresión de Bitácoras de Pagos (Recibidos y Pendientes)](#impresión-de-bitácoras-de-pagos-recibidos-y-pendientes)
-9. [Bitácora de Impresión y Producción](#9-bitácora-de-impresión-y-producción)
-   - [Cola de Trabajo (Mostrador vs. Maquila)](#cola-de-trabajo-mostrador-vs-maquila)
-   - [Alerta Visual por Entrega Atrasada (Parpadeo Rojo)](#alerta-visual-por-entrega-atrasada-parpadeo-rojo)
-   - [Flujo de Marcado como Listo (Completado)](#flujo-de-marcado-como-listo-completado)
-   - [Impresión de Bitácoras del Grupo de Producción](#impresión-de-bitácoras-del-grupo-de-producción)
-10. [Órdenes de Compra a Proveedores (Surtido Mayorista)](#10-órdenes-de-compra-a-proveedores-surtido-mayorista)
-    - [Creación con Columnas Dinámicas](#creación-con-columnas-dinámicas)
-    - [Detalles, Exportación a PNG e Integración con WhatsApp](#detalles-exportación-a-png-e-integración-con-whatsapp)
-11. [Módulo de Estadísticas y Gráficas de Ventas](#11-módulo-de-estadísticas-y-gráficas-de-ventas)
-12. [Guía de Resolución de Errores y Validaciones (Troubleshooting)](#12-guía-de-resolución-de-errores-y-validaciones-troubleshooting)
+8. [Órdenes Rápidas (Mostrador y Ventas de Paso)](#8-órdenes-rápidas-mostrador-y-ventas-de-paso)
+   - [Registro Rápido y Atajos de Teclado](#registro-rápido-y-atajos-de-teclado)
+   - [Impresión de Pendientes de Cobro](#impresión-de-pendientes-de-cobro)
+9. [Gestión de Pagos y Abonos](#9-gestión-de-pagos-y-abonos)
+   - [Registrar Abonos a Órdenes o Pagos Libres](#registrar-abonos-a-órdenes-o-pagos-libres)
+   - [Impresión de Bitácora de Pagos](#impresión-de-bitácora-de-pagos)
+10. [Bitácora de Impresión y Plotters (Área de Producción)](#10-bitácora-de-impresión-y-plotters-área-de-producción)
+    - [Cola de Producción (Mostrador vs. Maquila)](#cola-de-producción-mostrador-vs-maquila)
+    - [Alerta de Retraso (Parpadeo Rojo)](#alerta-de-retraso-parpadeo-rojo)
+    - [Flujo de "Listo" e Impresión de Hojas de Trabajo](#flujo-de-listo-e-impresión-de-hojas-de-trabajo)
+11. [Órdenes de Compra a Proveedores (Surtido Mayorista)](#11-órdenes-de-compra-a-proveedores-surtido-mayorista)
+    - [Creación y Formulario Adaptable](#creación-y-formulario-adaptable)
+    - [Detalles, Imagen PNG y WhatsApp](#detalles-imagen-png-y-whatsapp)
+12. [Panel de Estadísticas y Gráficas de Ventas](#12-panel-de-estadísticas-y-gráficas-de-ventas)
+13. [Guía Práctica para Resolver Problemas (Troubleshooting)](#13-guía-práctica-para-resolver-problemas-troubleshooting)
 
 ---
 
-## 1. Acceso al Sistema y Gestión de Permisos (Módulo Base)
+## 1. Acceso al Sistema y Gestión de Permisos
 
-Esta sección cubre el acceso principal, la creación y edición de usuarios, y cómo se configuran las restricciones de visibilidad o de acción a través de los roles y permisos.
+Esta sección explica cómo entrar al programa, cómo dar de alta a tus empleados y cómo controlar lo que cada uno puede ver o modificar.
 
 ### Pantalla de Inicio de Sesión
-1. Al iniciar la aplicación, se mostrará la pantalla de **Inicio de Sesión (Login)**.
-2. Introduce tu **Nombre de Usuario** y **Contraseña** en los campos indicados.
-3. Haz clic en el botón **Iniciar Sesión**. En caso de que los datos sean incorrectos, aparecerá una alerta en color rojo describiendo el error.
-4. Para salir de tu sesión de forma segura:
-   - Ve a la parte superior de la ventana o directamente al menú del **Dashboard**.
-   - Presiona el botón **Cerrar Sesión** en color rojo. Esto limpiará las credenciales y regresará a la pantalla de Login.
+1. Al abrir SETH, verás la pantalla de **Inicio de Sesión**.
+2. Escribe tu **Nombre de Usuario** y tu **Contraseña**.
+3. Haz clic en el botón azul **Iniciar Sesión**. Si escribiste algo mal, aparecerá un recuadro rojo indicando el error.
+4. **Salir de forma segura**: Para cerrar tu sesión y que nadie más use tu cuenta, haz clic en el botón **Cerrar Sesión** (de color rojo) en la esquina superior derecha del menú. Esto te regresará a la pantalla de entrada.
 
 ### Directorio de Usuarios
-Ubicado en el menú lateral bajo la sección **Usuarios**. Este módulo permite registrar y modificar la información de las personas autorizadas para utilizar la aplicación.
-* **Crear Usuario**:
-  1. Presiona el botón **Nuevo Usuario (+)** en la parte superior derecha.
-  2. Llena los campos obligatorios: **Nombre de usuario**, **Contraseña** (mínimo 6 caracteres), y selecciona un **Rol** (por ejemplo: Administrador, Cajero, Operador).
+Ubicado en el menú de la izquierda, en la opción **Usuarios**. Aquí puedes registrar a las personas que trabajarán con el sistema.
+* **Crear un nuevo usuario**:
+  1. Haz clic en el botón **Nuevo Usuario (+)** (esquina superior derecha).
+  2. Llena los campos: **Nombre de usuario**, ingresa una **Contraseña** (mínimo 6 letras o números), y selecciona un **Rol** (por ejemplo: Administrador, Cajero, Operador).
   3. Haz clic en **Guardar**.
-* **Editar Usuario**:
-  1. En la lista de usuarios, localiza al usuario y presiona el botón **Editar** (icono de lápiz).
-  2. Podrás cambiar el rol asignado o modificar el nombre de usuario.
-* **Activar/Desactivar Usuario**:
-  - Los usuarios no se eliminan permanentemente para no romper el historial de ventas creadas. En su lugar, se utiliza un conmutador (switch) o etiqueta de estado **Activo / Inactivo**. Un usuario desactivado no podrá iniciar sesión en el sistema.
+* **Editar un usuario**:
+  1. En la lista, busca al usuario y haz clic en el botón **Editar** (el icono de lápiz).
+  2. Podrás cambiar su nombre o asignarle un rol diferente.
+* **Activar o Desactivar**:
+  - Los usuarios no se pueden borrar por completo del sistema para no estropear el historial de ventas que ellos hicieron en el pasado. En su lugar, usa el interruptor (switch) de **Activo/Inactivo**. Si desactivas a un usuario, no podrá volver a entrar al sistema.
 
 ### Matriz y Gestión de Permisos
-El sistema cuenta con un control de accesos basado en permisos específicos para resguardar la información financiera y operativa.
-Ubicado en la barra lateral en **Gestión de Permisos**.
-* **Estructura de la Matriz**: Muestra la lista de permisos registrados en el sistema, su ID único y su estado (Activo/Inactivo).
-* **Asignar Permisos**: Los botones permiten mapear qué permisos posee cada rol o cuenta individual. Los permisos críticos incluyen:
-  - `Crear Presupuestos` / `Editar Presupuestos` / `Eliminar Presupuestos`: Acciones sobre el módulo de cotizaciones.
-  - `Crear Órdenes` / `Editar Órdenes`: Permiso para crear o modificar órdenes de trabajo formales.
-  - `Registrar Pagos` / `Eliminar Pagos`: Control sobre los flujos de dinero entrante a caja.
-  - `Ver Mayoristas` / `Crear Orden Mayorista`: Visualización y generación de pedidos a proveedores externos.
-  - `Estadisticas: Filtros` / `Estadisticas: Hoy`: Restricción que define si un usuario puede analizar los gráficos de ventas históricos o si únicamente puede visualizar las ventas del día corriente.
+Para proteger el dinero y los datos del negocio, puedes decidir qué botones y pantallas puede usar cada empleado.
+Ve a la opción **Gestión de Permisos** en el menú de la izquierda.
+* **¿Cómo funciona?**: Verás una tabla donde aparecen los permisos del sistema. Puedes activar o desactivar permisos específicos para cada rol de usuario.
+* **Permisos clave que debes cuidar**:
+  - `Crear/Editar/Eliminar Presupuestos`: Permite o bloquea el control de las cotizaciones.
+  - `Crear/Editar Órdenes`: Permite registrar pedidos formales de clientes.
+  - `Registrar/Eliminar Pagos`: Controla quién puede registrar abonos de dinero.
+  - `Ver Mayoristas` / `Crear Orden Mayorista`: Acceso a las compras externas para proveedores.
+  - `Estadísticas: Filtros` vs. `Estadísticas: Hoy`: Si un empleado tiene activado `Estadísticas: Hoy`, **sólo podrá ver las ventas que se han hecho el día de hoy** en las gráficas; no podrá ver el historial de meses o años anteriores. Esto protege la información financiera confidencial.
 
 ---
 
 ## 2. Catálogos Principales
 
-Los catálogos son la base de datos estática del sistema. Deben estar poblados antes de registrar transacciones, ya que los presupuestos, órdenes y bitácoras hacen referencia directa a ellos.
+Los catálogos son la "biblioteca" de información de tu negocio. Debes registrar aquí a tus clientes, productos y proveedores antes de empezar a hacer cotizaciones o ventas.
 
 ### Catálogo de Clientes
-Ubicado en **Clientes** en el menú lateral.
+Ubicado en la sección **Clientes** del menú izquierdo.
 * **Registrar Cliente**:
-  1. Presiona el botón **Nuevo Cliente**.
-  2. Rellena los campos:
-     - **Nombre**: Nombre completo o razón social del cliente.
-     - **Teléfono**: Número telefónico a 10 dígitos (crucial para notificaciones automáticas).
-     - **Correo Electrónico**: Dirección de correo electrónico de contacto.
-     - **Color del Círculo (Nivel de Cliente)**: Permite asignar una etiqueta de color (**Verde**, **Amarillo**, **Rojo**) para distinguir visualmente el nivel de prioridad, volumen de compra o comportamiento del cliente.
-  3. Presiona **Guardar**.
-* **Integración WhatsApp Directa**:
-  - Al lado de la información de cada cliente en la lista, encontrarás un botón verde con el icono de **WhatsApp**. Al presionarlo, el sistema abrirá de forma automática el chat del cliente en WhatsApp Web (usando el número de 10 dígitos registrado, prefijando el código de país `52` de México), permitiéndote enviarle mensajes de forma directa sin necesidad de guardar el contacto en el teléfono.
+  1. Haz clic en **Nuevo Cliente**.
+  2. Llena la información:
+     - **Nombre**: Nombre completo o el nombre del negocio del cliente.
+     - **Teléfono**: Escribe el número celular a **10 dígitos corridos** (ejemplo: `5512345678`), sin espacios ni guiones. *Esto es fundamental para que funcione el envío de mensajes por WhatsApp.*
+     - **Correo Electrónico**: Su dirección de correo (opcional).
+     - **Color del Círculo (Nivel de Cliente)**: Selecciona una etiqueta de color (**Verde**, **Amarillo** o **Rojo**). Esto te sirve para identificar visualmente a tus clientes (por ejemplo: Verde para clientes frecuentes, Amarillo para intermediarios, Rojo para clientes difíciles o con adeudos).
+  3. Haz clic en **Guardar**.
+* **Escribirle por WhatsApp al instante**:
+  - Al lado de cada cliente en la lista verás un botón verde con el logotipo de **WhatsApp**. Al hacer clic, el sistema abrirá automáticamente una pestaña de chat directo en WhatsApp Web usando el teléfono del cliente (agregándole el código de país de México `52`), lo que te permite escribirle sin necesidad de registrarlo en tu celular.
 
 ### Catálogo de Productos
-Ubicado en **Productos** en el menú lateral.
+Ubicado en la opción **Productos** del menú de la izquierda. Aquí das de alta lo que vendes.
 * **Registrar Producto**:
   1. Haz clic en **Nuevo Producto**.
-  2. Ingresa el **Nombre** del producto (ej: *Lona Front*, *Vinil Brillante*, *Diseño Gráfico*).
-  3. Captura el **Precio Base** de venta.
-  4. Selecciona o ingresa una **Categoría** para agruparlo.
-  5. Guarda los cambios. Estos productos estarán disponibles en las barras de búsqueda de cotizaciones y órdenes de trabajo.
+  2. Llena los datos:
+     - **Nombre**: (Ejemplo: *Lona Front*, *Vinil Auto-adherible*, *Taza Sublimada*).
+     - **Precio Base**: El precio de venta regular al público.
+     - **Precio Promoción** / **Precio con Descuento**: Precios especiales alternativos. El sistema tomará automáticamente el menor de los tres precios activos al vender.
+     - **Precio de Compra** (¡Nuevo!): Escribe cuánto te cuesta a ti comprar o producir este artículo. Este campo es privado (el cliente no lo ve) y te ayudará a conocer tus ganancias reales.
+     - **Categoría**: Agrupa tus productos para encontrarlos rápido (ej. *Impresión Gran Formato*, *Artículos Promocionales*).
+  3. Haz clic en **Guardar**.
+* **Galería de Fotos**: Al entrar al detalle de un producto (haciendo clic en su nombre), verás una sección para subir imágenes. Esto es ideal para guardar fotos de trabajos reales ya terminados de ese producto, sirviendo de catálogo visual para tus clientes o de guía de referencia para tus diseñadores.
 
-### Catálogo de Proveedores / Mayoristas
-Ubicado en la pestaña **Directorio de Proveedores** dentro de la sección **Proveedores** del menú lateral.
-* **Configuración del Proveedor**:
+### Catálogo de Proveedores y Columnas Dinámicas
+Ubicado en la pestaña **Directorio de Proveedores** dentro de la sección **Proveedores**.
+* **Registrar Proveedor**:
   1. Haz clic en **Nuevo Proveedor**.
-  2. Llena los campos básicos: **Nombre**, **Teléfono**, **Correo Electrónico** y **Descripción**.
-  3. **Columnas Personalizadas (Clave)**: Este campo te permite ingresar los nombres de las columnas que utiliza ese proveedor específico para sus pedidos (ejemplo: `pzas, descripcion, ancho, alto, ojillos, costura` o `cantidad, material, tinta, acabado`).
-     - Estas columnas se guardan como una estructura dinámica y se usarán más adelante para construir el formulario de pedido exacto de ese proveedor.
-  4. Presiona **Guardar**.
+  2. Ingresa su **Nombre**, **Teléfono**, **Correo** y una breve descripción.
+  3. **Columnas Personalizadas (Muy Importante)**: Aquí debes escribir, separados por comas, los datos que te pide ese proveedor específico para levantarle un pedido.
+     - *Ejemplo*: Si tu proveedor de lonas te pide piezas, ancho, alto y acabados, escribe: `piezas, ancho, alto, ojillos, costura`.
+     - Si tu proveedor de uniformes te pide cantidad, talla y color, escribe: `cantidad, talla, color`.
+     - *¿Para qué sirve esto?* El sistema creará un formulario inteligente y exclusivo para este proveedor que se adaptará automáticamente a estos campos cuando le hagas una orden de compra.
 
 ---
 
-## 3. Control de Flujo de Efectivo: Sesiones de Caja
+## 3. Control de Inventario y Stock
 
-La caja chica controla los turnos de venta de la aplicación. **Es mandatorio contar con una sesión de caja abierta para registrar cualquier tipo de pago (abono) o gasto en el sistema.**
+El sistema cuenta con un moderno y automatizado control de existencias (Stock) e inventario para evitar pérdidas de material y llevar las cuentas claras.
+
+### ¿Cómo funciona el stock en el sistema?
+
+El inventario de tus **Productos** y **Plantillas de Producto** se ajusta de forma inteligente y automática según las operaciones diarias del negocio:
 
 ```mermaid
-graph TD
-    A[Caja Cerrada] -->|Paso 1: Abrir Caja e ingresar Saldo Inicial| B[Caja Abierta]
-    B -->|Paso 2: Registrar Pagos, Abonos o Gastos| C[Flujo Diario de Dinero]
-    C -->|Paso 3: Presionar Cerrar Turno e ingresar Saldo Real| D[Cierre y Arqueo de Caja]
-    D -->|Si coinciden los montos| E[Caja Cerrada exitosamente]
-    D -->|Si NO coinciden| F[Alerta de Diferencia de Arqueo y registro de notas]
+flowchart LR
+    A[Registrar Venta / Orden] -->|Resta del Inventario| B(Stock de Producto / Plantilla)
+    C[Cancelar o Borrar Orden] -->|Devuelve al Inventario| B
+    D[Surtir Stock / Comprar] -->|Suma al Inventario| B
 ```
 
-### Apertura de Caja
-1. Si la caja está cerrada y se intenta realizar un cobro, el sistema mostrará una advertencia solicitando la apertura del turno.
-2. Ve a la sección **Sesión de Caja** en el menú lateral.
-3. Presiona el botón **Abrir Turno**.
-4. Introduce el **Monto Inicial** en efectivo con el que se cuenta físicamente en la caja chica (fondo de caja para cambio).
-5. Confirma la acción. El estado de la caja pasará a **Abierta**, registrando la fecha, hora y el usuario que realizó la apertura.
+* **Al crear una Orden de Trabajo**: En cuanto registras y guardas una venta formal con productos o plantillas, el sistema **resta automáticamente** las cantidades vendidas del stock disponible de esos artículos.
+* **Al cancelar o eliminar**: Si el cliente cancela el trabajo y tú cambias el estado de la orden a "Cancelado" (o si eliminas la orden por completo), el sistema **regresa (restablece) de forma automática** los artículos al inventario para que tus existencias físicas no se descuadren.
+* **Al modificar la orden**: Si editas una orden de trabajo abierta para cambiar las cantidades o quitar artículos, el sistema suma de vuelta las piezas anteriores y resta las nuevas de manera transparente.
 
-### Operación Diaria e Indicadores
-Mientras la sesión esté abierta, la pantalla principal de **Sesión de Caja** mostrará en tiempo real:
-* **Fondo de Caja (Monto Inicial)**: El efectivo con el que se abrió el turno.
-* **Total Ingresos**: Dinero acumulado por concepto de abonos, liquidaciones de órdenes o pagos libres.
-* **Total Gastos/Egresos**: Dinero retirado de la caja chica para gastos operativos (pago de servicios, papelería, etc.).
-* **Saldo Esperado**: Cálculo matemático automático: `Saldo Inicial + Ingresos - Gastos`.
+### Surtir Inventario y Registrar Gasto Automático
+Cuando te llegue mercancía o material nuevo, debes registrar la entrada en el sistema para actualizar tu stock y, al mismo tiempo, justificar el dinero que salió de la caja para pagar ese material.
 
-### Cierre de Caja y Arqueo
-Al finalizar la jornada laboral o el turno del cajero, se debe proceder al cierre del turno para auditar el dinero físico.
-1. Haz clic en el botón **Cerrar Turno**.
-2. Aparecerá el modal **Cerrar Sesión de Caja**, el cual te indicará el **Saldo Esperado** calculado por el sistema.
-3. Introduce obligatoriamente el **Monto Real (Efectivo Físico)** que hay en el cajón de dinero.
-4. **Alerta de Diferencia de Arqueo**:
-   - Si el *Monto Real* es diferente al *Saldo Esperado*, el sistema activará automáticamente una advertencia visual destacada en color naranja/rojo avisando que existe un descuadre (sobrante o faltante).
-5. Es obligatorio rellenar el campo **Notas / Observaciones de Cierre** explicando el motivo de la diferencia si la hubiera.
-6. Haz clic en **Confirmar Cierre**. El turno se guardará en el historial y la caja quedará cerrada para futuras ventas hasta que se vuelva a abrir una nueva sesión.
+**Pasos para surtir stock:**
+1. Ve a **Productos** y haz clic en el nombre del producto que vas a surtir.
+2. En la tarjeta de información verás el cuadro **Stock disponible**. Haz clic en el botón **Surtir Stock** (en las plantillas verás un botón que dice **Surtir**).
+3. Se abrirá una ventana emergente:
+   - **Cantidad a agregar**: Escribe el número de piezas, metros o unidades que están entrando al almacén (debe ser mayor a 0).
+   - **Precio de Compra Unitario**: El sistema te sugerirá el costo registrado, pero puedes modificarlo si el proveedor cambió su precio para esta compra.
+   - **Costo Total (Gasto)**: Se calcula multiplicando la cantidad por el precio unitario. Puedes sobrescribir este total de forma manual si te hicieron un descuento especial o si pagaste un extra de envío.
+   - **Notas / Descripción**: Agrega una nota breve (ej. *"Compra de 2 rollos de lona a Proveedor Distribuidor"*).
+4. Haz clic en **Surtir Inventario**.
 
-### Historial y Reapertura de Turnos
-En la misma sección de Caja, puedes consultar el historial de turnos pasados. Si cuentas con los permisos administrativos correspondientes, el sistema permite presionar el botón **Reabrir Turno** sobre una sesión cerrada para realizar correcciones de última hora (esto recalculará los balances y reajustará el flujo del arqueo según los nuevos movimientos).
+> [!IMPORTANT]
+> **Integración con la Caja Chica**:
+> Al hacer clic en "Surtir Inventario", el sistema realiza dos acciones en un solo paso:
+> 1. Suma la cantidad de artículos al stock del producto o plantilla.
+> 2. **Registra automáticamente un Gasto (Egreso)** en tu turno de caja activo por el **Costo Total** de la compra.
+> 
+> *Nota:* Para poder surtir inventario, **es obligatorio tener una sesión de caja abierta**. Si la caja está cerrada, el sistema te mostrará una advertencia y no te dejará guardar, ya que todo dinero invertido en mercancía debe quedar registrado en el flujo diario de caja.
 
 ---
 
-## 4. Plantillas de Producto
+## 4. Plantillas de Producto (Configuraciones Especiales)
 
-Las **Plantillas de Producto** sirven para predefinir configuraciones de artículos complejos que se venden de forma recurrente, evitando tener que calcular dimensiones o precios especiales manualmente cada vez.
-* **Estructura**: Se ligan a un producto base del catálogo (ej: *Lona front*) y permiten guardar medidas preestablecidas (alto y ancho), acabados específicos o fórmulas de cálculo de costo.
-* **Uso**: Al crear un presupuesto o una orden de trabajo, puedes buscar directamente la plantilla en lugar del producto individual, rellenando el formulario de artículos del pedido de forma automática e inmediata con los precios y dimensiones preestablecidos.
+Las **Plantillas de Producto** son "recetas predefinidas" para simplificar la venta de artículos complejos o personalizados que vendes muy seguido.
+
+* **¿Para qué sirven?**: Evitan que tengas que calcular dimensiones, acabados, precios de compra o precios de venta manualmente cada vez que atiendes a un cliente.
+* **Ejemplo práctico**: Tienes el producto base "Lona Front". Pero vendes muy seguido un paquete que incluye "Lona Front de 3x2 metros, con ojillos perimetrales y bastilla reforzada". Puedes crear una plantilla llamada "Lona Publicitaria Grande (3x2m)".
+* **Campos que almacena**: Medidas de alto y ancho fijas, categoría, modelo, si se vende por paquete (con piezas por empaque), precio de venta final, precio de compra y su propio **Stock de inventario independiente**.
+* **Uso al vender**: Al crear un presupuesto o una orden de trabajo, simplemente buscas la plantilla por su nombre en el buscador. El sistema rellenará al instante el formulario con las medidas, precios y detalles preestablecidos, ahorrándote valiosos minutos en mostrador.
 
 ---
 
-## 5. Gestión de Presupuestos (Cotizaciones)
+## 5. Control de Efectivo: Sesiones de Caja
 
-El módulo de presupuestos permite realizar cotizaciones a clientes sin comprometer inventarios, crear bitácoras de impresión o registrar flujos de caja.
+La caja chica controla el flujo de dinero en efectivo de la tienda. **Es obligatorio tener un turno de caja abierto para poder cobrar abonos, registrar gastos o surtir inventario.**
 
-### Creación y Edición de Presupuestos
-1. Ve a **Presupuestos** en la barra lateral y haz clic en **Nuevo Presupuesto**.
-2. Selecciona un **Cliente** de la lista de búsqueda.
-3. Añade artículos al presupuesto a través de las pestañas **Productos** o **Plantillas**:
-   - Captura la **Cantidad**.
-   - El sistema cargará el precio unitario base. Puedes modificar manualmente este precio si deseas otorgar un precio preferencial o descuento al cliente para esta cotización específica.
-4. Haz clic en **Guardar Presupuesto**.
-* *Nota de Restricción*: Si un presupuesto es editado y ya se encuentra marcado como **Convertido a Orden**, el sistema deshabilitará la edición para evitar incongruencias entre lo cotizado e impreso.
+### Apertura de Turno (Saldo Inicial)
+1. Si intentas realizar un cobro o registrar un abono con la caja cerrada, el sistema te mostrará un mensaje indicando que debes abrir turno.
+2. Ve a la opción **Sesión de Caja** en el menú izquierdo.
+3. Haz clic en el botón **Abrir Turno**.
+4. Escribe el **Monto Inicial** en efectivo (el fondo o "cambio" que dejas físicamente en el cajón de dinero al iniciar el día).
+5. Confirma la acción. La caja cambiará a estado **Abierta**.
 
-### Envío de Presupuesto por WhatsApp (Generación de Imagen en Portapapeles)
-SETH cuenta con un sistema avanzado de cotizaciones visuales para enviarse rápidamente por chat.
+### Operación Diaria y Caja Chica
+Mientras la caja esté abierta, la pantalla de **Sesión de Caja** te mostrará en tiempo real un resumen matemático exacto:
+* **Fondo de Caja (Monto Inicial)**: El efectivo con el que abriste el turno.
+* **Total Ingresos**: Todo el dinero que ha entrado por abonos de clientes, liquidaciones de órdenes rápidas o cobros libres.
+* **Total Gastos/Egresos**: Todo el dinero que ha salido (compras de material por surtido de stock, compras de papelería, pago de agua, etc.).
+* **Saldo Esperado**: El cálculo automático: `Fondo Inicial + Ingresos - Gastos`. Es el dinero exacto que debería haber físicamente en el cajón.
 
-1. En la lista de presupuestos, haz clic en el botón verde **WhatsApp** del registro que deseas enviar.
-2. Se abrirá una ventana emergente que muestra un cuadro de texto con un mensaje predeterminado:
-   > *"Le enviamos la cotización solicitada esperamos vernos favorecidos, será un placer colaborar con usted"*
-3. Puedes editar este texto de forma libre.
-4. Haz clic en el botón **Generar y Enviar**. El sistema realizará lo siguiente de forma interna:
-   - Tomará la información del presupuesto (artículos, cantidades, precios unitarios, total e ID del documento) y la incrustará de forma invisible en un formato gráfico pixel-perfect oficial (utilizando el fondo de marca oficial `COTIZACION.jpg`).
-   - Si el cliente obtuvo un precio rebajado en comparación con el catálogo base, el sistema estampará de forma automática un sello rojo visible que dice: **"USTED HA ADQUIRIDO UN PRECIO ESPECIAL"**.
-   - Si el cliente tiene un círculo de color asignado en su catálogo, este aparecerá dibujado en la imagen.
-   - El sistema convertirá esta plantilla en una imagen PNG y **la copiará directamente al portapapeles de tu computadora**. (En caso de que el navegador bloquee el portapapeles por seguridad, la imagen se descargará automáticamente a tu carpeta de descargas como `presupuesto-[ID].png`).
-5. Inmediatamente después, el sistema abrirá la ventana de **WhatsApp Web** con el chat del cliente activo.
-6. **Acción del Usuario**: En la caja de chat de WhatsApp, presiona las teclas **Ctrl + V** (o clic derecho -> Pegar) y presiona enviar. La imagen con el diseño oficial de la cotización y el texto redactado se enviarán al cliente en segundos.
+### Cierre de Caja y Arqueo (Cuadre de Dinero)
+Al terminar la jornada laboral o el turno del cajero, se debe hacer el arqueo (contar el dinero físico en billetes y monedas) para cerrar la caja chica:
+
+1. Ve a **Sesión de Caja** y haz clic en **Cerrar Turno**.
+2. Verás una pantalla que te muestra el **Saldo Esperado** calculado por el sistema.
+3. En el campo **Monto Real (Efectivo Físico)**, escribe la cantidad exacta de dinero en efectivo que contaste físicamente en el cajón.
+4. **Advertencias por descuadre**:
+   - Si lo que contaste físicamente es menor o mayor a lo que la computadora calcula, se encenderá un recuadro de advertencia en color naranja o rojo avisando que hay un **faltante** o **sobrante** de dinero.
+5. **Notas de Cierre obligatorias**:
+   - Si existe alguna diferencia de dinero (aunque sea de $1 peso), **el botón para cerrar se bloqueará**. Para desbloquearlo, debes escribir de forma obligatoria una explicación en el campo de notas (ejemplo: *"Falta de cambio de $20 pesos"* o *"Arqueo correcto"*). Una vez que escribas la justificación, el botón **Confirmar Cierre** se habilitará.
+6. Haz clic en **Confirmar Cierre**. La sesión se guardará en el historial histórico de auditoría.
+
+---
+
+## 6. Gestión de Presupuestos (Cotizaciones)
+
+El módulo de presupuestos te permite cotizar precios a tus clientes de forma formal sin que se reste material del inventario, sin que se mande a imprimir nada en plotters y sin afectar tu caja de dinero.
+
+### Creación y Edición de Cotizaciones
+1. Ve a **Presupuestos** en el menú y haz clic en **Nuevo Presupuesto**.
+2. Escribe y selecciona al **Cliente** (si no existe, debes darlo de alta en el catálogo primero).
+3. Agrega los artículos buscando por **Productos** o por **Plantillas**. Escribe la cantidad.
+4. *Precio especial*: El sistema cargará el precio regular del catálogo. Si le vas a dar un descuento especial a este cliente, puedes borrar el precio unitario sugerido y escribir uno menor.
+5. Haz clic en **Guardar Presupuesto**.
+
+> [!NOTE]
+> Para evitar errores y mantener la congruencia de tus registros, si un presupuesto ya fue convertido en una Orden de Trabajo real, **el sistema bloqueará su edición**. Ya no podrás cambiarlo porque el pedido ya está en producción.
+
+### Envío de Presupuesto por WhatsApp (Generación de Imagen)
+SETH cuenta con una innovadora herramienta para enviar cotizaciones limpias, formales y visualmente atractivas directamente a los chats de WhatsApp de tus clientes.
+
+1. En la lista de presupuestos, haz clic en el botón verde con el icono de **WhatsApp** correspondiente al presupuesto que quieres enviar.
+2. Se abrirá una ventana que te muestra un saludo predeterminado, el cual puedes editar libremente.
+3. Haz clic en **Generar y Enviar**.
+4. **¿Qué hace el sistema internamente?**:
+   - Toma los datos del presupuesto (productos, precios, total y el número de cotización) y los dibuja en una imagen digital con el diseño oficial de tu empresa.
+   - **Sello de Precio Especial**: Si rebajaste los precios para este cliente en comparación con el catálogo regular, el sistema le estampará automáticamente un sello rojo que dice **"USTED HA ADQUIRIDO UN PRECIO ESPECIAL"**.
+   - El sistema copia esta imagen directamente al "portapapeles" invisible de tu computadora (es decir, hace un "Copiar" automático) y abre el chat del cliente en WhatsApp Web.
+5. **Cómo enviarla (Acción del usuario)**: Haz clic en la barra donde escribes tus mensajes de WhatsApp Web, presiona las teclas **Ctrl + V** (o clic derecho -> Pegar) y presiona la tecla Enter. La cotización se enviará de inmediato como una imagen PNG de alta calidad con el texto de saludo.
+
+> [!TIP]
+> **¿Qué pasa si mi navegador bloquea el portapapeles?**
+> Por motivos de seguridad de algunos navegadores, a veces el pegado automático (`Ctrl + V`) no funciona. **No te preocupes.**
+> SETH tiene un respaldo automático: en cuanto haces clic en "Generar y Enviar", la imagen se descarga de forma invisible en la carpeta de **Descargas** de tu computadora (con un nombre como `presupuesto-15.png`). Si `Ctrl + V` no pega nada, simplemente arrastra el archivo de imagen descargado hacia el chat de WhatsApp Web, o haz clic en el icono de archivos adjuntos (el clip o el botón `+` en WhatsApp), selecciona el archivo y envíalo.
 
 ### Conversión Directa a Orden de Trabajo
-Cuando el cliente apruebe la cotización, no es necesario volver a capturar la orden desde cero:
-1. En la lista de presupuestos, ubica el registro y presiona el botón **Convertir a Orden** (icono de flecha a la derecha).
-2. Confirma en el cuadro de diálogo. El sistema copiará todos los artículos, precios y datos del cliente y los transformará automáticamente en una **Orden de Trabajo** activa, marcando el presupuesto original como "Convertido" (lo que bloquea su futura modificación o duplicación).
+Si el cliente acepta el presupuesto, no tienes que volver a escribir todo el pedido:
+1. En la lista de presupuestos, haz clic en el botón **Convertir a Orden** (icono de flecha hacia la derecha).
+2. Confirma la acción. El sistema copiará automáticamente todos los datos del cliente, los artículos y los precios para crear una **Orden de Trabajo** activa, ahorrándote tiempo y evitando errores de dedo. El presupuesto original cambiará a estado "Convertido".
 
 ---
 
-## 6. Órdenes de Trabajo
+## 7. Órdenes de Trabajo (Pedidos Formales)
 
-Las órdenes de trabajo representan los compromisos comerciales firmes de la empresa. Controlan la producción, los abonos y la entrega física de los productos.
+Las órdenes de trabajo representan las ventas confirmadas que tus clientes ya pagaron o prometieron pagar y que tu taller debe fabricar o entregar.
 
-### Creación y Flujo de Trabajo
-1. Ve a **Ordenes** y presiona **Nueva Orden**.
-2. Selecciona un **Cliente**.
-3. Selecciona el **Responsable del Trabajo**:
-   - **Mostrador**: Si el trabajo es de entrega inmediata o producción simple en tienda.
-   - **Maquila**: Si requiere procesos externos o es para clientes mayoristas.
-4. Captura la **Fecha Estimada de Entrega**.
-5. Añade los productos. Para artículos de impresión en gran formato (como lonas o viniles), puedes capturar las dimensiones:
-   - **Ancho** y **Alto** en metros. El sistema calculará los metros cuadrados automáticamente para multiplicar por el precio base y arrojar el total del artículo.
-6. Registra notas y observaciones para el área de producción si es necesario.
-7. Haz clic en **Guardar Orden**.
+### Registro de Orden y Cálculo de Medidas ($m^2$)
+1. Ve a **Ordenes** en el menú de la izquierda y haz clic en **Nueva Orden**.
+2. Selecciona al **Cliente**.
+3. Elige al **Responsable del Trabajo**:
+   - **Mostrador**: Si el trabajo se hace rápido dentro del local o se entrega de inmediato.
+   - **Maquila**: Si el trabajo requiere procesos externos (proveedores mayoristas) o si es para un distribuidor grande.
+4. Selecciona la **Fecha Estimada de Entrega** (día y hora aproximada).
+5. Agrega los productos. Para artículos cobrados por medidas (como lonas, viniles o espectaculares):
+   - Escribe el **Ancho** y el **Alto** en metros (ejemplo: ancho `2.50`, alto `1.20`).
+   - El sistema calculará los metros cuadrados automáticamente, los multiplicará por el precio unitario y te dará el total exacto.
+6. Agrega notas e indicaciones específicas para el área de producción en el cuadro de texto.
+7. Haz clic en **Guardar Orden**. *En este momento, el stock de los productos utilizados se restará de forma automática.*
 
 ### Historial de Órdenes Completadas
-Las órdenes que han sido finalizadas y entregadas con éxito pasan al **Historial de Ordenes** (menú lateral **Historial**).
-* **Búsqueda e Infinitud**: Esta pantalla carga las órdenes completadas de forma paginada para optimizar el rendimiento. Simplemente desplázate hacia abajo en la pantalla y el sistema cargará automáticamente más registros de forma infinita.
-* **Búsqueda Dinámica**: La barra de búsqueda superior busca instantáneamente por ID de orden, notas, nombre del cliente, teléfono o nombre del producto ingresado.
-* **Flujo de Retorno (Reapertura)**: Si por error se marcó una orden como completada y se edita en el historial cambiando su estado a "Pendiente" o "En Proceso", **la orden desaparecerá del historial y regresará automáticamente a la lista de órdenes activas**.
+Una vez que el pedido es fabricado y entregado al cliente, se marca como completado y se archiva en la sección **Historial** del menú de la izquierda.
+* **Búsqueda Inteligente**: Puedes buscar órdenes archivadas escribiendo en la barra de búsqueda el número de orden, el nombre del cliente, su teléfono o incluso el nombre del producto vendido.
+* **Desplazamiento Infinito**: Para no saturar tu computadora con miles de registros viejos, el historial carga de 10 en 10. Para ver más órdenes antiguas, simplemente desplázate hacia abajo en la pantalla y verás cómo aparecen más automáticamente de forma infinita.
+* **Corregir errores de estado (Reapertura)**: Si marcaste una orden como completada por error y la quieres regresar al área de producción activa:
+  1. Busca la orden en la pantalla de **Historial**.
+  2. Haz clic en **Editar** y cambia su estado a "Pendiente" o "En Proceso".
+  3. Al guardar, la orden desaparecerá del historial y regresará automáticamente a la lista de órdenes activas de la bitácora de plotters.
 
 ---
 
-## 7. Órdenes Rápidas (Mostrador y Ventas de Paso)
+## 8. Órdenes Rápidas (Mostrador y Ventas de Paso)
 
-Este módulo (bajo el menú **Órdenes Rápidas**) está diseñado para registrar cobros rápidos en el mostrador donde no se requiere capturar dimensiones complejas o dar de alta a un cliente formal con datos extensos.
+Este módulo está diseñado para registrar ventas rápidas de mostrador que no requieren cálculos de metros cuadrados ni dar de alta fichas de cliente completas (ejemplo: copias, impresiones sencillas, engargolados o venta de material sobrante).
 
-### Registro de Venta Rápida
-1. Haz clic en **Nueva Orden Rápida**.
-2. Completa los campos:
-   - **Cliente (Opcional)**: Nombre del cliente de paso (ej: *Juan Pérez* o *Venta Mostrador*).
-   - **Teléfono (Opcional)**: Teléfono de contacto de 10 dígitos.
-   - **Concepto / Descripción (Obligatorio)**: Detalle del servicio cobrado (ej: *"Impresión de 20 copias a color, engargolado"*).
-   - **Total a Cobrar (Obligatorio)**: Importe total de la transacción.
-   - **Abono Inicial (Opcional)**: Dinero que entrega el cliente en ese instante. Si el cliente liquida de inmediato, ingresa la misma cantidad del total de la orden.
-   - **Método de Pago**: Se activa únicamente si el *Abono Inicial* es mayor a cero. Selecciona entre **Efectivo**, **Transferencia**, **Tarjeta** u **Otro**.
-3. Haz clic en **Guardar Orden**. El sistema registrará el movimiento en la caja abierta y creará el recibo de cobro rápido.
+### Registro Rápido y Atajos de Teclado
+1. Ve a **Órdenes Rápidas** y haz clic en **Nueva Orden Rápida**.
+2. Llena los datos básicos:
+   - **Cliente (Opcional)**: Escribe un nombre rápido (ej. *"Señora de las copias"*) o déjalo vacío para ventas generales.
+   - **Teléfono (Opcional)**: Por si necesitas llamarle cuando su trabajo de mostrador esté listo.
+   - **Concepto / Descripción (Obligatorio)**: Escribe lo que le estás cobrando (ej. *"15 copias a color y 1 engargolado"*).
+   - **Total a Cobrar (Obligatorio)**: El costo total de la compra.
+   - **Abono Inicial (Opcional)**: Lo que te entrega en ese momento. Si te paga todo de una vez, escribe la misma cantidad del total.
+   - **Método de Pago**: Se activa si el abono es mayor a 0 (Efectivo, Tarjeta, Transferencia u Otro).
+3. Haz clic en **Guardar Orden**.
 
-### Atajos de Teclado del Formulario
-Para agilizar la captura en la caja de cobro del mostrador:
-* **Enviar Formulario (Guardar rápido)**: Al estar escribiendo en el campo de texto de **Concepto / Descripción**, presionar la tecla **Enter** enviará y guardará el formulario de manera automática (siempre que los campos obligatorios estén completos).
-* **Insertar Salto de Línea**: Si necesitas agregar varios renglones en el concepto sin enviar el formulario, presiona **Shift + Enter**.
+* **Atajos de Teclado para agilizar el cobro**:
+  - **Guardar rápido con Enter**: Cuando termines de escribir el concepto en el cuadro de texto de descripción, simplemente presiona la tecla **Enter** en tu teclado. Si completaste los campos obligatorios, el formulario se guardará automáticamente sin necesidad de usar el ratón.
+  - **Saltar de línea**: Si deseas escribir varios renglones en la descripción sin que se guarde la orden, presiona las teclas **Shift + Enter** juntas.
 
-### Impresión de Pendientes Rápidas
-En la barra superior de la pantalla de Órdenes Rápidas encontrarás el botón **Imprimir Pendientes**. Al presionarlo, se generará y abrirá una ventana limpia con una tabla optimizada para impresora que enlista únicamente aquellas órdenes de mostrador rápidas que aún tienen un saldo de dinero pendiente de liquidar por parte del cliente, facilitando su cobro en caja física.
+### Impresión de Pendientes de Cobro
+En la esquina superior de la pantalla de Órdenes Rápidas verás el botón **Imprimir Pendientes**. Al hacer clic, el sistema generará una hoja limpia lista para imprimirse con una lista de los clientes de mostrador que aún te deben dinero. Es ideal para que el cajero revise rápidamente a quién cobrarle al final del día.
 
 ---
 
-## 8. Gestión de Pagos y Abonos
+## 9. Gestión de Pagos y Abonos
 
-Toda orden formal u orden rápida puede recibir múltiples abonos a lo largo del tiempo hasta completar su importe total.
+Lleva un registro claro de cada peso que entra a tu negocio. Una orden de trabajo o venta rápida puede recibir abonos parciales hasta quedar liquidada por completo.
 
-### Registro de Pagos (Vínculo de Órdenes o Pago Libre)
-Para abonar saldo a una cuenta:
-1. Ve a **Pagos** en el menú lateral y haz clic en **Nuevo Pago**.
-2. Configura los datos del pago:
-   - **Vincular a Orden**: Puedes buscar y seleccionar una Orden de Trabajo activa o una Orden Rápida de la lista para abonar directamente a su deuda. El sistema cargará el total de la orden, el saldo abonado a la fecha y te indicará el monto pendiente sugerido.
-   - **Pago Libre (Sin Orden)**: Permite registrar ingresos de dinero a la caja chica que no están amarrados a ningún cliente u orden del sistema (por ejemplo, venta de sobrantes de material, merma de papel, etc.).
-   - **Monto del Pago**: Cantidad de dinero recibida.
-   - **Método de Pago**: **Efectivo**, **Transferencia**, **Tarjeta** u **Otro**.
-   - **Concepto / Info**: Notas adicionales del movimiento (ejemplo: *"Abono en efectivo dejado por el hermano del cliente"*).
-3. Guarda el registro. El dinero entrará al saldo del turno activo de caja.
+### Registrar Abonos a Órdenes o Pagos Libres
+1. Ve a la sección **Pagos** del menú de la izquierda.
+2. Haz clic en el botón **Nuevo Pago**.
+3. Selecciona el tipo de cobro que harás:
+   - **Vincular a Orden**: Usa el buscador para seleccionar la orden de trabajo activa que el cliente va a pagar. El sistema te mostrará cuánto costó la orden, cuánto ha pagado antes y cuánto debe todavía.
+   - **Pago Libre (Sin Orden)**: Elige esto para registrar entradas de dinero extra que no provienen de una orden de trabajo (ejemplo: cobro por la venta de cartón/basura de plotters, renta de un espacio, etc.).
+4. Escribe el **Monto del Pago** (la cantidad de dinero que estás recibiendo).
+5. Selecciona el **Método de Pago** (Efectivo, Transferencia, Tarjeta o Crédito/Otro).
+6. **Concepto / Info**: Describe brevemente de qué es el pago. *Si elegiste "Pago Libre", escribir esta nota es obligatorio para justificar la entrada de efectivo.*
+7. Haz clic en **Guardar**. El dinero entrará al saldo de tu sesión de caja chica activa.
 
-### Impresión de Bitácoras de Pagos (Recibidos y Pendientes)
-Presionando el botón **Bitácora** (icono de libro) en la pantalla de pagos se abre el generador de reportes de cobranza:
+### Impresión de Bitácora de Pagos
+Haz clic en el botón **Bitácora** (el icono de libro abierto) en la pantalla de pagos para generar reportes financieros:
 
 1. **Tipo de Reporte**:
-   - **Pagos Recibidos**: Genera una lista de todo el dinero cobrado. Puedes filtrar por método de pago y tipo de transacción (Órdenes de Trabajo, Pagos Libres o Órdenes Rápidas).
-   - **Pagos Pendientes**: Enlista las órdenes activas en el sistema que tienen saldos pendientes por cobrar mayores a `$0.01`, ordenados por cliente.
-2. **Filtro de Período de Fecha**:
-   - Puedes seleccionar filtros rápidos de rango: **Hoy**, **Ayer**, **Esta semana** (desde el lunes), **Este mes** (desde el día 1) o **Todo el historial**.
-   - También cuenta con selectores manuales para ingresar un día específico (**Un día**) o un rango personalizado (**Desde / Hasta**).
-3. **Previsualización en Pantalla**: El cuadro inferior calcula de forma instantánea el conteo físico de registros y el monto total acumulado según los filtros elegidos antes de imprimir.
-4. **Impresión**: Presiona **Imprimir Bitácora** para mandar a la impresora o guardar como archivo PDF un reporte de cobro estructurado.
+   - **Pagos Recibidos**: Genera un informe detallado de todo el dinero cobrado. Puedes filtrarlo para ver sólo los pagos hechos en efectivo, tarjeta o transferencia.
+   - **Pagos Pendientes**: Crea una lista organizada de los clientes que tienen adeudos (saldos mayores a $0.01 centavos).
+2. **Selección de Rango de Fechas**:
+   - Puedes usar filtros rápidos como **Hoy**, **Ayer**, **Esta semana** (desde el lunes), **Este mes** (desde el día 1) o **Todo**.
+   - O bien, selecciona en el calendario un día específico (**Un día**) o un período personalizado (**Desde / Hasta**).
+3. **Previsualización**: En la parte inferior verás la suma total del dinero cobrado antes de imprimir, sirviendo como un arqueo virtual rápido.
+4. **Impresión**: Haz clic en **Imprimir Bitácora** para mandar el reporte en formato PDF o papel a tu impresora.
 
 ---
 
-## 9. Bitácora de Impresión y Producción
+## 10. Bitácora de Impresión y Plotters (Área de Producción)
 
-Este módulo (menú lateral **Bitácora de Impresión**) está destinado al personal del taller de producción y plotters para controlar el estatus físico de cada pieza de trabajo.
+Esta pantalla (opción **Bitácora de Impresión** en el menú de la izquierda) está diseñada especialmente para los operadores de maquinaria y diseñadores en el taller de producción.
 
-### Cola de Trabajo (Mostrador vs. Maquila)
-La pantalla principal cuenta con dos pestañas básicas:
-* **Bitácora Actual**: Muestra los trabajos en proceso de producción o entregas pendientes del día.
-* **Historial de Impresiones**: Registros históricos de impresiones ya entregadas.
-* Los trabajos se dividen visualmente por columnas de responsabilidad:
-  - **Most (Mostrador)**: Si tiene la marca, el operador sabe que es prioridad de entrega en local.
-  - **Maq (Maquila)**: Identifica órdenes que corresponden a clientes mayoristas.
+### Cola de Producción (Mostrador vs. Maquila)
+La pantalla tiene dos pestañas principales:
+* **Bitácora Actual**: Muestra los trabajos que están pendientes de imprimirse o entregarse hoy.
+* **Historial de Impresiones**: Registros de los trabajos que ya se entregaron.
+* **Columnas de Prioridad**:
+  - **Most (Mostrador)**: Tiene una marca visual rápida si es un trabajo urgente para entregar a un cliente que espera en tienda.
+  - **Maq (Maquila)**: Indica si es un pedido de mayoreo que requiere acabados o envíos externos especiales.
 
-### Alerta Visual por Entrega Atrasada (Parpadeo Rojo)
-El sistema monitorea constantemente el tiempo de entrega prometido al cliente (`hora_entrega`).
-* **Regla de Alerta**: Si la hora actual supera la hora de entrega configurada para el registro, y el trabajo aún **no** está completado, **toda la fila correspondiente al trabajo en la tabla comenzará a parpadear con un fondo color rojo brillante de forma infinita**.
-* Esta alerta visual ayuda a los operarios a identificar al instante qué impresiones tienen retraso y deben priorizarse en la fila de los plotters.
+### Alerta de Retraso (Parpadeo Rojo)
+Para evitar que se te pase el tiempo de entrega prometido al cliente, el sistema cuenta con una alerta visual de emergencia:
+* Si la hora de entrega configurada para un trabajo ya pasó y el operador aún **no** lo ha marcado como terminado, **toda la fila de ese pedido en la tabla comenzará a parpadear con un fondo color rojo brillante de forma infinita**.
+* Esto le avisa al instante al operador de plotters que ese trabajo lleva retraso y debe meterlo a la fila de impresión de inmediato.
 
-### Flujo de Marcado como Listo (Completado)
-* **Checkbox "Listo"**: Cuando el operador termine de imprimir, refinar e inspeccionar el trabajo, basta con que active la casilla de la columna **Listo** en la tabla.
-* **Comportamiento**: Al hacer clic en el checkbox, el sistema guardará el cambio de estatus y, de forma automática, **removerá el trabajo de la lista activa de la Bitácora Actual, trasladándolo al Historial de Impresiones** para mantener limpia la cola de producción.
-
-### Impresión de Bitácoras del Grupo de Producción
-En el encabezado de cada tarjeta de fecha en la bitácora de impresión se encuentra un botón **Imprimir**. Al presionarlo, el sistema abrirá un reporte físico optimizado de producción para ese día específico, que contiene la lista de trabajos, sus especificaciones de material, observaciones y el estado de pago, ideal para entregarse en papel a los operadores de maquinaria.
+### Flujo de "Listo" e Impresión de Hojas de Trabajo
+* **Checkbox "Listo"**: Cuando el operador termina de imprimir y terminar la lona o vinil, sólo debe marcar la casilla en la columna **Listo**. En ese momento, el pedido desaparece de la bitácora activa para no hacer bulto y se archiva en el historial de impresiones.
+* **Imprimir Hojas de Trabajo**: En la cabecera de cada fecha de la bitácora verás el botón **Imprimir**. Al presionarlo, el sistema genera una hoja de control física con los nombres de archivo de diseño, medidas de impresión, materiales y especificaciones de acabados de ese día para entregársela en papel a los operadores de plotters.
 
 ---
 
-## 10. Órdenes de Compra a Proveedores (Surtido Mayorista)
+## 11. Órdenes de Compra a Proveedores (Surtido Mayorista)
 
-Diseñado para gestionar pedidos de insumos o maquilas a proveedores externos.
+Esta sección sirve para levantar pedidos de maquila o insumos especiales a tus proveedores externos.
 
-### Creación con Columnas Dinámicas
+### Creación y Formulario Adaptable
 1. Ve a **Proveedores** -> pestaña **Órdenes de Compra** -> haz clic en **Nueva Orden de Proveedor**.
-2. Selecciona al **Proveedor** correspondiente.
-3. **Formulario Adaptable Automático**:
-   - En cuanto selecciones al proveedor, el formulario del modal **se rediseñará de manera dinámica**. En lugar de mostrar campos fijos, **cargará como entradas de texto las columnas que definiste en el perfil de ese proveedor** (por ejemplo, si configuraste al proveedor con columnas `pzas, ancho, alto, terminados`, el formulario te pedirá que captures esos datos específicos para cada renglón de pedido).
-4. Opcionalmente, vincula el pedido a una **Orden de Cliente** activa del sistema para saber a quién pertenece el material solicitado.
-5. Presiona **Guardar**.
+2. Selecciona al **Proveedor**.
+3. **Formulario Inteligente**:
+   - Al seleccionar al proveedor, el formulario se modificará automáticamente. Cargará los campos personalizados que diste de alta en la ficha del proveedor (Sección 2).
+   - *Ejemplo*: Si es tu maquilador de lonas, te aparecerán casillas para escribir ancho, alto y ojillos. Si es tu proveedor de camisas, te pedirá tallas y colores.
+4. **Vincular a Orden de Cliente (Opcional)**: Puedes seleccionar a qué pedido de cliente corresponde esta compra, para saber exactamente a quién pertenece la mercancía cuando el repartidor la traiga.
+5. Haz clic en **Guardar**.
 
-### Detalles, Exportación a PNG e Integración con WhatsApp
-Al hacer clic en el botón de **Detalles** (icono de ojo) de una orden de proveedor en la tabla, se abrirá el modal de resumen, el cual cuenta con tres potentes herramientas en su barra inferior:
+### Detalles, Imagen PNG y WhatsApp
+En la tabla de pedidos, haz clic en el botón de **Detalles** (icono de ojo) para ver el resumen de la orden de compra. En la parte inferior tendrás herramientas ideales para enviar el pedido:
 
-1. **Imprimir / PDF**: Genera una hoja de pedido limpia en blanco y negro con la tabla dinámica para imprimir o guardar como archivo digital PDF.
-2. **Guardar Imagen (PNG Crisp de alta definición)**:
-   - Captura toda la tarjeta de detalles del pedido y la procesa mediante `html2canvas` (con una escala doble y sanitización de colores OKLCH para evitar fallos de renderizado en pantallas modernas), descargando una imagen PNG nítida ideal para adjuntar en correos o mandar por plataformas de mensajería.
-3. **Enviar por WhatsApp (Vínculo Directo y Clipboard)**:
-   - Al presionarlo, el sistema genera la imagen del pedido, **la copia automáticamente al portapapeles de tu equipo** y abre el chat de WhatsApp Web correspondiente al teléfono del proveedor.
-   - **Acción**: Solo abre el chat recién cargado en tu pantalla de WhatsApp, presiona **Ctrl + V** para pegar la imagen nítida del pedido y envíala. El proveedor recibirá su lista de surtido de forma visual e inmediata.
-
----
-
-## 11. Módulo de Estadísticas y Gráficas de Ventas
-
-El panel de **Gráficas de Ventas** (barra lateral) permite evaluar la salud financiera del negocio mediante métricas y gráficas dinámicas utilizando la librería Recharts.
-
-### Gráficas Disponibles
-* **Ventas por Tiempo**: Gráfico de barras azul que muestra los ingresos facturados día con día a lo largo del período seleccionado.
-* **Top Productos (Ingresos)**: Gráfico de barras verde que enlista los 10 productos que más dinero han generado al negocio.
-* **Top Productos (Cantidad)**: Gráfico de barras naranja que enlista los 10 productos más vendidos por unidad física.
-
-### Filtros de Análisis
-* **Período**: Analiza la información **Por Semana**, **Por Mes**, **Por Año** o **Por Días** (permite ir agregando días específicos al análisis mediante un calendario y un botón de suma `+`).
-* **Origen de Ventas (Filtro por Canal)**: Filtra los ingresos mostrando únicamente ventas de **Órdenes de Trabajo**, **Órdenes Rápidas (Mostrador)** o **Ingresos Extra de Caja sin Orden**.
-* **Método de Pago**: Filtra estadísticas por efectivo, transferencia, tarjeta, etc.
-  - *Advertencia Importante*: Si se filtra por un método de pago particular, el sistema mostrará un banner informativo aclarando que el total de las gráficas reflejará el valor total de las órdenes que utilicen ese método de pago en sus transacciones, no solo la fracción parcial cobrada.
-* **Filtros Adicionales**: Permite segmentar por un **Producto** específico o por un **Año / Mes** en particular.
-
-### Permiso de Visualización "Hoy"
-* Si un usuario del sistema **no** tiene el permiso general `Estadisticas: Filtros` pero cuenta con el permiso `Estadisticas: Hoy`, el sistema bloqueará de forma automática todos los selectores de períodos, años, meses e ingresos. **El usuario quedará restringido a visualizar exclusivamente la gráfica de ingresos acumulados correspondientes al día de hoy**, protegiendo la información de facturación histórica general.
-
-### Impresión de Reporte Ejecutivo
-* Presionando el botón **Imprimir** en la barra superior, el sistema abrirá una plantilla ejecutiva horizontal (Letter Landscape) que clona los gráficos interactivos de la pantalla y genera un reporte en PDF listo para juntas comerciales o archivo físico.
+1. **Imprimir / PDF**: Genera un documento en blanco y negro para imprimir o archivar digitalmente.
+2. **Guardar Imagen (PNG Nítido)**: Descarga una foto digital clara de la orden de compra, con un formato limpio y nítido para que puedas mandarla por correo electrónico.
+3. **Enviar por WhatsApp al Proveedor**:
+   - Al hacer clic, el sistema genera la imagen de la orden, **la copia automáticamente al portapapeles de tu computadora** y te abre el chat de WhatsApp Web con el número del proveedor.
+   - **Acción del usuario**: Sólo ve al chat que se abrió, presiona **Ctrl + V** (pegar) en tu teclado y presiona enviar. El proveedor recibirá la lista del pedido en una imagen limpia y legible de forma inmediata.
 
 ---
 
-## 12. Guía de Resolución de Errores y Validaciones (Troubleshooting)
+## 12. Panel de Estadísticas y Gráficas de Ventas
 
-Esta sección describe detalladamente las advertencias, limitaciones y errores del sistema que podrías presenciar durante el uso operativo, explicando la causa técnica y la forma exacta de solucionarlos.
+El panel de **Gráficas de Ventas** es la herramienta del dueño del negocio para analizar cómo van las finanzas sin enredarse con números complejos.
 
-### A. Autenticación y Usuarios
-1. **Error: "Usuario inactivo" o falta de respuesta al dar clic en Ingresar.**
-   - *Causa*: El administrador del sistema ha configurado tu usuario con el estado "Inactivo" (`active: false` en base de datos).
-   - *Solución*: Pide a un administrador que ingrese a la sección **Usuarios**, busque tu nombre y reactive el conmutador de estado.
-2. **Error: Alerta roja de credenciales inválidas.**
-   - *Causa*: El nombre de usuario o contraseña ingresados no coinciden con la base de datos local.
-   - *Solución*: Revisa que no tengas activada la tecla Bloq Mayús y que no haya espacios al final del nombre de usuario.
+* **Gráficas Visuales**:
+  - *Ventas por Tiempo (Barra Azul)*: Te muestra cuánto dinero se ha facturado día a día en el período seleccionado.
+  - *Top Productos en Ingresos (Barra Verde)*: Cuáles son los 10 productos que más dinero de ganancia le traen al negocio.
+  - *Top Productos en Cantidad (Barra Naranja)*: Cuáles son los 10 productos que más unidades o metros se venden.
+* **Filtros Sencillos**: Puedes ver los datos por semana, por mes, por año o seleccionar días específicos del calendario. También puedes filtrar para ver sólo las ventas de mostrador (órdenes rápidas) o las de plotters (órdenes de trabajo).
+* **Filtro de Método de Pago**:
+  - Si filtras por un método de pago (por ejemplo, *Transferencia*), el sistema te mostrará una advertencia amarilla aclarando que el total de las gráficas reflejará el costo total de las órdenes que se pagaron por esa vía, no sólo los anticipos parciales.
+* **Imprimir Reporte Ejecutivo**: Haz clic en el botón de **Imprimir** en la barra superior y el sistema te generará un reporte horizontal limpio con todas las gráficas acomodadas para imprimir en papel o guardar en formato PDF para juntas.
 
-### B. Control de Caja y Registro de Gastos
-1. **Error: Bloqueo al intentar registrar cobros o abonos.**
-   - *Causa*: No existe ninguna sesión de caja abierta en el turno corriente.
-   - *Solución*: Ve a **Sesión de Caja**, haz clic en **Abrir Turno** e introduce el saldo inicial en efectivo.
-2. **Error: "El monto debe ser mayor a 0" al registrar un Gasto.**
-   - *Causa*: Intentaste registrar un egreso de caja chica con valor de cero, negativo o vacío.
-   - *Solución*: Ingresa un monto numérico positivo en el campo **Monto ($)*.
-3. **Error: "La descripción es requerida" o "La fecha es requerida" en Gastos.**
-   - *Causa*: Dejaste en blanco el concepto del egreso o el selector de calendario/hora.
-   - *Solución*: Describe detalladamente para qué se usó el dinero (ej. "Pago de garrafones de agua") y selecciona la fecha actual en el calendario del formulario.
-4. **Advertencia: "Diferencia de arqueo de caja" (Fondo destacado naranja/rojo en el Cierre de Caja).**
-   - *Causa*: El efectivo físico real ingresado en el arqueo no cuadra con el saldo esperado calculado automáticamente (`Saldo Inicial + Ingresos - Egresos`).
-   - *Solución*: No se trata de un error de bloqueo del sistema; es una advertencia de auditoría. Para poder cerrar el turno de caja chica, **debes escribir de manera obligatoria una nota justificativa** en el campo de texto inferior describiendo la causa del descuadre (ej: "Se devolvieron $10 pesos de cambio de más" o "Faltante por aclarar con administración"). Una vez escrita la observación, el botón **Confirmar Cierre** se habilitará.
+---
 
-### C. Presupuestos y Órdenes de Trabajo
-1. **Error: El botón de editar presupuesto o el formulario de artículos aparece deshabilitado.**
-   - *Causa*: El presupuesto ya fue convertido de forma formal en una Orden de Trabajo (`converted_to_order: true`). Para evitar discrepancias de cotización, el sistema congela el presupuesto original.
-   - *Solución*: Si necesitas hacer cambios, debes editar directamente la **Orden de Trabajo** creada en el menú lateral **Ordenes**, o bien, crear un presupuesto nuevo duplicando los conceptos del cliente.
-2. **Error: "El monto no puede exceder el pendiente: $X.XX" al registrar un abono.**
-   - *Causa*: Intentaste capturar un pago con un importe mayor a la deuda que le resta a la orden vinculada.
-   - *Solución*: Si necesitas cobrarle esa cantidad al cliente, primero debes editar el total de la orden de trabajo para reflejar los precios correctos, o bien, registrar el excedente de dinero como un **Pago Libre** sin vincular a la orden.
-3. **Error: "El campo 'Información/Concepto' es requerido para pagos sin orden" (en Pagos Libres).**
-   - *Causa*: Al dar de alta un pago que no está amarrado a una orden, no especificaste de qué concepto proviene el dinero.
-   - *Solución*: Llena obligatoriamente el campo **Información / Concepto** antes de presionar Guardar.
+## 13. Guía Práctica para Resolver Problemas (Troubleshooting)
 
-### D. Órdenes Rápidas (Mostrador)
-1. **Error: "El teléfono debe tener exactamente 10 dígitos" en el formulario rápido.**
-   - *Causa*: Escribiste un número de teléfono incompleto, con espacios, guiones o con el código de país.
-   - *Solución*: Captura únicamente los 10 dígitos numéricos corridos (ejemplo: `5512345678`). Si no cuentas con el teléfono, deja el campo totalmente en blanco, ya que es opcional.
-2. **Error: "El abono inicial no puede ser mayor al total de la orden".**
-   - *Causa*: Capturaste una cantidad de abono inicial superior al total especificado en la orden rápida.
-   - *Solución*: Ingresa un monto menor o igual al total a cobrar.
-3. **Error: "Debe seleccionar un método de pago para el abono inicial".**
-   - *Causa*: Indicaste que el cliente dejó un abono inicial mayor a $0, pero no definiste la vía de ingreso.
-   - *Solución*: Selecciona una opción del menú desplegable **Método de Pago** (Efectivo, Tarjeta, Transferencia u Otro).
+Aquí tienes soluciones rápidas a las dudas y pequeños problemas técnicos que podrían surgirte durante el día a día.
 
-### E. Integración de WhatsApp y Portapapeles
-1. **Error: No se abre WhatsApp Web al dar clic en enviar presupuesto o pedido de proveedor.**
-   - *Causa*: El cliente o proveedor no tiene un número telefónico válido registrado en su ficha de catálogo.
-   - *Solución*: Modifica la ficha del cliente/proveedor y asegúrate de agregar un teléfono de 10 dígitos.
-2. **Error: Al intentar pegar (Ctrl+V) la cotización en WhatsApp, no aparece ninguna imagen o se pega un texto antiguo.**
-   - *Causa*: Tu navegador de internet no tiene otorgados los permisos para escribir datos en el portapapeles del sistema (Clipboard API), lo cual ocurre a veces en conexiones locales HTTP sin certificados de seguridad SSL.
-   - *Solución*: SETH tiene un sistema de respaldo automático. En cuanto diste clic en el botón de WhatsApp, el sistema descargó un archivo de imagen PNG directamente a tu computadora (con nombre `presupuesto-[ID].png` o `pedido-proveedor-[ID].png`). Simplemente ve al chat del cliente en WhatsApp Web, haz clic en el icono de adjuntar archivo (+), selecciona **Fotos y videos**, busca el archivo descargado en tu carpeta de descargas e envíalo manualmente.
+### A. Problemas de Inicio de Sesión y Usuarios
+* **El sistema no hace nada al hacer clic en "Iniciar Sesión" o da un error en rojo.**
+  - *Causa*: Estás escribiendo mal el nombre de usuario o la contraseña, o tu cuenta fue desactivada por el administrador.
+  - *Solución*: Revisa que no tengas activado el Bloqueo de Mayúsculas (`Bloq Mayús`) en tu teclado. Si estás seguro de escribirla bien, pídele a un administrador que entre a la pantalla de **Usuarios** y revise si tu cuenta está en estado "Activo".
+* **Quiero borrar un usuario pero no veo el botón de eliminar.**
+  - *Causa*: Por seguridad contable, no se permite borrar usuarios para no dejar huérfanas las ventas que hicieron en el pasado.
+  - *Solución*: Edita el perfil del usuario y desactiva el interruptor de estado. Con eso, el usuario ya no podrá ingresar a la aplicación pero sus registros del pasado se guardarán con su nombre.
 
-### F. Proveedores e Insumos
-1. **Error: La orden de proveedor aparece con campos por defecto ('pzas' y 'descripción') en lugar de sus columnas personalizadas.**
-   - *Causa*: El proveedor seleccionado no tiene columnas dinámicas dadas de alta en su perfil del catálogo de proveedores.
-   - *Solución*: Ve al **Directorio de Proveedores**, presiona editar (icono de lápiz) sobre el proveedor correspondiente, y en el campo **Columnas Personalizadas** ingresa sus columnas separadas por comas (ejemplo: `cantidad, ancho, alto, ojillos, material`). Guarda y vuelve a abrir el modal de orden.
+### B. Dudas sobre la Caja Chica y Dinero
+* **El sistema me arroja un error y no me deja hacer un cobro o registrar un abono.**
+  - *Causa*: Intentaste cobrar con la caja cerrada.
+  - *Solución*: Ve a **Sesión de Caja**, haz clic en **Abrir Turno** e introduce tu saldo inicial en efectivo.
+* **Me aparece una advertencia en rojo/naranja al querer cerrar el turno y no me deja dar clic en Confirmar Cierre.**
+  - *Causa*: El efectivo físico real que contaste en el cajón de dinero no coincide con el balance que calculó la computadora (Saldo Esperado). Para evitar cierres descuadrados sin justificación, el botón se bloquea.
+  - *Solución*: Escribe de forma obligatoria una explicación en el campo de notas (ejemplo: *"Falta de cambio de $20 pesos"* o *"Se compraron refrescos para el taller"*). En cuanto escribas cualquier texto que justifique la diferencia, el botón **Confirmar Cierre** se desbloqueará para que termines tu turno.
+* **Quiero agregar stock a un producto o plantilla pero el sistema me da error.**
+  - *Causa*: Tienes la sesión de caja cerrada. Recuerda que al surtir inventario, el sistema registra de forma automática un gasto en la caja chica por el costo de la mercancía.
+  - *Solución*: Abre el turno de la caja chica primero en **Sesión de Caja** y luego realiza el surtido de stock.
 
-### G. Restricciones de Permisos
-1. **Error: Al dar clic en "Nueva Orden de Proveedor" o "Ver Mayoristas" el sistema no responde o muestra acceso denegado.**
-   - *Causa*: Tu usuario tiene activo un rol limitado y carece del permiso de seguridad `Crear Orden Mayorista` o `Ver Mayoristas`.
-   - *Solución*: Solicita a un usuario administrador que eleve tus permisos en la pantalla de **Gestión de Permisos** para habilitarte el acceso.
+### C. Dudas sobre Stock e Inventario
+* **¿Por qué cambió el stock de un producto si yo no lo he surtido?**
+  - *Causa*: Al guardar una orden de trabajo real de un cliente, el sistema resta las piezas en automático. Si la orden se cambia a "Cancelado" o se elimina, las piezas se devuelven de inmediato al inventario.
+* **¿Qué hago si quiero registrar que compré material pero no quiero que afecte a la caja de dinero?**
+  - *Causa*: SETH está diseñado para mantener una contabilidad real. Toda entrada de mercancía que cueste dinero debe registrarse como un egreso de caja chica para que el arqueo de efectivo de fin de turno sea correcto.
+  - *Solución*: Si el material fue un regalo o se pagó con dinero ajeno a la caja chica de la tienda, registra el surtido de stock colocando el **Costo Total** en `$0.00` en la ventana de surtido. Así el stock aumentará sin generar egresos en tu sesión de caja.
+
+### D. Dudas sobre Cotizaciones y Envío por WhatsApp
+* **Al dar clic en enviar cotización por WhatsApp, no se abre el chat del cliente.**
+  - *Causa*: El número telefónico del cliente en el catálogo está incompleto o tiene caracteres extraños (guiones, espacios, paréntesis).
+  - *Solución*: Ve a **Clientes**, edita la ficha del cliente y asegúrate de que el teléfono tenga exactamente 10 números corridos sin ningún otro carácter (ejemplo: `5512345678`).
+* **Presiono Ctrl + V (Pegar) en WhatsApp Web pero no aparece la imagen de la cotización o se pega otra cosa.**
+  - *Causa*: El navegador de internet (Chrome, Edge, Firefox) bloquea la copia automática en el portapapeles debido a configuraciones de seguridad de tu computadora.
+  - *Solución*: No te preocupes. Cuando haces clic en el botón de WhatsApp, el sistema descarga automáticamente la imagen a tu computadora. Busca en tu carpeta de **Descargas** un archivo llamado `presupuesto-[Número].png` y arrástralo directamente al chat de tu cliente en WhatsApp Web, o mándalo como un archivo adjunto usando el icono de clip (`+`).
+
+### E. Dudas sobre Plotters y Producción
+* **Una fila en la Bitácora de Impresión parpadea en color rojo brillante.**
+  - *Causa*: La hora de entrega prometida al cliente ya se venció y el trabajo aún no está marcado como "Listo".
+  - *Solución*: Imprime el trabajo con prioridad. Una vez terminado y revisado, haz clic en la casilla **Listo** de la fila para apagar el parpadeo y archivarlo.
+* **Marqué una orden como "Listo" por error en la Bitácora y desapareció. ¿Cómo la recupero?**
+  - *Causa*: Al marcar la casilla "Listo", el sistema traslada el trabajo de la lista activa al **Historial de Impresiones** para mantener limpia la pantalla de producción.
+  - *Solución*: Ve a la pestaña **Historial de Impresiones** en la bitácora de impresión, localiza el trabajo y desmarca la casilla "Listo". La orden regresará al instante a la lista de trabajos activos.
+
+### F. Problemas Técnicos y Base de Datos
+* **Al iniciar el programa me sale un error de conexión a la Base de Datos.**
+  - *Causa*: Si tu sistema está configurado para usar base de datos en red (PostgreSQL), podría haber un fallo de conexión a internet o de red local. Si está configurado localmente (SQLite), puede haber un problema de permisos en la carpeta del archivo.
+  - *Solución*: 
+    1. Revisa que tu computadora tenga conexión estable a la red/internet.
+    2. Asegúrate de que el archivo de configuración `.env` en la carpeta del programa tenga el tipo de base de datos (`DB_TYPE=sqlite` para uso local sencillo o `DB_TYPE=postgres` para uso en red) y las credenciales correctas.
+    3. Si el problema persiste, reinicia la aplicación. La base de datos realiza comprobaciones y actualizaciones de estructura de forma totalmente automática al iniciar, por lo que no es necesario realizar ningún ajuste manual de código.

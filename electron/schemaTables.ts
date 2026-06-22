@@ -215,6 +215,24 @@ const schemaTables: string = `
     active               BOOLEAN       NOT NULL DEFAULT TRUE
   );
 
+  CREATE TABLE IF NOT EXISTS local_licenses (
+    id                     SERIAL        PRIMARY KEY,
+    client_code            VARCHAR(255)  NOT NULL UNIQUE,
+    status                 VARCHAR(50)   NOT NULL,
+    is_suspended           BOOLEAN       NOT NULL DEFAULT FALSE,
+    last_online_validation TIMESTAMPTZ   NOT NULL,
+    created_at             TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+  );
+
+  CREATE TABLE IF NOT EXISTS local_devices (
+    id                     SERIAL        PRIMARY KEY,
+    hardware_id            VARCHAR(255)  NOT NULL UNIQUE,
+    device_name            VARCHAR(255),
+    is_blocked             BOOLEAN       NOT NULL DEFAULT FALSE,
+    created_at             TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+  );
+
+
 `;
 
 export default schemaTables;

@@ -38,10 +38,11 @@ const queryClient = new QueryClient({
   }
 })
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useThemeStore } from '@/store/theme'
 import { enable as enableDarkMode, disable as disableDarkMode } from 'darkreader'
 import UpdateBanner from './components/layout/UpdateBanner'
+import LicenseBlockScreen from './components/layout/LicenseBlockScreen'
 
 function AppWrapper() {
   // Initialize auth hook to check authentication status
@@ -52,6 +53,48 @@ function AppWrapper() {
 
 function App() {
   const theme = useThemeStore((state) => state.theme)
+  const [license, setLicense] = useState<{
+    success: boolean;
+    status: 'checking' | 'demo' | 'activo' | 'suspended' | 'blocked' | 'expired' | 'limit_exceeded' | 'invalid_config' | 'validation_required' | 'no_license';
+    clientCode: string;
+    hardwareId: string;
+    deviceName: string;
+    message?: string;
+  }>({
+    success: true, // Permite el inicio inmediato en segundo plano
+    status: 'checking',
+    clientCode: '',
+    hardwareId: '',
+    deviceName: '',
+  });
+
+  const checkLicenseStatus = async () => {
+    try {
+      const res = await window.api.checkLicense();
+      setLicense({
+        success: res.success,
+        status: res.status,
+        clientCode: res.clientCode,
+        hardwareId: res.hardwareId,
+        deviceName: res.deviceName,
+        message: res.message,
+      });
+    } catch (e) {
+      console.error('Error verifying license status:', e);
+      setLicense({
+        success: false,
+        status: 'no_license',
+        clientCode: '',
+        hardwareId: '',
+        deviceName: '',
+        message: 'No se pudo comunicar con el servicio de licencias.',
+      });
+    }
+  };
+
+  useEffect(() => {
+    checkLicenseStatus();
+  }, []);
 
   useEffect(() => {
     if (theme === 'dark') {
@@ -133,6 +176,19 @@ function App() {
     return () => window.removeEventListener('keydown', handleEscape);
   }, []);
 
+  if (!license.success && license.status !== 'checking') {
+    return (
+      <LicenseBlockScreen
+        status={license.status as any}
+        clientCode={license.clientCode}
+        hardwareId={license.hardwareId}
+        deviceName={license.deviceName}
+        message={license.message}
+        onRetry={checkLicenseStatus}
+      />
+    );
+  }
+
   return (
     <QueryClientProvider client={queryClient}>
       <AppWrapper />
@@ -146,3 +202,4 @@ function App() {
 }
 
 export default App
+

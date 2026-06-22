@@ -219,6 +219,18 @@ declare global {
       openExternal: (url: string) => Promise<void>;
       openWhatsApp: () => Promise<void>;
 
+      // Sistema de Licencias
+      checkLicense: () => Promise<{
+        success: boolean;
+        status: 'demo' | 'activo' | 'suspended' | 'blocked' | 'expired' | 'limit_exceeded' | 'invalid_config' | 'validation_required' | 'no_license';
+        clientCode: string;
+        daysRemaining?: number;
+        message?: string;
+        hardwareId: string;
+        deviceName: string;
+      }>;
+
+
       // Actualizaciones automáticas
       updater: {
         onUpdateAvailable: (callback: (info: { version: string }) => void) => void;

@@ -233,6 +233,9 @@ contextBridge.exposeInMainWorld('api', {
   // WhatsApp
   openWhatsApp: (): Promise<unknown> => ipcRenderer.invoke('whatsapp:open'),
 
+  // Sistema de Licencias
+  checkLicense: (): Promise<any> => ipcRenderer.invoke('license:check'),
+
   // Actualizaciones automáticas
   updater: {
     onUpdateAvailable: (callback: (info: { version: string }) => void): void => {

@@ -4,7 +4,7 @@ import { spawn } from 'child_process';
 import { autoUpdater } from 'electron-updater';
 import * as log from 'electron-log';
 import * as http from 'http';
-import 'dotenv/config';
+import './env';
 
 import { initDb } from './db';
 import authService from './services/authService';
@@ -143,7 +143,7 @@ function createWindow(): void {
   win.on('closed', () => { app.quit(); });
 
   if (app.isPackaged) {
-    win.loadFile(path.join(__dirname, '../renderer/dist/index.html'));
+    win.loadFile(path.join(__dirname, '../../renderer/dist/index.html'));
   } else {
     const loadDevServer = () => {
       http.get('http://localhost:5173', () => {

@@ -1,3 +1,4 @@
+import '../env';
 import { machineIdSync } from 'node-machine-id';
 import * as os from 'os';
 import * as fs from 'fs';
@@ -157,15 +158,21 @@ class LicenseService {
       try {
         console.log(`Validating license online for client: ${clientCode}, device: ${deviceName}`);
         
-        // 1. Fetch Client status from Supabase
-        const { data: clientData, error: clientErr } = await supabase
-          .from('clientes')
-          .select('client_code, max_devices, status, is_suspended')
-          .eq('client_code', clientCode)
-          .single();
+        // Call the secure RPC function instead of querying tables directly
+        const { data, error } = await supabase.rpc('registrar_o_validar_dispositivo', {
+          p_hardware_id: hardwareId,
+          p_client_code: clientCode,
+          p_device_name: deviceName
+        });
 
-        if (clientErr || !clientData) {
-          console.error('Client not found or query failed in Supabase:', clientErr);
+        if (error || !data || data.length === 0) {
+          console.error('RPC validation failed or returned no data:', error);
+          throw new Error(error?.message || 'Error al validar dispositivo por RPC');
+        }
+
+        const result = data[0] as { resultado: string; client_status: string; first_boot: string };
+
+        if (result.resultado === 'client_not_found') {
           return await handleLicenseFailure({
             success: false,
             status: 'invalid_config',
@@ -176,9 +183,8 @@ class LicenseService {
           });
         }
 
-        // 2. Check if client is suspended
-        if (clientData.is_suspended) {
-          await saveLocalLicense(clientCode, clientData.status, true);
+        if (result.resultado === 'suspended') {
+          await saveLocalLicense(clientCode, result.client_status || 'demo', true);
           return await handleLicenseFailure({
             success: false,
             status: 'suspended',
@@ -189,36 +195,32 @@ class LicenseService {
           });
         }
 
-        // 3. Fetch device status from Supabase
-        const { data: deviceData, error: deviceErr } = await supabase
-          .from('dispositivos')
-          .select('hardware_id, client_code, device_name, is_blocked, first_boot, last_connection')
-          .eq('hardware_id', hardwareId)
-          .single();
+        if (result.resultado === 'blocked') {
+          await saveLocalDevice(hardwareId, deviceName, true);
+          return await handleLicenseFailure({
+            success: false,
+            status: 'blocked',
+            clientCode,
+            hardwareId,
+            deviceName,
+            message: 'Esta computadora ha sido bloqueada. Por favor, contacte a soporte.'
+          });
+        }
 
-        if (deviceData) {
-          // Device is registered
-          if (deviceData.is_blocked) {
-            await saveLocalDevice(hardwareId, deviceName, true);
-            return await handleLicenseFailure({
-              success: false,
-              status: 'blocked',
-              clientCode,
-              hardwareId,
-              deviceName,
-              message: 'Esta computadora ha sido bloqueada. Por favor, contacte a soporte.'
-            });
-          }
+        if (result.resultado === 'limit_exceeded') {
+          return await handleLicenseFailure({
+            success: false,
+            status: 'limit_exceeded',
+            clientCode,
+            hardwareId,
+            deviceName,
+            message: 'Límite de dispositivos excedido. Contacte a soporte para añadir más cupos.'
+          });
+        }
 
-          // Update connection status in Supabase
-          await supabase
-            .from('dispositivos')
-            .update({ last_connection: new Date().toISOString(), device_name: deviceName })
-            .eq('hardware_id', hardwareId);
-
-          // Evaluate Demo Period
-          if (clientData.status === 'demo') {
-            const firstBootDate = new Date(deviceData.first_boot);
+        if (result.resultado === 'authorized') {
+          if (result.client_status === 'demo') {
+            const firstBootDate = new Date(result.first_boot);
             const timeDiff = new Date().getTime() - firstBootDate.getTime();
             const daysDiff = timeDiff / (1000 * 3600 * 24);
             const daysRemaining = Math.max(0, 2 - daysDiff);
@@ -261,76 +263,9 @@ class LicenseService {
             deviceName,
             message: 'Licencia activa y validada.'
           };
-
-        } else {
-          // Device is NOT registered
-          // 4. Count devices to check limit
-          const { count, error: countErr } = await supabase
-            .from('dispositivos')
-            .select('*', { count: 'exact', head: true })
-            .eq('client_code', clientCode)
-            .eq('is_blocked', false); // Only active ones
-
-          if (countErr) {
-            console.error('Error counting devices:', countErr);
-            throw new Error('Error al contar los dispositivos del cliente.');
-          }
-
-          const currentCount = count || 0;
-          if (currentCount >= clientData.max_devices) {
-            return await handleLicenseFailure({
-              success: false,
-              status: 'limit_exceeded',
-              clientCode,
-              hardwareId,
-              deviceName,
-              message: `Límite de dispositivos excedido (${currentCount} de ${clientData.max_devices}). Contacte a soporte para añadir más cupos.`
-            });
-          }
-
-          // Register new device
-          const { error: regErr } = await supabase
-            .from('dispositivos')
-            .insert({
-              hardware_id: hardwareId,
-              client_code: clientCode,
-              device_name: deviceName,
-              is_blocked: false,
-              first_boot: new Date().toISOString(),
-              last_connection: new Date().toISOString()
-            });
-
-          if (regErr) {
-            console.error('Error registering new device:', regErr);
-            throw new Error('No se pudo registrar esta computadora en el servidor.');
-          }
-
-          // Success, determine status
-          if (clientData.status === 'demo') {
-            await saveLocalLicense(clientCode, 'demo', false);
-            await saveLocalDevice(hardwareId, deviceName, false);
-            return {
-              success: true,
-              status: 'demo',
-              clientCode,
-              hardwareId,
-              deviceName,
-              daysRemaining: 2,
-              message: 'Licencia de prueba iniciada (2 días restantes).'
-            };
-          }
-
-          await saveLocalLicense(clientCode, 'activo', false);
-          await saveLocalDevice(hardwareId, deviceName, false);
-          return {
-            success: true,
-            status: 'activo',
-            clientCode,
-            hardwareId,
-            deviceName,
-            message: 'Computadora registrada. Licencia activa.'
-          };
         }
+
+        throw new Error(`Resultado desconocido de la validación: ${result.resultado}`);
 
       } catch (err) {
         console.error('Online license verification failed, falling back to offline validation:', err);

@@ -1,3 +1,4 @@
+import './env';
 import * as path from 'path';
 import * as bcrypt from 'bcryptjs';
 import db, { initDb } from './db';

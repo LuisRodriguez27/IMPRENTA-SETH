@@ -148,7 +148,7 @@ const OrderItemRow: React.FC<OrderItemRowProps> = ({
               className="text-xs px-2 py-1 h-7"
             >
               <Layers size={12} className="mr-1" />
-              Plantillas ({templates.length})
+              Familias ({templates.length})
             </Button>
           </div>
 

@@ -666,7 +666,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
               <div className="flex items-center justify-between mb-4 sticky top-0 bg-white z-20 py-3 -mx-6 px-6 border-b">
                 <div className="flex items-center gap-2">
                   <Package className="h-5 w-5 text-gray-600" />
-                  <h3 className="text-lg font-medium text-gray-900">Productos y Plantillas</h3>
+                  <h3 className="text-lg font-medium text-gray-900">Familias y Productos</h3>
                   <span className="text-sm text-gray-500">({budgetItems.length} items)</span>
                   {budgetItems.length > 0 && (
                     <div className="flex items-center gap-2 ml-4 px-3 py-1 bg-green-50 rounded-full">
@@ -816,7 +816,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
                                 className="text-xs px-2 py-1 h-7"
                               >
                                 <Layers size={12} className="mr-1" />
-                                Plantillas ({templates.length})
+                                Familias ({templates.length})
                               </Button>
                             </div>
 

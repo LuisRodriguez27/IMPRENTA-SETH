@@ -27,7 +27,7 @@ const TemplateStats: React.FC<TemplateStatsProps> = ({ templates }) => {
             <Package className="h-5 w-5 text-blue-600" />
           </div>
           <div>
-            <p className="text-sm text-gray-600">Total Plantillas</p>
+            <p className="text-sm text-gray-600">Total Productos</p>
             <p className="text-2xl font-bold text-gray-900">{totalTemplates}</p>
           </div>
         </div>

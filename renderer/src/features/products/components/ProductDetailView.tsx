@@ -274,7 +274,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
             <span className="text-gray-500 font-normal mr-2">#{product.id}</span>
             {product.name}
           </h1>
-          <p className="text-gray-600">Gestión de producto y plantillas</p>
+          <p className="text-gray-600">Gestión de familias y producto </p>
         </div>
         <Button
           onClick={openEditProductModal}
@@ -418,7 +418,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
-                Plantillas ({filteredTemplates.length})
+                Productos ({filteredTemplates.length})
               </h2>
               <p className="text-sm text-gray-600">
                 Configuraciones personalizadas para este producto
@@ -429,7 +429,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
               className="flex items-center gap-2"
             >
               <Plus size={16} />
-              Nueva Plantilla
+              Nuevo Producto
             </Button>
           </div>
         </div>

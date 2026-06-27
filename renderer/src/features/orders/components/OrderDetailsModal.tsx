@@ -620,7 +620,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                 <div className="px-6 py-4 border-b border-gray-200">
                   <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                     <Package className="h-5 w-5" />
-                    Productos y Plantillas
+                    Familias y Productos
                     <span className="text-sm font-normal text-gray-500">
                       ({orderProducts.length} items)
                     </span>

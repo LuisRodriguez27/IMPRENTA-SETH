@@ -111,7 +111,7 @@ const CreateTemplateModal: React.FC<CreateTemplateModalProps> = ({
             <div>
               <h2 className="text-lg font-semibold text-gray-900">Nueva Plantilla</h2>
               <p className="text-sm text-gray-500">
-                Crear plantilla para: <span className="font-medium">{product.name}</span>
+                Crear producto para: <span className="font-medium">{product.name}</span>
               </p>
             </div>
           </div>
@@ -137,7 +137,7 @@ const CreateTemplateModal: React.FC<CreateTemplateModalProps> = ({
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
               <div>
-                <span className="font-medium">Producto:</span> {product.name}
+                <span className="font-medium">Familia:</span> {product.name}
               </div>
               <div>
                 <span className="font-medium">Precio base:</span> ${product.price.toFixed(2)} MXN

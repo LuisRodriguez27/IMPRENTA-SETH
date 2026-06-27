@@ -444,7 +444,7 @@ const ProductsPage: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestión de Productos</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Gestión de Familias de Productos</h1>
           <p className="text-gray-600 mt-2">
             Administra tu catálogo de productos personalizados
           </p>

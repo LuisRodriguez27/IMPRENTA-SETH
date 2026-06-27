@@ -38,7 +38,7 @@ export async function runMigrations(db: Db, client: PoolClient): Promise<void> {
     CREATE TABLE IF NOT EXISTS schema_migrations (
       version    INTEGER      PRIMARY KEY,
       name       VARCHAR(255) NOT NULL,
-      applied_at TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+      applied_at TIMESTAMPTZ  NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `);
 

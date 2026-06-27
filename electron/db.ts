@@ -198,6 +198,12 @@ function translatePgToSqlite(sql: string, params: unknown[] = []): { sql: string
   // 5. Remover "AT TIME ZONE '...'"
   translatedSql = translatedSql.replace(/\bAT\s+TIME\s+ZONE\s+'[^']+'/gi, '');
 
+  // 6. Traducir TIMESTAMPTZ a DATETIME para SQLite
+  translatedSql = translatedSql.replace(/\bTIMESTAMPTZ\b/gi, 'DATETIME');
+
+  // 7. Traducir DEFAULT NOW() a DEFAULT CURRENT_TIMESTAMP
+  translatedSql = translatedSql.replace(/\bDEFAULT\s+NOW\(\)/gi, 'DEFAULT CURRENT_TIMESTAMP');
+
   return { sql: translatedSql, params: newParams };
 }
 

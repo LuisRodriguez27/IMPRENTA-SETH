@@ -203,7 +203,7 @@ const Sidebar: React.FC = () => {
           )}
           style={{ transform: `translateY(${indicator.top}px)`, height: indicator.height }}
         />
-        <div className="space-y-2"></div>
+        <div className="space-y-2">
         {menuItems.map((item) => {
           // Solo ocultar la opción de Usuarios si no tiene permiso
           if (item.id === 'users' && !canAccess('Gestionar Usuario')) {
@@ -258,7 +258,7 @@ const Sidebar: React.FC = () => {
             </Link>
           )
         })}
-        {/* </div> */}
+        </div>
       </nav>
 
       {/* WhatsApp, tema y Acerca de al fondo */}

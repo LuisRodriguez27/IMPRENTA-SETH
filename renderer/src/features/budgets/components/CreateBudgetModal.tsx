@@ -408,7 +408,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
     // Agregar plantillas si corresponde
     if (category === 'all' || category === 'templates') {
       templates.forEach(template => {
-        const baseProduct = products.find(p => p.id === template.product_id);
+        const baseProduct = products.find(p => p.id === (template.productId ?? template.product_id));
         const templateName = baseProduct ? `${baseProduct.name} (Producto)` : `Producto #${template.id}`;
 
         const matchesSearch = !searchTerm ||
@@ -439,7 +439,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
     sortedProducts.forEach(productItem => {
       grouped.push(productItem);
       const children = templateItems
-        .filter(t => t.item.product_id === productItem.item.id)
+        .filter(t => (t.item.productId ?? t.item.product_id) === productItem.item.id)
         .sort((a, b) => (a.item as any).name.localeCompare((b.item as any).name));
       children.forEach(child => {
         usedTemplateIds.add(child.item.id);
@@ -470,7 +470,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
       setSearchTerms(prev => ({ ...prev, [index]: `${product.name}${product.serial_number ? ` (${product.serial_number})` : ''}` }));
     } else {
       const template = item as ProductTemplate;
-      const baseProduct = products.find(p => p.id === template.product_id);
+      const baseProduct = products.find(p => p.id === (template.productId ?? template.product_id));
       const templateName = baseProduct ? `${baseProduct.name} (Producto)` : `Producto #${template.id}`;
 
       updateBudgetItem(index, {

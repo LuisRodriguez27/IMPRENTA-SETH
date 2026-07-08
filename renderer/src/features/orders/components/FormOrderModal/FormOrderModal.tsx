@@ -260,10 +260,10 @@ const CreateOrderModal: React.FC<CreateOrderModalProps> = ({
                         <Package className="h-12 w-12 text-gray-300" />
                         <Layers className="h-12 w-12 text-gray-300" />
                       </div>
-                      <p className="text-lg font-medium text-gray-700 mb-2">No hay productos o plantillas agregados</p>
+                      <p className="text-lg font-medium text-gray-700 mb-2">No hay familias o productos agregados</p>
                       <p className="text-sm mb-4">Haz clic en &quot;Agregar Item&quot; para comenzar a {orderForm.isEditMode ? 'editar' : 'crear'} tu orden</p>
                       <div className="flex flex-col items-center gap-2 text-xs text-gray-400">
-                        <p>💡 <strong>Tip:</strong> Puedes crear productos y plantillas sobre la marcha</p>
+                        <p>💡 <strong>Tip:</strong> Puedes crear familias y productos sobre la marcha</p>
                         <div className="flex items-center gap-4">
                           <span>🏷️ Filtra por tipo de item</span>
                         </div>

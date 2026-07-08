@@ -56,7 +56,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
   const [budgetItems, setBudgetItems] = useState<BudgetFormItem[]>([]);
   const [searchTerms, setSearchTerms] = useState<{ [key: number]: string }>({});
   const [showDropdowns, setShowDropdowns] = useState<{ [key: number]: boolean }>({});
-  const [dropdownPositions, setDropdownPositions] = useState<{ [key: number]: { top: number, left: number, width: number, maxHeight?: number } }>({});
+  const [dropdownPositions, setDropdownPositions] = useState<{ [key: number]: { top?: number, bottom?: number, left: number, width: number, maxHeight?: number } }>({});
   const [selectedCategory, setSelectedCategory] = useState<{ [key: number]: 'all' | 'products' | 'templates' }>({});
   const [nextBudgetId, setNextBudgetId] = useState<number>(0);
 
@@ -113,7 +113,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
             return {
               type: 'template' as const,
               id: bp.template_id || 0,
-              name: bp.template_base_product_name ? `${bp.template_base_product_name} (Plantilla)` : (bp.product_name ? `${bp.product_name} (Plantilla)` : 'Plantilla'),
+              name: bp.template_base_product_name ? `${bp.template_base_product_name} (Producto)` : (bp.product_name ? `${bp.product_name} (Producto)` : 'Producto'),
               quantity: bp.quantity,
               unit_price: bp.unit_price,
               dimensions: bp.template_dimensions || undefined,
@@ -193,13 +193,24 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
         left = viewportWidth - rect.width - 20 + window.scrollX;
       }
 
-      // Calcular altura máxima disponible hacia abajo
+      // Calcular espacio disponible hacia abajo y hacia arriba, y abrir hacia
+      // donde haya más lugar cuando no alcance por debajo del input
       const spaceBelow = viewportHeight - rect.bottom - 20;
-      const maxHeight = Math.max(150, Math.min(300, spaceBelow));
+      const spaceAbove = rect.top - 20;
+      const openAbove = spaceBelow < 200 && spaceAbove > spaceBelow;
+
+      const maxHeight = Math.max(150, Math.min(450, openAbove ? spaceAbove : spaceBelow));
 
       setDropdownPositions(prev => ({
         ...prev,
-        [index]: {
+        [index]: openAbove
+          ? {
+              bottom: viewportHeight - rect.top + window.scrollY,
+              left: left,
+              width: rect.width,
+              maxHeight: maxHeight
+            }
+          : {
           top: rect.bottom + window.scrollY,
           left: left,
           width: rect.width,
@@ -259,11 +270,11 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
     };
 
     window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleResize);
+    window.addEventListener('scroll', handleResize, true);
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleResize);
+      window.removeEventListener('scroll', handleResize, true);
     };
   }, [showDropdowns]);
 
@@ -398,7 +409,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
     if (category === 'all' || category === 'templates') {
       templates.forEach(template => {
         const baseProduct = products.find(p => p.id === template.product_id);
-        const templateName = baseProduct ? `${baseProduct.name} (Plantilla)` : `Plantilla #${template.id}`;
+        const templateName = baseProduct ? `${baseProduct.name} (Producto)` : `Producto #${template.id}`;
 
         const matchesSearch = !searchTerm ||
           templateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -416,12 +427,32 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
       });
     }
 
-    // Ordenar: favoritos primero, luego por nombre
-    return items.sort((a, b) => {
-      const nameA = a.type === 'product' ? (a.item as Product).name : (a.item as any).name;
-      const nameB = b.type === 'product' ? (b.item as Product).name : (b.item as any).name;
-      return nameA.localeCompare(nameB);
+    // Agrupar: cada familia (producto) seguida de sus productos (plantillas) asociados
+    const productItems = items.filter((i): i is { type: 'product', item: Product } => i.type === 'product');
+    const templateItems = items.filter((i): i is { type: 'template', item: ProductTemplate } => i.type === 'template');
+
+    const sortedProducts = [...productItems].sort((a, b) => a.item.name.localeCompare(b.item.name));
+
+    const grouped: Array<{ type: 'product' | 'template', item: Product | ProductTemplate }> = [];
+    const usedTemplateIds = new Set<number>();
+
+    sortedProducts.forEach(productItem => {
+      grouped.push(productItem);
+      const children = templateItems
+        .filter(t => t.item.product_id === productItem.item.id)
+        .sort((a, b) => (a.item as any).name.localeCompare((b.item as any).name));
+      children.forEach(child => {
+        usedTemplateIds.add(child.item.id);
+        grouped.push(child);
+      });
     });
+
+    // Plantillas cuya familia no está en la lista actual (p. ej. filtro solo "templates")
+    const orphanTemplates = templateItems
+      .filter(t => !usedTemplateIds.has(t.item.id))
+      .sort((a, b) => (a.item as any).name.localeCompare((b.item as any).name));
+
+    return [...grouped, ...orphanTemplates];
   }, [searchTerms, selectedCategory, products, templates]);
 
   // Seleccionar item (producto o plantilla)
@@ -440,7 +471,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
     } else {
       const template = item as ProductTemplate;
       const baseProduct = products.find(p => p.id === template.product_id);
-      const templateName = baseProduct ? `${baseProduct.name} (Plantilla)` : `Plantilla #${template.id}`;
+      const templateName = baseProduct ? `${baseProduct.name} (Producto)` : `Producto #${template.id}`;
 
       updateBudgetItem(index, {
         type: 'template',
@@ -714,10 +745,10 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
                         <Package className="h-12 w-12 text-gray-300" />
                         <Layers className="h-12 w-12 text-gray-300" />
                       </div>
-                      <p className="text-lg font-medium text-gray-700 mb-2">No hay productos o plantillas agregados</p>
+                      <p className="text-lg font-medium text-gray-700 mb-2">No hay familias o productos agregados</p>
                       <p className="text-sm mb-4">Haz clic en "Agregar Item" para comenzar a crear tu presupuesto</p>
                       <div className="flex flex-col items-center gap-2 text-xs text-gray-400">
-                        <p>💡 <strong>Tip:</strong> Puedes crear productos y plantillas sobre la marcha</p>
+                        <p>💡 <strong>Tip:</strong> Puedes crear familias y productos sobre la marcha</p>
                         <div className="flex items-center gap-4">
                           <span>🏷️ Filtra por tipo de item</span>
                         </div>
@@ -851,7 +882,9 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
                                   id={`item-dropdown-${index}`}
                                   className="fixed z-9999 bg-white border border-gray-300 rounded-md shadow-lg overflow-y-auto"
                                   style={{
-                                    top: `${dropdownPositions[index].top}px`,
+                                    ...(dropdownPositions[index].top !== undefined
+                                      ? { top: `${dropdownPositions[index].top}px` }
+                                      : { bottom: `${dropdownPositions[index].bottom}px` }),
                                     left: `${dropdownPositions[index].left}px`,
                                     width: `${dropdownPositions[index].width}px`,
                                     maxHeight: `${dropdownPositions[index].maxHeight || 200}px`
@@ -861,7 +894,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
                                     getFilteredItems(index).map((filteredItem, _) => (
                                       <div
                                         key={`${filteredItem.type}-${filteredItem.item.id}`}
-                                        className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 group"
+                                        className="px-3 py-1.5 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-b-0 group"
                                       >
                                         <div className="flex justify-between items-center">
                                           <div
@@ -878,7 +911,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
                                                 <div className="font-medium text-sm text-gray-900">
                                                   {filteredItem.type === 'product'
                                                     ? (filteredItem.item as Product).name
-                                                    : (filteredItem.item as any).name
+                                                    : (filteredItem.item as ProductTemplate).description
                                                   }
                                                 </div>
                                                 {filteredItem.type === 'product' && (filteredItem.item as Product).serial_number && (
@@ -888,8 +921,8 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
                                                 )}
                                                 {filteredItem.type === 'template' && (
                                                   <div className="text-xs text-gray-500">
-                                                    {(filteredItem.item as ProductTemplate).description && (
-                                                      <span>{(filteredItem.item as ProductTemplate).description}</span>
+                                                    {(filteredItem.item as ProductTemplate).product_name && (
+                                                      <span>{(filteredItem.item as ProductTemplate).product_name}</span>
                                                     )}
                                                     {(filteredItem.item as ProductTemplate).dimensions && (
                                                       <span className="ml-2">{(filteredItem.item as ProductTemplate).dimensions}</span>

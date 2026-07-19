@@ -1,7 +1,6 @@
 import { useAuthStore } from '@/store/auth'
 import { authService } from '@/features/auth/AuthService'
-import logo from '@/assets/LogoSinFondo.png'
-// import logo from '@/assets/LogoLetras.png'
+import logo from '@/assets/Logo.png'
 import pkg from '../../../../package.json'
 
 export function Dashboard() {
@@ -28,11 +27,12 @@ export function Dashboard() {
       </div>
       
       {/* Logo centrado y responsivo */}
-      <div className="flex justify-center items-center py-10">
-        <img 
-          src={logo} 
-          alt="LOGO" 
-        />        
+      <div className="flex justify-center items-center min-h-[calc(100vh-16rem)]">
+        <img
+          src={logo}
+          alt="LOGO"
+          className="h-[65vh] w-auto max-w-[75vw] object-contain"
+        />
       </div>
 
       <div className="fixed bottom-1 right-4 text-sm text-gray-500 font-medium opacity-75">

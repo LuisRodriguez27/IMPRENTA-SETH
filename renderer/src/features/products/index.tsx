@@ -220,7 +220,13 @@ const ProductsPage: React.FC = () => {
       );
 
       // Generar reporte (backend manda ya filtrado)
-      const filteredForPrint = products;
+      const productsForPrint = searchTerm
+        ? await ProductsApiService.searchWithTemplates(searchTerm)
+        : await ProductsApiService.findAllWithTemplates();
+
+      // El backend devuelve los productos más recientes primero (id DESC);
+      // para el reporte impreso se ordenan por id ascendente
+      const filteredForPrint = [...productsForPrint].sort((a, b) => a.id - b.id);
 
       // Generar HTML
       const printHTML = `

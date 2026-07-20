@@ -39,18 +39,19 @@ class ProductTemplateRepository {
     piecesPerPack?: number | null;
     pieces_per_pack?: number | null;
     description?: string | null;
+    template_serial_number?: string | null;
     created_by?: number | null;
     stock?: number | string | null;
   }) {
-    const pzas = templateData.piecesPerPack !== undefined 
-      ? templateData.piecesPerPack 
+    const pzas = templateData.piecesPerPack !== undefined
+      ? templateData.piecesPerPack
       : templateData.pieces_per_pack;
 
     const stockVal = templateData.stock !== undefined && templateData.stock !== null ? parseFloat(String(templateData.stock)) : 0;
 
     const result = await db.execute(`
-      INSERT INTO product_templates (product_id, name, final_price, promo_price, purchase_price, dimensions, category, model, package, pieces_per_pack, description, created_by, stock)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      INSERT INTO product_templates (product_id, name, final_price, promo_price, purchase_price, dimensions, category, model, package, pieces_per_pack, description, template_serial_number, created_by, stock)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
     `, [
       templateData.product_id,
       templateData.name || null,
@@ -63,6 +64,7 @@ class ProductTemplateRepository {
       templateData.package === true || templateData.package === 1 ? 1 : 0,
       pzas !== undefined && pzas !== null ? pzas : null,
       templateData.description || null,
+      templateData.template_serial_number || null,
       templateData.created_by || null,
       stockVal
     ]);
@@ -82,18 +84,19 @@ class ProductTemplateRepository {
     piecesPerPack?: number | null;
     pieces_per_pack?: number | null;
     description?: string | null;
+    template_serial_number?: string | null;
     stock?: number | string | null;
   }): Promise<boolean> {
-    const pzas = templateData.piecesPerPack !== undefined 
-      ? templateData.piecesPerPack 
+    const pzas = templateData.piecesPerPack !== undefined
+      ? templateData.piecesPerPack
       : templateData.pieces_per_pack;
 
     const stockVal = templateData.stock !== undefined && templateData.stock !== null ? parseFloat(String(templateData.stock)) : 0;
 
     const result = await db.execute(`
       UPDATE product_templates
-      SET product_id = $1, name = $2, final_price = $3, promo_price = $4, purchase_price = $5, dimensions = $6, category = $7, model = $8, package = $9, pieces_per_pack = $10, description = $11, stock = $12
-      WHERE id = $13
+      SET product_id = $1, name = $2, final_price = $3, promo_price = $4, purchase_price = $5, dimensions = $6, category = $7, model = $8, package = $9, pieces_per_pack = $10, description = $11, template_serial_number = $12, stock = $13
+      WHERE id = $14
     `, [
       templateData.product_id,
       templateData.name || null,
@@ -106,6 +109,7 @@ class ProductTemplateRepository {
       templateData.package === true || templateData.package === 1 ? 1 : 0,
       pzas !== undefined && pzas !== null ? pzas : null,
       templateData.description || null,
+      templateData.template_serial_number || null,
       stockVal,
       id
     ]);
@@ -128,7 +132,7 @@ class ProductTemplateRepository {
 
   async searchByTerm(searchTerm: string) {
     const term = `%${searchTerm}%`;
-    const templates = await db.getAll<ProductTemplateRow>(`${this._selectQuery} WHERE pt.active = true AND (pt.description ILIKE $1 OR p.name ILIKE $1 OR p.serial_number ILIKE $1 OR pt.category ILIKE $1 OR pt.model ILIKE $1 OR u.username ILIKE $1) ORDER BY pt.id DESC`, [term]);
+    const templates = await db.getAll<ProductTemplateRow>(`${this._selectQuery} WHERE pt.active = true AND (pt.description ILIKE $1 OR p.name ILIKE $1 OR p.serial_number ILIKE $1 OR pt.template_serial_number ILIKE $1 OR pt.category ILIKE $1 OR pt.model ILIKE $1 OR u.username ILIKE $1) ORDER BY pt.id DESC`, [term]);
     return templates.map((t) => new ProductTemplate(t));
   }
 
@@ -144,7 +148,7 @@ class ProductTemplateRepository {
       templates = raw.map((t) => new ProductTemplate(t));
     } else {
       const term = `%${searchTerm.trim()}%`;
-      const searchWhere = `pt.active = true AND (pt.description ILIKE $1 OR p.name ILIKE $1 OR p.serial_number ILIKE $1 OR pt.category ILIKE $1 OR pt.model ILIKE $1 OR u.username ILIKE $1)`;
+      const searchWhere = `pt.active = true AND (pt.description ILIKE $1 OR p.name ILIKE $1 OR p.serial_number ILIKE $1 OR pt.template_serial_number ILIKE $1 OR pt.category ILIKE $1 OR pt.model ILIKE $1 OR u.username ILIKE $1)`;
       const countResult = await db.getOne<{ total: string }>(`SELECT COUNT(*) as total FROM product_templates pt JOIN products p ON pt.product_id = p.id LEFT JOIN users u ON pt.created_by = u.id WHERE ${searchWhere}`, [term]);
       total = parseInt(countResult!.total, 10) || 0;
       const raw = await db.getAll<ProductTemplateRow>(`${this._selectQuery} WHERE ${searchWhere} ORDER BY pt.id DESC LIMIT $2 OFFSET $3`, [term, limit, offset]);

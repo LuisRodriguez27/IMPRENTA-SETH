@@ -14,6 +14,7 @@ class ProductTemplate {
   package: boolean;
   piecesPerPack: number | null;
   description: string | null;
+  template_serial_number: string | null;
   created_by: number | null;
   stock: number;
   active: boolean;
@@ -39,6 +40,7 @@ class ProductTemplate {
     this.piecesPerPack = pzas !== null && pzas !== undefined ? parseInt(String(pzas), 10) : null;
     
     this.description = row.description || null;
+    this.template_serial_number = row.template_serial_number || null;
     this.created_by = row.created_by || null;
     this.stock = parseFloat(String(row.stock)) || 0;
     this.active = row.active === 1 || row.active === true;
@@ -76,6 +78,7 @@ class ProductTemplate {
       (this.name && this.name.toLowerCase().includes(term)) ||
       (this.description && this.description.toLowerCase().includes(term)) ||
       (this.serial_number && this.serial_number.toLowerCase().includes(term)) ||
+      (this.template_serial_number && this.template_serial_number.toLowerCase().includes(term)) ||
       (this.category && this.category.toLowerCase().includes(term)) ||
       (this.model && this.model.toLowerCase().includes(term)) ||
       (this.created_by_username && this.created_by_username.toLowerCase().includes(term))
@@ -97,6 +100,7 @@ class ProductTemplate {
       package: this.package,
       piecesPerPack: this.piecesPerPack,
       description: this.description,
+      template_serial_number: this.template_serial_number,
       created_by: this.created_by,
       active: this.active,
       stock: this.stock,

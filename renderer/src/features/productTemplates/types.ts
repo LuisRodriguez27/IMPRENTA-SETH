@@ -12,6 +12,7 @@ export const createProductTemplateSchema = z.object({
   package: z.boolean(),
   piecesPerPack: z.number().int().min(0).nullable().optional().or(z.nan().transform(() => undefined)),
   description: z.string().optional().nullable(),
+  template_serial_number: z.string().optional().nullable(),
   created_by: z.number().int().optional(),
   stock: z.number({ error: 'El stock debe ser un número' }).min(0, 'El stock no puede ser negativo').optional().or(z.nan().transform(() => undefined))
 });
@@ -28,6 +29,7 @@ export const editProductTemplateSchema = z.object({
   package: z.boolean(),
   piecesPerPack: z.number().int().min(0).nullable().optional().or(z.nan().transform(() => undefined)),
   description: z.string().optional().nullable(),
+  template_serial_number: z.string().optional().nullable(),
   created_by: z.number().int().optional(),
   stock: z.number({ error: 'El stock debe ser un número' }).min(0, 'El stock no puede ser negativo').optional().or(z.nan().transform(() => undefined))
 });
@@ -50,6 +52,7 @@ export interface ProductTemplate {
   package: boolean;
   piecesPerPack?: number | null;
   description: string | null; // Descripción de la plantilla
+  template_serial_number?: string | null; // Número de serie de la plantilla
   created_by?: number | null;
   stock?: number;
   active: boolean;

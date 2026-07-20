@@ -4,6 +4,7 @@ import type { Product } from '@/features/products/types';
 import {
   DollarSign,
   Grid, List,
+  Hash,
   Package,
   Ruler,
   Search,
@@ -411,6 +412,13 @@ const ProductTemplatesPage: React.FC = () => {
                               <span className="text-xs font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-800">
                                 Paquete {template.piecesPerPack ? `(${template.piecesPerPack} uds)` : ''}
                               </span>
+                            </div>
+                          )}
+
+                          {template.template_serial_number && (
+                            <div className="flex items-center gap-2">
+                              <Hash size={14} />
+                              <span className="font-mono">{template.template_serial_number}</span>
                             </div>
                           )}
                         </div>

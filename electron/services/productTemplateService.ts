@@ -66,7 +66,8 @@ class ProductTemplateService {
         model: data.model ? String(data.model).trim() : '',
         package: data.package === true || data.package === 1 || String(data.package) === 'true',
         piecesPerPack: pzas !== undefined && pzas !== null ? parseInt(String(pzas), 10) : null,
-        description: data.description?.trim() || null, 
+        description: data.description?.trim() || null,
+        template_serial_number: data.template_serial_number?.trim() || null,
         created_by: data.created_by ? parseInt(String(data.created_by)) : null
       });
       if (!template) throw new Error('Error al crear plantilla');
@@ -113,6 +114,7 @@ class ProductTemplateService {
         package: data.package === true || data.package === 1 || String(data.package) === 'true',
         piecesPerPack: pzas !== undefined && pzas !== null ? parseInt(String(pzas), 10) : null,
         description: data.description?.trim() || null,
+        template_serial_number: data.template_serial_number?.trim() || null,
         stock: finalStock
       });
       if (!updated) throw new Error('Error al actualizar plantilla');

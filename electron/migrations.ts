@@ -15,19 +15,30 @@ import type { Db } from './types/db';
 import type { Migration } from './types/migrations';
 
 const MIGRATIONS: Migration[] = [
-  /*
   {
     version: 1,
-    name: 'ejemplo_migracion',
+    name: 'add_template_serial_number',
     isApplied: async (client: PoolClient) => {
-      // Opcional: retornar true si ya se aplicó anteriormente
-      return false;
+      try {
+        const { rows } = await client.query(`
+          SELECT 1 FROM information_schema.columns 
+          WHERE table_name = 'product_templates' AND column_name = 'template_serial_number'
+        `);
+        return rows.length > 0;
+      } catch (err) {
+        // En caso de SQLite u otro motor que no tenga information_schema, usamos PRAGMA
+        try {
+          const { rows } = await client.query(`PRAGMA table_info(product_templates)`);
+          return rows.some((row: any) => row.name === 'template_serial_number');
+        } catch {
+          return false;
+        }
+      }
     },
     up: async (client: PoolClient) => {
-      await client.query(`ALTER TABLE tabla ADD COLUMN columna TEXT`);
+      await client.query(`ALTER TABLE product_templates ADD COLUMN template_serial_number VARCHAR(255)`);
     }
   }
-  */
 ];
 
 // ─── RUNNER PRINCIPAL ───────────────────────────────────────────────────────
@@ -52,6 +63,19 @@ export async function runMigrations(db: Db, client: PoolClient): Promise<void> {
   let ran = 0;
   for (const migration of MIGRATIONS) {
     if (appliedVersions.has(migration.version)) continue;
+
+    // Verificar si la migración ya está aplicada físicamente (ej. bases de datos pre-versionadas)
+    if (migration.isApplied) {
+      const alreadyApplied = await migration.isApplied(client);
+      if (alreadyApplied) {
+        await client.query(
+          `INSERT INTO schema_migrations (version, name) VALUES ($1, $2)`,
+          [migration.version, migration.name]
+        );
+        console.log(`v${migration.version} ya estaba aplicada (se registró en control).`);
+        continue;
+      }
+    }
 
     console.log(`Migración v${migration.version} (${migration.name})...`);
     try {

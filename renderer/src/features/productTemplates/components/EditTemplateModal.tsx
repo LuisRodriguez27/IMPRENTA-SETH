@@ -2,7 +2,7 @@ import { Button, Input, Label } from "@/components/ui";
 import { ProductTemplatesApiService } from "@/features/productTemplates/ProductTemplatesApiService";
 import { editProductTemplateSchema, type EditProductTemplateForm, type ProductTemplate } from "@/features/productTemplates/types";
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CircleDollarSign, FileText, Loader, Package, Percent, Ruler, X } from "lucide-react";
+import { CircleDollarSign, FileText, Hash, Loader, Package, Percent, Ruler, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from 'react-hook-form';
 import { extractErrorMessage } from '@/utils/errorHandling';
@@ -69,6 +69,7 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
       setValue('model', template.model || '');
       setValue('package', template.package || false);
       setValue('piecesPerPack', template.piecesPerPack ?? null);
+      setValue('template_serial_number', template.template_serial_number ?? '');
       setValue('stock', template.stock ?? 0);
     }
   }, [template, isOpen, setValue]);
@@ -161,6 +162,26 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
               </div>
               {errors.name && (
                 <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+              )}
+            </div>
+
+            {/* Modelo */}
+            <div>
+              <Label htmlFor="model" className="text-sm font-medium text-gray-700">
+                Modelo
+              </Label>
+              <div className="mt-1 relative">
+                <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <Input
+                  id="model"
+                  type="text"
+                  placeholder="Ej: Premium o Blanco"
+                  className="pl-10"
+                  {...register('model')}
+                />
+              </div>
+              {errors.model && (
+                <p className="mt-1 text-sm text-red-600">{errors.model.message}</p>
               )}
             </div>
 
@@ -321,23 +342,23 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
               )}
             </div>
 
-            {/* Modelo */}
+            {/* Número de Serie */}
             <div>
-              <Label htmlFor="model" className="text-sm font-medium text-gray-700">
-                Modelo
+              <Label htmlFor="template_serial_number" className="text-sm font-medium text-gray-700">
+                Número de Serie
               </Label>
               <div className="mt-1 relative">
-                <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                 <Input
-                  id="model"
+                  id="template_serial_number"
                   type="text"
-                  placeholder="Ej: Premium o Blanco"
+                  placeholder="Ej: SN-00123"
                   className="pl-10"
-                  {...register('model')}
+                  {...register('template_serial_number')}
                 />
               </div>
-              {errors.model && (
-                <p className="mt-1 text-sm text-red-600">{errors.model.message}</p>
+              {errors.template_serial_number && (
+                <p className="mt-1 text-sm text-red-600">{errors.template_serial_number.message}</p>
               )}
             </div>
 

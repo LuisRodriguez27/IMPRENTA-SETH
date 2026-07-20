@@ -58,6 +58,7 @@ const schemaTables: string = `
     package          BOOLEAN       NOT NULL DEFAULT FALSE,
     pieces_per_pack  INTEGER,
     description      TEXT,
+    template_serial_number VARCHAR(255),
     created_by       INTEGER       REFERENCES users(id),
     stock            DECIMAL(10,4) DEFAULT 0,
     active           BOOLEAN       NOT NULL DEFAULT TRUE

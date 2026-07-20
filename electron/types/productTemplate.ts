@@ -19,6 +19,7 @@ export interface ProductTemplateRow {
   pieces_per_pack?: number | null;
   piecesPerPack?: number | null;
   description: string | null;
+  template_serial_number?: string | null;
   created_by: number | null;
   active: boolean | number;
   stock?: number | null;
@@ -45,6 +46,7 @@ export interface TemplateData {
   pieces_per_pack?: number | string | null;
   piecesPerPack?: number | string | null;
   description?: string | null;
+  template_serial_number?: string | null;
   created_by?: number | string | null;
   stock?: number | string | null;
 }

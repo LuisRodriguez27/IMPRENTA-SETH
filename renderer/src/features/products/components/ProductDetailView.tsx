@@ -596,6 +596,13 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                         </div>
                       )}
 
+                      {template.template_serial_number && (
+                        <div className="flex items-center gap-2">
+                          <Hash size={14} />
+                          <span className="font-mono">{template.template_serial_number}</span>
+                        </div>
+                      )}
+
                       {template.package && (
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-800">

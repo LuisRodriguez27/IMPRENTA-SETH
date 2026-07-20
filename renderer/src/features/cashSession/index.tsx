@@ -41,6 +41,7 @@ import ExpenseFormModal from './components/ExpenseFormModal';
 import SessionDetailModal from './components/SessionDetailModal';
 import CashSessionPrintModal from './components/CashSessionPrintModal';
 import { usePermissions } from '@/hooks/use-permissions';
+import { useOrderDetailsModal } from '@/hooks/use-order-details-modal';
 import type { Pagination } from './types';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -88,6 +89,7 @@ const CashSessionPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { checkPermission, canAccess } = usePermissions();
+  const { openOrder, orderDetailsModal } = useOrderDetailsModal();
 
   // expenses local (subset del session)
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -192,7 +194,7 @@ const CashSessionPage: React.FC = () => {
     if (!checkPermission("Abrir Caja")) {
       return;
     }
-    
+
     try {
       await CashSessionApiService.open(data);
       toast.success('Sesión de caja abierta correctamente');
@@ -373,17 +375,15 @@ const CashSessionPage: React.FC = () => {
       <div className="flex gap-1 bg-gray-100 p-1 rounded-lg mb-6 w-fit">
         <button
           onClick={() => setTab('active')}
-          className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-            tab === 'active' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-          }`}
+          className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${tab === 'active' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
         >
           <Wallet size={14} /> Sesión Activa
         </button>
         <button
           onClick={() => setTab('history')}
-          className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-            tab === 'history' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-          }`}
+          className={`flex items-center gap-1.5 px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${tab === 'history' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            }`}
         >
           <History size={14} /> Historial
         </button>
@@ -392,281 +392,292 @@ const CashSessionPage: React.FC = () => {
       {/* ── ACTIVE TAB ─────────────────────────────────────────── */}
       {tab === 'active' && (
         <>
-      {/* No session banner */}
-      {!session && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
-          <Wallet size={40} className="mx-auto text-amber-400 mb-3" />
-          <p className="text-amber-800 font-medium">No hay una sesión de caja abierta.</p>
-          <p className="text-amber-600 text-sm mt-1">Abre una sesión para comenzar a registrar movimientos del día.</p>
-          <Button className="mt-4" onClick={handleOpenClick}>
-            <LockOpen size={16} className="mr-2" /> Abrir Caja
-          </Button>
-        </div>
-      )}
-
-      {session && (
-        <>
-          {/* Stats row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <StatCard label="Balance apertura" value={fmt(summary?.opening_balance ?? session.opening_balance)} icon={Wallet} color="blue" />
-            <StatCard label="Ingresos del día" value={fmt(summary?.total_income ?? 0)} icon={TrendingUp} color="green" />
-            <StatCard label="Gastos del día" value={fmt(summary?.total_expenses ?? 0)} icon={TrendingDown} color="red" />
-            <StatCard label="Balance esperado" value={fmt(summary?.expected_balance ?? session.expected_balance)} icon={DollarSign} color="purple" />
-          </div>
-
-          {/* Session notes */}
-          {session.notes && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-4 text-sm text-blue-800">
-              <span className="font-medium">Nota: </span>{session.notes}
+          {/* No session banner */}
+          {!session && (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
+              <Wallet size={40} className="mx-auto text-amber-400 mb-3" />
+              <p className="text-amber-800 font-medium">No hay una sesión de caja abierta.</p>
+              <p className="text-amber-600 text-sm mt-1">Abre una sesión para comenzar a registrar movimientos del día.</p>
+              <Button className="mt-4" onClick={handleOpenClick}>
+                <LockOpen size={16} className="mr-2" /> Abrir Caja
+              </Button>
             </div>
           )}
 
-          {/* ── Simple Order Payments accordion ─────────────────────────────── */}
-          <div className="bg-white rounded-lg shadow border border-gray-100 mb-4">
-            <button
-              className="w-full flex justify-between items-center px-5 py-4 text-left"
-              onClick={() => setShowPayments(v => !v)}
-            >
-              <span className="font-semibold text-gray-800 flex items-center gap-2">
-                <TrendingUp size={18} className="text-green-500" />
-                Pagos — Órdenes Rápidas
-                <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                  {session.payments.length}
-                </span>
-              </span>
-              {showPayments ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </button>
-            {showPayments && (
-              <div className="border-t border-gray-100 overflow-x-auto">
-                {session.payments.length === 0 ? (
-                  <p className="text-gray-400 text-sm text-center py-6">Sin pagos de órdenes rápidas en esta sesión.</p>
-                ) : (
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
-                      <tr>
-                        <th className="px-4 py-3 text-left">ID</th>
-                        <th className="px-4 py-3 text-left">Orden</th>
-                        <th className="px-4 py-3 text-left">Fecha</th>
-                        <th className="px-4 py-3 text-left">Descripción</th>
-                        <th className="px-4 py-3 text-right">Monto</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {session.payments.map(p => (
-                        <tr key={p.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-gray-500">#{p.id}</td>
-                          <td className="px-4 py-3 text-gray-700">Orden #{p.simple_order_id}</td>
-                          <td className="px-4 py-3 text-gray-500">{fmtDate(p.date)}</td>
-                          <td className="px-4 py-3 text-gray-500">{p.descripcion || '—'}</td>
-                          <td className="px-4 py-3 text-right font-medium text-green-700">{fmt(p.amount)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot className="border-t border-gray-200 bg-gray-50">
-                      <tr>
-                        <td colSpan={4} className="px-4 py-3 text-sm font-semibold text-gray-600">Total</td>
-                        <td className="px-4 py-3 text-right font-bold text-green-700">
-                          {fmt(session.payments.reduce((s, p) => s + p.amount, 0))}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                )}
+          {session && (
+            <>
+              {/* Stats row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <StatCard label="Balance apertura" value={fmt(summary?.opening_balance ?? session.opening_balance)} icon={Wallet} color="blue" />
+                <StatCard label="Ingresos del día" value={fmt(summary?.total_income ?? 0)} icon={TrendingUp} color="green" />
+                <StatCard label="Gastos del día" value={fmt(summary?.total_expenses ?? 0)} icon={TrendingDown} color="red" />
+                <StatCard label="Balance esperado" value={fmt(summary?.expected_balance ?? session.expected_balance)} icon={DollarSign} color="purple" />
               </div>
-            )}
-          </div>
 
-          {/* ── Order Payments accordion ─────────────────────────────────────── */}
-          <div className="bg-white rounded-lg shadow border border-gray-100 mb-4">
-            <button
-              className="w-full flex justify-between items-center px-5 py-4 text-left"
-              onClick={() => setShowOrderPay(v => !v)}
-            >
-              <span className="font-semibold text-gray-800 flex items-center gap-2">
-                <DollarSign size={18} className="text-blue-500" />
-                Pagos — Órdenes
-                <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                  {orderPaymentsWithOrder.length}
-                </span>
-              </span>
-              {showOrderPay ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </button>
-            {showOrderPay && (
-              <div className="border-t border-gray-100 overflow-x-auto">
-                {orderPaymentsWithOrder.length === 0 ? (
-                  <p className="text-gray-400 text-sm text-center py-6">Sin pagos de órdenes de crédito en esta sesión.</p>
-                ) : (
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
-                      <tr>
-                        <th className="px-4 py-3 text-left">ID</th>
-                        <th className="px-4 py-3 text-left">Orden</th>
-                        <th className="px-4 py-3 text-left">Fecha</th>
-                        <th className="px-4 py-3 text-left">Descripción</th>
-                        <th className="px-4 py-3 text-right">Monto</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {orderPaymentsWithOrder.map(p => (
-                        <tr key={p.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-gray-500">#{p.id}</td>
-                          <td className="px-4 py-3 text-gray-700">{p.order_id ? `Orden #${p.order_id}` : '—'}</td>
-                          <td className="px-4 py-3 text-gray-500">{fmtDate(p.date)}</td>
-                          <td className="px-4 py-3 text-gray-500">{p.descripcion || '—'}</td>
-                          <td className="px-4 py-3 text-right font-medium text-blue-700">{fmt(p.amount)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot className="border-t border-gray-200 bg-gray-50">
-                      <tr>
-                        <td colSpan={4} className="px-4 py-3 text-sm font-semibold text-gray-600">Total</td>
-                        <td className="px-4 py-3 text-right font-bold text-blue-700">
-                          {fmt(orderPaymentsWithOrder.reduce((s, p) => s + p.amount, 0))}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* ── Other Payments accordion ─────────────────────────────────────── */}
-          <div className="bg-white rounded-lg shadow border border-gray-100 mb-4">
-            <button
-              className="w-full flex justify-between items-center px-5 py-4 text-left"
-              onClick={() => setShowOtherPay(v => !v)}
-            >
-              <span className="font-semibold text-gray-800 flex items-center gap-2">
-                <DollarSign size={18} className="text-indigo-500" />
-                Otros Pagos
-                <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                  {orderPaymentsWithoutOrder.length}
-                </span>
-              </span>
-              {showOtherPay ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-            </button>
-            {showOtherPay && (
-              <div className="border-t border-gray-100 overflow-x-auto">
-                {orderPaymentsWithoutOrder.length === 0 ? (
-                  <p className="text-gray-400 text-sm text-center py-6">Sin otros pagos registrados en esta sesión.</p>
-                ) : (
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
-                      <tr>
-                        <th className="px-4 py-3 text-left">ID</th>
-                        <th className="px-4 py-3 text-left">Fecha</th>
-                        <th className="px-4 py-3 text-left">Descripción</th>
-                        <th className="px-4 py-3 text-right">Monto</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {orderPaymentsWithoutOrder.map(p => (
-                        <tr key={p.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-gray-500">#{p.id}</td>
-                          <td className="px-4 py-3 text-gray-500">{fmtDate(p.date)}</td>
-                          <td className="px-4 py-3 text-gray-500">{p.descripcion || '—'}</td>
-                          <td className="px-4 py-3 text-right font-medium text-indigo-700">{fmt(p.amount)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot className="border-t border-gray-200 bg-gray-50">
-                      <tr>
-                        <td colSpan={3} className="px-4 py-3 text-sm font-semibold text-gray-600">Total</td>
-                        <td className="px-4 py-3 text-right font-bold text-indigo-700">
-                          {fmt(orderPaymentsWithoutOrder.reduce((s, p) => s + p.amount, 0))}
-                        </td>
-                      </tr>
-                    </tfoot>
-                  </table>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* ── Expenses accordion ────────────────────────────────────────────── */}
-          <div className="bg-white rounded-lg shadow border border-gray-100 mb-4">
-            <div className="flex items-center justify-between px-5 py-4">
-              <button
-                className="flex-1 flex justify-between items-center text-left"
-                onClick={() => setShowExpenses(v => !v)}
-              >
-                <span className="font-semibold text-gray-800 flex items-center gap-2">
-                  <TrendingDown size={18} className="text-red-500" />
-                  Gastos
-                  <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
-                    {expenses.length}
-                  </span>
-                </span>
-                {showExpenses ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              </button>
-              {isOpen && (
-                <Button size="sm" className="ml-3" onClick={handleAddExpenseClick}>
-                  <Plus size={14} className="mr-1" /> Agregar
-                </Button>
+              {/* Session notes */}
+              {session.notes && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-4 text-sm text-blue-800">
+                  <span className="font-medium">Nota: </span>{session.notes}
+                </div>
               )}
-            </div>
-            {showExpenses && (
-              <div className="border-t border-gray-100 overflow-x-auto">
-                {expenses.length === 0 ? (
-                  <p className="text-gray-400 text-sm text-center py-6">Sin gastos registrados en esta sesión.</p>
-                ) : (
-                  <table className="w-full text-sm">
-                    <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
-                      <tr>
-                        <th className="px-4 py-3 text-left">Fecha</th>
-                        <th className="px-4 py-3 text-left">Descripción</th>
-                        <th className="px-4 py-3 text-left">Registrado por</th>
-                        <th className="px-4 py-3 text-right">Monto</th>
-                        {isOpen && <th className="px-4 py-3 text-center">Acciones</th>}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {expenses.map(e => (
-                        <tr key={e.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 text-gray-500">{fmtDate(e.date)}</td>
-                          <td className="px-4 py-3 text-gray-700">{e.description}</td>
-                          <td className="px-4 py-3 text-gray-500">{e.user_username || '—'}</td>
-                          <td className="px-4 py-3 text-right font-medium text-red-700">{fmt(e.amount)}</td>
-                          {isOpen && (
-                            <td className="px-4 py-3 text-center">
-                              <div className="flex justify-center gap-1">
-                                <button
-                                  onClick={() => openEditExpense(e)}
-                                  className="p-1.5 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50"
-                                  title="Editar"
-                                >
-                                  <Pencil size={14} />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteExpense(e.id)}
-                                  className="p-1.5 rounded text-gray-400 hover:text-red-600 hover:bg-red-50"
-                                  title="Eliminar"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
+
+              {/* ── Simple Order Payments accordion ─────────────────────────────── */}
+              <div className="bg-white rounded-lg shadow border border-gray-100 mb-4">
+                <button
+                  className="w-full flex justify-between items-center px-5 py-4 text-left"
+                  onClick={() => setShowPayments(v => !v)}
+                >
+                  <span className="font-semibold text-gray-800 flex items-center gap-2">
+                    <TrendingUp size={18} className="text-green-500" />
+                    Pagos — Órdenes Rápidas
+                    <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                      {session.payments.length}
+                    </span>
+                  </span>
+                  {showPayments ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                </button>
+                {showPayments && (
+                  <div className="border-t border-gray-100 overflow-x-auto">
+                    {session.payments.length === 0 ? (
+                      <p className="text-gray-400 text-sm text-center py-6">Sin pagos de órdenes rápidas en esta sesión.</p>
+                    ) : (
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
+                          <tr>
+                            <th className="px-4 py-3 text-left">ID</th>
+                            <th className="px-4 py-3 text-left">Orden</th>
+                            <th className="px-4 py-3 text-left">Fecha</th>
+                            <th className="px-4 py-3 text-left">Descripción</th>
+                            <th className="px-4 py-3 text-right">Monto</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {session.payments.map(p => (
+                            <tr key={p.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-gray-500">#{p.id}</td>
+                              <td className="px-4 py-3 text-gray-700">Orden #{p.simple_order_id}</td>
+                              <td className="px-4 py-3 text-gray-500">{fmtDate(p.date)}</td>
+                              <td className="px-4 py-3 text-gray-500">{p.descripcion || '—'}</td>
+                              <td className="px-4 py-3 text-right font-medium text-green-700">{fmt(p.amount)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot className="border-t border-gray-200 bg-gray-50">
+                          <tr>
+                            <td colSpan={4} className="px-4 py-3 text-sm font-semibold text-gray-600">Total</td>
+                            <td className="px-4 py-3 text-right font-bold text-green-700">
+                              {fmt(session.payments.reduce((s, p) => s + p.amount, 0))}
                             </td>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                    <tfoot className="border-t border-gray-200 bg-gray-50">
-                      <tr>
-                        <td colSpan={isOpen ? 3 : 3} className="px-4 py-3 text-sm font-semibold text-gray-600">Total gastos</td>
-                        <td className="px-4 py-3 text-right font-bold text-red-700">
-                          {fmt(expenses.reduce((s, e) => s + e.amount, 0))}
-                        </td>
-                        {isOpen && <td />}
-                      </tr>
-                    </tfoot>
-                  </table>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    )}
+                  </div>
                 )}
               </div>
-            )}
-          </div>
-        </>
-      )}
+
+              {/* ── Order Payments accordion ─────────────────────────────────────── */}
+              <div className="bg-white rounded-lg shadow border border-gray-100 mb-4">
+                <button
+                  className="w-full flex justify-between items-center px-5 py-4 text-left"
+                  onClick={() => setShowOrderPay(v => !v)}
+                >
+                  <span className="font-semibold text-gray-800 flex items-center gap-2">
+                    <DollarSign size={18} className="text-blue-500" />
+                    Pagos — Órdenes
+                    <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                      {orderPaymentsWithOrder.length}
+                    </span>
+                  </span>
+                  {showOrderPay ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                </button>
+                {showOrderPay && (
+                  <div className="border-t border-gray-100 overflow-x-auto">
+                    {orderPaymentsWithOrder.length === 0 ? (
+                      <p className="text-gray-400 text-sm text-center py-6">Sin pagos de órdenes de crédito en esta sesión.</p>
+                    ) : (
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
+                          <tr>
+                            <th className="px-4 py-3 text-left">ID</th>
+                            <th className="px-4 py-3 text-left">Orden</th>
+                            <th className="px-4 py-3 text-left">Fecha</th>
+                            <th className="px-4 py-3 text-left">Descripción</th>
+                            <th className="px-4 py-3 text-right">Monto</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {orderPaymentsWithOrder.map(p => (
+                            <tr key={p.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-gray-500">#{p.id}</td>
+                              <td className="px-4 py-3 text-gray-700">
+                                {p.order_id ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => openOrder(p.order_id!)}
+                                    className="font-medium text-blue-700 hover:underline cursor-pointer"
+                                    title="Ver orden"
+                                  >
+                                    Orden #{p.order_id}
+                                  </button>
+                                ) : '—'}
+                              </td>
+                              <td className="px-4 py-3 text-gray-500">{fmtDate(p.date)}</td>
+                              <td className="px-4 py-3 text-gray-500">{p.descripcion || '—'}</td>
+                              <td className="px-4 py-3 text-right font-medium text-blue-700">{fmt(p.amount)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot className="border-t border-gray-200 bg-gray-50">
+                          <tr>
+                            <td colSpan={4} className="px-4 py-3 text-sm font-semibold text-gray-600">Total</td>
+                            <td className="px-4 py-3 text-right font-bold text-blue-700">
+                              {fmt(orderPaymentsWithOrder.reduce((s, p) => s + p.amount, 0))}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* ── Other Payments accordion ─────────────────────────────────────── */}
+              <div className="bg-white rounded-lg shadow border border-gray-100 mb-4">
+                <button
+                  className="w-full flex justify-between items-center px-5 py-4 text-left"
+                  onClick={() => setShowOtherPay(v => !v)}
+                >
+                  <span className="font-semibold text-gray-800 flex items-center gap-2">
+                    <DollarSign size={18} className="text-indigo-500" />
+                    Otros Pagos
+                    <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                      {orderPaymentsWithoutOrder.length}
+                    </span>
+                  </span>
+                  {showOtherPay ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                </button>
+                {showOtherPay && (
+                  <div className="border-t border-gray-100 overflow-x-auto">
+                    {orderPaymentsWithoutOrder.length === 0 ? (
+                      <p className="text-gray-400 text-sm text-center py-6">Sin otros pagos registrados en esta sesión.</p>
+                    ) : (
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
+                          <tr>
+                            <th className="px-4 py-3 text-left">ID</th>
+                            <th className="px-4 py-3 text-left">Fecha</th>
+                            <th className="px-4 py-3 text-left">Descripción</th>
+                            <th className="px-4 py-3 text-right">Monto</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {orderPaymentsWithoutOrder.map(p => (
+                            <tr key={p.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-gray-500">#{p.id}</td>
+                              <td className="px-4 py-3 text-gray-500">{fmtDate(p.date)}</td>
+                              <td className="px-4 py-3 text-gray-500">{p.descripcion || '—'}</td>
+                              <td className="px-4 py-3 text-right font-medium text-indigo-700">{fmt(p.amount)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot className="border-t border-gray-200 bg-gray-50">
+                          <tr>
+                            <td colSpan={3} className="px-4 py-3 text-sm font-semibold text-gray-600">Total</td>
+                            <td className="px-4 py-3 text-right font-bold text-indigo-700">
+                              {fmt(orderPaymentsWithoutOrder.reduce((s, p) => s + p.amount, 0))}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* ── Expenses accordion ────────────────────────────────────────────── */}
+              <div className="bg-white rounded-lg shadow border border-gray-100 mb-4">
+                <div className="flex items-center justify-between px-5 py-4">
+                  <button
+                    className="flex-1 flex justify-between items-center text-left"
+                    onClick={() => setShowExpenses(v => !v)}
+                  >
+                    <span className="font-semibold text-gray-800 flex items-center gap-2">
+                      <TrendingDown size={18} className="text-red-500" />
+                      Gastos
+                      <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
+                        {expenses.length}
+                      </span>
+                    </span>
+                    {showExpenses ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                  </button>
+                  {isOpen && (
+                    <Button size="sm" className="ml-3" onClick={handleAddExpenseClick}>
+                      <Plus size={14} className="mr-1" /> Agregar
+                    </Button>
+                  )}
+                </div>
+                {showExpenses && (
+                  <div className="border-t border-gray-100 overflow-x-auto">
+                    {expenses.length === 0 ? (
+                      <p className="text-gray-400 text-sm text-center py-6">Sin gastos registrados en esta sesión.</p>
+                    ) : (
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
+                          <tr>
+                            <th className="px-4 py-3 text-left">Fecha</th>
+                            <th className="px-4 py-3 text-left">Descripción</th>
+                            <th className="px-4 py-3 text-left">Registrado por</th>
+                            <th className="px-4 py-3 text-right">Monto</th>
+                            {isOpen && <th className="px-4 py-3 text-center">Acciones</th>}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-50">
+                          {expenses.map(e => (
+                            <tr key={e.id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-gray-500">{fmtDate(e.date)}</td>
+                              <td className="px-4 py-3 text-gray-700">{e.description}</td>
+                              <td className="px-4 py-3 text-gray-500">{e.user_username || '—'}</td>
+                              <td className="px-4 py-3 text-right font-medium text-red-700">{fmt(e.amount)}</td>
+                              {isOpen && (
+                                <td className="px-4 py-3 text-center">
+                                  <div className="flex justify-center gap-1">
+                                    <button
+                                      onClick={() => openEditExpense(e)}
+                                      className="p-1.5 rounded text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                                      title="Editar"
+                                    >
+                                      <Pencil size={14} />
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteExpense(e.id)}
+                                      className="p-1.5 rounded text-gray-400 hover:text-red-600 hover:bg-red-50"
+                                      title="Eliminar"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot className="border-t border-gray-200 bg-gray-50">
+                          <tr>
+                            <td colSpan={isOpen ? 3 : 3} className="px-4 py-3 text-sm font-semibold text-gray-600">Total gastos</td>
+                            <td className="px-4 py-3 text-right font-bold text-red-700">
+                              {fmt(expenses.reduce((s, e) => s + e.amount, 0))}
+                            </td>
+                            {isOpen && <td />}
+                          </tr>
+                        </tfoot>
+                      </table>
+                    )}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </>
       )}
 
@@ -707,8 +718,8 @@ const CashSessionPage: React.FC = () => {
                       </td>
                     </tr>
                   ) : history.map(s => {
-                    const income   = s.payments.reduce((acc, p) => acc + p.amount, 0)
-                                   + s.order_payments.reduce((acc, p) => acc + p.amount, 0);
+                    const income = s.payments.reduce((acc, p) => acc + p.amount, 0)
+                      + s.order_payments.reduce((acc, p) => acc + p.amount, 0);
                     const expenses = s.expenses.reduce((acc, e) => acc + e.amount, 0);
                     return (
                       <tr key={s.id} className="hover:bg-gray-50 transition-colors">
@@ -725,11 +736,10 @@ const CashSessionPage: React.FC = () => {
                               <button
                                 onClick={() => handleReopen(s.id)}
                                 disabled={!!session}
-                                className={`p-1.5 rounded transition-colors ${
-                                  session
+                                className={`p-1.5 rounded transition-colors ${session
                                     ? 'text-gray-200 cursor-not-allowed'
                                     : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'
-                                }`}
+                                  }`}
                                 title={session ? 'Ya existe una sesión de caja activa' : 'Reabrir caja'}
                               >
                                 <LockOpen size={15} />
@@ -842,6 +852,8 @@ const CashSessionPage: React.FC = () => {
         type="warning"
         isLoading={reopenLoading}
       />
+
+      {orderDetailsModal}
     </div>
   );
 };

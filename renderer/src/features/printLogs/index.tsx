@@ -7,12 +7,14 @@ import React, { useState, useRef } from 'react';
 import CreatePrintLogModal from './components/CreatePrintLogModal';
 import ActivePrintLogsTable from './components/ActivePrintLogsTable';
 import PrintLogsHistoryTable from './components/PrintLogsHistoryTable';
+import { useOrderDetailsModal } from '@/hooks/use-order-details-modal';
 import type { PrintLog, PrintLogsTableRef } from './types';
 
 const PrintLogsFeature: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'current' | 'history'>('current');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedLogForEdit, setSelectedLogForEdit] = useState<PrintLog | null>(null);
+  const { openOrder, orderDetailsModal } = useOrderDetailsModal();
 
   const activeTableRef = useRef<PrintLogsTableRef>(null);
   const historyTableRef = useRef<PrintLogsTableRef>(null);
@@ -123,11 +125,13 @@ const PrintLogsFeature: React.FC = () => {
           <ActivePrintLogsTable
             ref={activeTableRef}
             onEditClick={handleEditClick}
+            onOrderClick={openOrder}
           />
         ) : (
           <PrintLogsHistoryTable
             ref={historyTableRef}
             onEditClick={handleEditClick}
+            onOrderClick={openOrder}
           />
         )}
       </div>
@@ -143,6 +147,8 @@ const PrintLogsFeature: React.FC = () => {
         onLogUpdated={handleLogUpdated}
         logToEdit={selectedLogForEdit}
       />
+
+      {orderDetailsModal}
     </div>
   );
 };

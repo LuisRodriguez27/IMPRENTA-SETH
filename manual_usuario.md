@@ -8,8 +8,9 @@
 
 1. [Acceso al Sistema y Gestión de Permisos](#1-acceso-al-sistema-y-gestión-de-permisos)
    - [Pantalla de Inicio de Sesión](#pantalla-de-inicio-de-sesión)
+   - [Pantalla Principal y Menú de Navegación](#pantalla-principal-y-menú-de-navegación)
    - [Directorio de Usuarios](#directorio-de-usuarios)
-   - [Matriz y Gestión de Permisos](#matriz-y-gestión-de-permisos)
+   - [Permisos por Usuario](#permisos-por-usuario)
 2. [Catálogos Principales](#2-catálogos-principales)
    - [Catálogo de Clientes](#catálogo-de-clientes)
    - [Catálogo de Productos](#catálogo-de-productos)
@@ -27,7 +28,7 @@
    - [Envío de Presupuesto por WhatsApp (Generación de Imagen)](#envío-de-presupuesto-por-whatsapp-generación-de-imagen)
    - [Conversión Directa a Orden de Trabajo](#conversión-directa-a-orden-de-trabajo)
 7. [Órdenes de Trabajo (Pedidos Formales)](#7-órdenes-de-trabajo-pedidos-formales)
-   - [Registro de Orden y Cálculo de Medidas ($m^2$)](#registro-de-orden-y-cálculo-de-medidas-m2)
+   - [Registro de Orden](#registro-de-orden)
    - [Historial de Órdenes Completadas](#historial-de-órdenes-completadas)
 8. [Órdenes Rápidas (Mostrador y Ventas de Paso)](#8-órdenes-rápidas-mostrador-y-ventas-de-paso)
    - [Registro Rápido y Atajos de Teclado](#registro-rápido-y-atajos-de-teclado)
@@ -55,30 +56,59 @@ Esta sección explica cómo entrar al programa, cómo dar de alta a tus empleado
 1. Al abrir SETH, verás la pantalla de **Inicio de Sesión**.
 2. Escribe tu **Nombre de Usuario** y tu **Contraseña**.
 3. Haz clic en el botón azul **Iniciar Sesión**. Si escribiste algo mal, aparecerá un recuadro rojo indicando el error.
-4. **Salir de forma segura**: Para cerrar tu sesión y que nadie más use tu cuenta, haz clic en el botón **Cerrar Sesión** (de color rojo) en la esquina superior derecha del menú. Esto te regresará a la pantalla de entrada.
+4. **Salir de forma segura**: Para cerrar tu sesión y que nadie más use tu cuenta, entra a la opción **Dashboard** (la primera del menú izquierdo, es la pantalla de bienvenida) y haz clic en el botón rojo **Cerrar sesión**. Esto te regresará a la pantalla de entrada.
+
+### Pantalla Principal y Menú de Navegación
+Al iniciar sesión llegarás siempre a la pantalla **Dashboard**, que es una pantalla de bienvenida sencilla (muestra tu nombre de usuario, el logotipo de la empresa y el botón de **Cerrar sesión**). Desde ahí usarás el menú de la izquierda para moverte por todo el sistema.
+
+* **Orden del menú lateral** (de arriba hacia abajo): Dashboard, Órdenes, Órdenes Rápidas, Historial de Órdenes, Presupuestos, Productos, Pagos, Sesión de Caja, Bitácora de Impresión, Gráficas de Ventas, Clientes, Proveedores, Usuarios.
+* **Opciones que pueden faltarte**: Algunas opciones (Pagos, Sesión de Caja, Bitácora de Impresión, Gráficas de Ventas, Proveedores, Usuarios) sólo aparecen en tu menú si el administrador te dio el permiso correspondiente. Si no ves alguna de estas opciones, no es un error del programa: significa que tu usuario no tiene autorización para entrar ahí (ver [Permisos por Usuario](#permisos-por-usuario)).
+* **Botones inferiores del menú**: Debajo de la lista de opciones encontrarás tres botones adicionales:
+  - **WhatsApp**: Abre WhatsApp Web directamente, útil para escribirle a cualquier contacto sin salir del sistema.
+  - **Modo Oscuro / Modo Claro**: Cambia la apariencia de colores de toda la aplicación según tu preferencia o la luz del lugar donde trabajas.
+  - **Acerca de**: Muestra información sobre la versión del programa que tienes instalada.
 
 ### Directorio de Usuarios
-Ubicado en el menú de la izquierda, en la opción **Usuarios**. Aquí puedes registrar a las personas que trabajarán con el sistema.
+Ubicado en el menú de la izquierda, en la opción **Usuarios** (sólo visible si tu cuenta tiene el permiso `Gestionar Usuario`). Aquí puedes registrar a las personas que trabajarán con el sistema.
 * **Crear un nuevo usuario**:
   1. Haz clic en el botón **Nuevo Usuario (+)** (esquina superior derecha).
-  2. Llena los campos: **Nombre de usuario**, ingresa una **Contraseña** (mínimo 6 letras o números), y selecciona un **Rol** (por ejemplo: Administrador, Cajero, Operador).
+  2. Llena los campos: **Nombre de usuario** y una **Contraseña** (mínimo 6 caracteres).
   3. Haz clic en **Guardar**.
+  4. *Importante*: al crear un usuario **no se le asigna ningún "Rol"**. El sistema no maneja roles como "Administrador" o "Cajero"; cada usuario nuevo se crea sin ningún permiso activado. Debes asignarle sus permisos por separado (ver siguiente apartado) para que pueda usar las distintas pantallas.
 * **Editar un usuario**:
   1. En la lista, busca al usuario y haz clic en el botón **Editar** (el icono de lápiz).
-  2. Podrás cambiar su nombre o asignarle un rol diferente.
-* **Activar o Desactivar**:
-  - Los usuarios no se pueden borrar por completo del sistema para no estropear el historial de ventas que ellos hicieron en el pasado. En su lugar, usa el interruptor (switch) de **Activo/Inactivo**. Si desactivas a un usuario, no podrá volver a entrar al sistema.
+  2. Podrás cambiar su nombre de usuario o su contraseña.
+* **Activar, Desactivar o "Eliminar"**:
+  - Los usuarios nunca se borran por completo del sistema para no estropear el historial de ventas que ellos hicieron en el pasado. Tienes dos formas de bloquear el acceso a un usuario, y ambas hacen exactamente lo mismo (desactivarlo, no borrar nada):
+    - El interruptor (switch) de **Activo/Inactivo** en la lista.
+    - El botón **Eliminar Usuario** (icono de bote de basura). Aunque el mensaje de confirmación advierte que "no se puede deshacer" y que se eliminará "permanentemente", en realidad el sistema sólo desactiva la cuenta por dentro; su historial de ventas, órdenes y pagos se conserva intacto y el usuario puede reactivarse después con el switch.
+  - Un usuario desactivado no podrá volver a iniciar sesión. El sistema no te dejará desactivar al último usuario activo que quede en la base de datos, para evitar que te quedes sin acceso.
 
-### Matriz y Gestión de Permisos
-Para proteger el dinero y los datos del negocio, puedes decidir qué botones y pantallas puede usar cada empleado.
-Ve a la opción **Gestión de Permisos** en el menú de la izquierda.
-* **¿Cómo funciona?**: Verás una tabla donde aparecen los permisos del sistema. Puedes activar o desactivar permisos específicos para cada rol de usuario.
-* **Permisos clave que debes cuidar**:
-  - `Crear/Editar/Eliminar Presupuestos`: Permite o bloquea el control de las cotizaciones.
-  - `Crear/Editar Órdenes`: Permite registrar pedidos formales de clientes.
-  - `Registrar/Eliminar Pagos`: Controla quién puede registrar abonos de dinero.
-  - `Ver Mayoristas` / `Crear Orden Mayorista`: Acceso a las compras externas para proveedores.
-  - `Estadísticas: Filtros` vs. `Estadísticas: Hoy`: Si un empleado tiene activado `Estadísticas: Hoy`, **sólo podrá ver las ventas que se han hecho el día de hoy** en las gráficas; no podrá ver el historial de meses o años anteriores. Esto protege la información financiera confidencial.
+### Permisos por Usuario
+Para proteger el dinero y los datos del negocio, puedes decidir qué pantallas y botones puede usar cada empleado. **No existe una pantalla independiente de "Gestión de Permisos" en el menú**: los permisos se asignan directamente desde la ficha de cada persona.
+
+* **¿Cómo se asignan?**:
+  1. Ve a **Usuarios** en el menú izquierdo.
+  2. En la fila del usuario que quieres configurar, haz clic en el botón **Permisos**.
+  3. Se abrirá una ventana con la lista completa de permisos del sistema. Activa o desactiva cada uno con su interruptor según lo que quieras permitirle a esa persona.
+  4. Guarda los cambios. La próxima vez que ese usuario inicie sesión (o al recargar su sesión activa), el menú y los botones se ajustarán automáticamente a sus nuevos permisos.
+  - *Nota*: para poder abrir esta ventana y modificar permisos de otros, tu propia cuenta necesita tener activado el permiso `Gestionar Permisos`.
+
+* **Lista completa de permisos disponibles**, agrupados por área:
+  - **Usuarios y permisos**: `Gestionar Usuario` (crear, editar o desactivar usuarios), `Gestionar Permisos` (asignar o quitar permisos a otros usuarios).
+  - **Clientes**: `Crear Cliente`, `Editar Cliente`, `Eliminar Cliente`.
+  - **Productos**: `Crear Producto`, `Editar Producto`, `Eliminar Producto`.
+  - **Plantillas de productos**: `Crear Plantilla`, `Editar Plantilla`, `Eliminar Plantilla`.
+  - **Órdenes de trabajo**: `Crear Órdenes`, `Editar Órdenes`, `Cancelar Órdenes`.
+  - **Presupuestos**: `Crear Presupuestos`, `Editar Presupuestos`, `Eliminar Presupuestos`.
+  - **Pagos**: `Ver Pagos` (necesario para que la opción "Pagos" aparezca en el menú), `Registrar Pagos`, `Eliminar Pagos`.
+  - **Caja chica**: `Ver Caja` (necesario para que la opción "Sesión de Caja" aparezca en el menú), `Abrir Caja`, `Cerrar Caja`, `Reabrir Caja`, `Registrar Egreso`.
+  - **Estadísticas**: `Estadisticas` — un único permiso que controla si la opción "Gráficas de Ventas" aparece o no en el menú de esa persona. Si lo activas, la persona puede ver todas las gráficas y todo el historial de fechas; si lo desactivas, no puede entrar a esa pantalla en absoluto. (Actualmente el sistema no distingue entre "ver sólo el día de hoy" y "ver todo el historial"; es un permiso de todo o nada.)
+  - **Proveedores / Mayoristas**: `Ver Mayoristas` (necesario para que la opción "Proveedores" aparezca en el menú), `Crear Orden Mayorista`.
+  - **Bitácora de impresión**: `Ver Bitacora de Impresion` (necesario para que la opción aparezca en el menú), `Gestionar Bitacora de Impresion`.
+
+> [!TIP]
+> Al crear un usuario nuevo, sus permisos empiezan todos apagados. Es buena práctica, justo después de guardarlo, entrar de inmediato al botón **Permisos** para activarle lo mínimo necesario para su puesto (por ejemplo, un cajero de mostrador normalmente necesita `Crear Órdenes`, `Registrar Pagos`, `Ver Caja` y `Abrir Caja`).
 
 ---
 
@@ -93,8 +123,8 @@ Ubicado en la sección **Clientes** del menú izquierdo.
   2. Llena la información:
      - **Nombre**: Nombre completo o el nombre del negocio del cliente.
      - **Teléfono**: Escribe el número celular a **10 dígitos corridos** (ejemplo: `5512345678`), sin espacios ni guiones. *Esto es fundamental para que funcione el envío de mensajes por WhatsApp.*
-     - **Correo Electrónico**: Su dirección de correo (opcional).
      - **Color del Círculo (Nivel de Cliente)**: Selecciona una etiqueta de color (**Verde**, **Amarillo** o **Rojo**). Esto te sirve para identificar visualmente a tus clientes (por ejemplo: Verde para clientes frecuentes, Amarillo para intermediarios, Rojo para clientes difíciles o con adeudos).
+     - *Nota*: la ficha de Cliente no tiene un campo de correo electrónico; sólo se guarda nombre, teléfono y color. (El correo electrónico sí existe como campo opcional en la ficha de **Proveedores**, ver más abajo.)
   3. Haz clic en **Guardar**.
 * **Escribirle por WhatsApp al instante**:
   - Al lado de cada cliente en la lista verás un botón verde con el logotipo de **WhatsApp**. Al hacer clic, el sistema abrirá automáticamente una pestaña de chat directo en WhatsApp Web usando el teléfono del cliente (agregándole el código de país de México `52`), lo que te permite escribirle sin necesidad de registrarlo en tu celular.
@@ -105,21 +135,22 @@ Ubicado en la opción **Productos** del menú de la izquierda. Aquí das de alta
   1. Haz clic en **Nuevo Producto**.
   2. Llena los datos:
      - **Nombre**: (Ejemplo: *Lona Front*, *Vinil Auto-adherible*, *Taza Sublimada*).
-     - **Precio Base**: El precio de venta regular al público.
-     - **Precio Promoción** / **Precio con Descuento**: Precios especiales alternativos. El sistema tomará automáticamente el menor de los tres precios activos al vender.
-     - **Precio de Compra** (¡Nuevo!): Escribe cuánto te cuesta a ti comprar o producir este artículo. Este campo es privado (el cliente no lo ve) y te ayudará a conocer tus ganancias reales.
-     - **Categoría**: Agrupa tus productos para encontrarlos rápido (ej. *Impresión Gran Formato*, *Artículos Promocionales*).
+     - **Precio**: El precio de venta regular al público.
+     - **Precio Promoción** / **Precio Descuento**: Precios especiales alternativos. El sistema tomará automáticamente el menor de los tres precios activos al vender.
+     - **Precio de Compra**: Escribe cuánto te cuesta a ti comprar o producir este artículo. Este campo es privado (el cliente no lo ve) y te ayudará a conocer tus ganancias reales.
+     - **Stock Inicial**: La cantidad con la que empieza el producto en el inventario.
   3. Haz clic en **Guardar**.
+     - *Nota*: el catálogo de **Productos** no maneja un campo de "Categoría". Si necesitas agrupar variantes de un mismo producto por categoría, modelo o medidas, usa las **Plantillas de Producto** (sección 4), que sí incluyen ese campo.
 * **Galería de Fotos**: Al entrar al detalle de un producto (haciendo clic en su nombre), verás una sección para subir imágenes. Esto es ideal para guardar fotos de trabajos reales ya terminados de ese producto, sirviendo de catálogo visual para tus clientes o de guía de referencia para tus diseñadores.
 
 ### Catálogo de Proveedores y Columnas Dinámicas
 Ubicado en la pestaña **Directorio de Proveedores** dentro de la sección **Proveedores**.
 * **Registrar Proveedor**:
   1. Haz clic en **Nuevo Proveedor**.
-  2. Ingresa su **Nombre**, **Teléfono**, **Correo** y una breve descripción.
-  3. **Columnas Personalizadas (Muy Importante)**: Aquí debes escribir, separados por comas, los datos que te pide ese proveedor específico para levantarle un pedido.
-     - *Ejemplo*: Si tu proveedor de lonas te pide piezas, ancho, alto y acabados, escribe: `piezas, ancho, alto, ojillos, costura`.
-     - Si tu proveedor de uniformes te pide cantidad, talla y color, escribe: `cantidad, talla, color`.
+  2. Ingresa su **Nombre**, **Teléfono** (opcional), **Correo** (opcional) y una breve descripción.
+  3. **Columnas Personalizadas (Muy Importante)**: En esta sección debes indicar los datos que te pide ese proveedor específico para levantarle un pedido. El formulario te da una casilla de texto por cada columna; escribe el nombre de la primera (ej. `piezas`) y haz clic en el botón **Agregar columna (+)** para que aparezca una nueva casilla vacía, y así sucesivamente por cada dato que necesites.
+     - *Ejemplo*: Si tu proveedor de lonas te pide piezas, ancho, alto y ojillos, agrega cuatro columnas con esos nombres, una por una.
+     - Si tu proveedor de uniformes te pide cantidad, talla y color, agrega esas tres columnas.
      - *¿Para qué sirve esto?* El sistema creará un formulario inteligente y exclusivo para este proveedor que se adaptará automáticamente a estos campos cuando le hagas una orden de compra.
 
 ---
@@ -170,9 +201,14 @@ Cuando te llegue mercancía o material nuevo, debes registrar la entrada en el s
 
 Las **Plantillas de Producto** son "recetas predefinidas" para simplificar la venta de artículos complejos o personalizados que vendes muy seguido.
 
-* **¿Para qué sirven?**: Evitan que tengas que calcular dimensiones, acabados, precios de compra o precios de venta manualmente cada vez que atiendes a un cliente.
-* **Ejemplo práctico**: Tienes el producto base "Lona Front". Pero vendes muy seguido un paquete que incluye "Lona Front de 3x2 metros, con ojillos perimetrales y bastilla reforzada". Puedes crear una plantilla llamada "Lona Publicitaria Grande (3x2m)".
-* **Campos que almacena**: Medidas de alto y ancho fijas, categoría, modelo, si se vende por paquete (con piezas por empaque), precio de venta final, precio de compra y su propio **Stock de inventario independiente**.
+* **¿Para qué sirven?**: Evitan que tengas que escribir de nuevo las dimensiones, acabados, precios de compra o precios de venta manualmente cada vez que atiendes a un cliente.
+* **Ejemplo práctico**: Tienes el producto base "Lona Front". Pero vendes muy seguido un paquete que incluye "Lona Front de 3x2 metros, con ojillos perimetrales y bastilla reforzada". Puedes crear una plantilla llamada "Lona Publicitaria Grande (3x2m)" colgada de ese producto base.
+* **Cómo crear una plantilla**:
+  1. Ve a **Productos** y haz clic en el nombre del producto base al que pertenecerá la plantilla (ej. entra al detalle de "Lona Front").
+  2. En la sección de plantillas de ese producto, haz clic en **Nueva Plantilla**.
+  3. Llena los datos: **Nombre**, **Modelo** (opcional), **Descripción** (opcional), **Dimensiones** (un texto libre, ej. `2.0m x 3.0m` o `Carta` — no son dos casillas separadas de ancho y alto), **Precio Final**, **Precio Promoción** y **Precio de Compra**, **Stock**, **Categoría** (para agrupar tus plantillas, ej. *Impresión Gran Formato*), **Número de Serie de Plantilla** (opcional, para tu control interno) y si se vende **por paquete** (activa la casilla y anota cuántas **piezas por paquete** trae).
+  4. Haz clic en **Guardar**.
+* **Campos que almacena**: dimensiones (texto libre), categoría, modelo, si se vende por paquete (con piezas por empaque), precio de venta final, precio de compra y su propio **Stock de inventario independiente** del producto base.
 * **Uso al vender**: Al crear un presupuesto o una orden de trabajo, simplemente buscas la plantilla por su nombre en el buscador. El sistema rellenará al instante el formulario con las medidas, precios y detalles preestablecidos, ahorrándote valiosos minutos en mostrador.
 
 ---
@@ -203,8 +239,8 @@ Al terminar la jornada laboral o el turno del cajero, se debe hacer el arqueo (c
 3. En el campo **Monto Real (Efectivo Físico)**, escribe la cantidad exacta de dinero en efectivo que contaste físicamente en el cajón.
 4. **Advertencias por descuadre**:
    - Si lo que contaste físicamente es menor o mayor a lo que la computadora calcula, se encenderá un recuadro de advertencia en color naranja o rojo avisando que hay un **faltante** o **sobrante** de dinero.
-5. **Notas de Cierre obligatorias**:
-   - Si existe alguna diferencia de dinero (aunque sea de $1 peso), **el botón para cerrar se bloqueará**. Para desbloquearlo, debes escribir de forma obligatoria una explicación en el campo de notas (ejemplo: *"Falta de cambio de $20 pesos"* o *"Arqueo correcto"*). Una vez que escribas la justificación, el botón **Confirmar Cierre** se habilitará.
+5. **Notas de Cierre (recomendadas, no obligatorias)**:
+   - El campo de **Notas de cierre** es opcional: el sistema **no te obliga** a escribir nada y el botón **Confirmar Cierre** permanece disponible aunque haya un faltante o sobrante. Aun así, es muy buena práctica anotar siempre el motivo de cualquier diferencia (ejemplo: *"Falta de cambio de $20 pesos"* o *"Se compraron refrescos para el taller"*), porque esa nota queda guardada en el historial y te ayudará a ti o al dueño a entender qué pasó si lo revisan después.
 6. Haz clic en **Confirmar Cierre**. La sesión se guardará en el historial histórico de auditoría.
 
 ---
@@ -251,26 +287,26 @@ Si el cliente acepta el presupuesto, no tienes que volver a escribir todo el ped
 
 Las órdenes de trabajo representan las ventas confirmadas que tus clientes ya pagaron o prometieron pagar y que tu taller debe fabricar o entregar.
 
-### Registro de Orden y Cálculo de Medidas ($m^2$)
+### Registro de Orden
 1. Ve a **Ordenes** en el menú de la izquierda y haz clic en **Nueva Orden**.
 2. Selecciona al **Cliente**.
 3. Elige al **Responsable del Trabajo**:
    - **Mostrador**: Si el trabajo se hace rápido dentro del local o se entrega de inmediato.
    - **Maquila**: Si el trabajo requiere procesos externos (proveedores mayoristas) o si es para un distribuidor grande.
 4. Selecciona la **Fecha Estimada de Entrega** (día y hora aproximada).
-5. Agrega los productos. Para artículos cobrados por medidas (como lonas, viniles o espectaculares):
-   - Escribe el **Ancho** y el **Alto** en metros (ejemplo: ancho `2.50`, alto `1.20`).
-   - El sistema calculará los metros cuadrados automáticamente, los multiplicará por el precio unitario y te dará el total exacto.
+5. Agrega los productos o plantillas y escribe la **Cantidad** de cada uno. El sistema multiplica la cantidad por el precio unitario para darte el total de esa línea.
+   - *Nota*: el sistema **no calcula metros cuadrados automáticamente**. Para artículos que se cobran por medida (lonas, viniles, espectaculares), tú debes calcular tú mismo el total de m² (ancho × alto) y escribirlo en el campo de **Cantidad**; el precio unitario del catálogo debe estar configurado como "precio por m²" para que el cálculo salga correcto. Si vendes siempre la misma medida, considera crear una **Plantilla de Producto** (sección 4) con esas dimensiones fijas para no tener que calcular nada cada vez.
 6. Agrega notas e indicaciones específicas para el área de producción en el cuadro de texto.
-7. Haz clic en **Guardar Orden**. *En este momento, el stock de los productos utilizados se restará de forma automática.*
+7. Elige el **Estado** de la orden: `Revisión`, `Diseño`, `Producción`, `Entrega`, `Completado` o `Cancelado`. Una orden nueva normalmente inicia en `Revisión`.
+8. Haz clic en **Guardar Orden**. *En este momento, el stock de los productos utilizados se restará de forma automática.*
 
 ### Historial de Órdenes Completadas
-Una vez que el pedido es fabricado y entregado al cliente, se marca como completado y se archiva en la sección **Historial** del menú de la izquierda.
+Una vez que el pedido se marca con estado **Completado**, desaparece de las listas activas y se archiva en la sección **Historial** del menú de la izquierda.
 * **Búsqueda Inteligente**: Puedes buscar órdenes archivadas escribiendo en la barra de búsqueda el número de orden, el nombre del cliente, su teléfono o incluso el nombre del producto vendido.
 * **Desplazamiento Infinito**: Para no saturar tu computadora con miles de registros viejos, el historial carga de 10 en 10. Para ver más órdenes antiguas, simplemente desplázate hacia abajo en la pantalla y verás cómo aparecen más automáticamente de forma infinita.
-* **Corregir errores de estado (Reapertura)**: Si marcaste una orden como completada por error y la quieres regresar al área de producción activa:
+* **Corregir errores de estado (Reapertura)**: Si marcaste una orden como `Completado` por error y la quieres regresar al área de producción activa:
   1. Busca la orden en la pantalla de **Historial**.
-  2. Haz clic en **Editar** y cambia su estado a "Pendiente" o "En Proceso".
+  2. Haz clic en **Editar** y cambia su estado a cualquiera de los otros disponibles (`Revisión`, `Diseño`, `Producción` o `Entrega`).
   3. Al guardar, la orden desaparecerá del historial y regresará automáticamente a la lista de órdenes activas de la bitácora de plotters.
 
 ---
@@ -287,7 +323,7 @@ Este módulo está diseñado para registrar ventas rápidas de mostrador que no 
    - **Concepto / Descripción (Obligatorio)**: Escribe lo que le estás cobrando (ej. *"15 copias a color y 1 engargolado"*).
    - **Total a Cobrar (Obligatorio)**: El costo total de la compra.
    - **Abono Inicial (Opcional)**: Lo que te entrega en ese momento. Si te paga todo de una vez, escribe la misma cantidad del total.
-   - **Método de Pago**: Se activa si el abono es mayor a 0 (Efectivo, Tarjeta, Transferencia u Otro).
+   - **Método de Pago**: Se activa si el abono es mayor a 0 (Efectivo, Transferencia, Tarjeta u Otro).
 3. Haz clic en **Guardar Orden**.
 
 * **Atajos de Teclado para agilizar el cobro**:
@@ -310,7 +346,7 @@ Lleva un registro claro de cada peso que entra a tu negocio. Una orden de trabaj
    - **Vincular a Orden**: Usa el buscador para seleccionar la orden de trabajo activa que el cliente va a pagar. El sistema te mostrará cuánto costó la orden, cuánto ha pagado antes y cuánto debe todavía.
    - **Pago Libre (Sin Orden)**: Elige esto para registrar entradas de dinero extra que no provienen de una orden de trabajo (ejemplo: cobro por la venta de cartón/basura de plotters, renta de un espacio, etc.).
 4. Escribe el **Monto del Pago** (la cantidad de dinero que estás recibiendo).
-5. Selecciona el **Método de Pago** (Efectivo, Transferencia, Tarjeta o Crédito/Otro).
+5. Selecciona el **Método de Pago** (Efectivo, Transferencia, Tarjeta u Otro).
 6. **Concepto / Info**: Describe brevemente de qué es el pago. *Si elegiste "Pago Libre", escribir esta nota es obligatorio para justificar la entrada de efectivo.*
 7. Haz clic en **Guardar**. El dinero entrará al saldo de tu sesión de caja chica activa.
 
@@ -398,17 +434,23 @@ Aquí tienes soluciones rápidas a las dudas y pequeños problemas técnicos que
 * **El sistema no hace nada al hacer clic en "Iniciar Sesión" o da un error en rojo.**
   - *Causa*: Estás escribiendo mal el nombre de usuario o la contraseña, o tu cuenta fue desactivada por el administrador.
   - *Solución*: Revisa que no tengas activado el Bloqueo de Mayúsculas (`Bloq Mayús`) en tu teclado. Si estás seguro de escribirla bien, pídele a un administrador que entre a la pantalla de **Usuarios** y revise si tu cuenta está en estado "Activo".
-* **Quiero borrar un usuario pero no veo el botón de eliminar.**
-  - *Causa*: Por seguridad contable, no se permite borrar usuarios para no dejar huérfanas las ventas que hicieron en el pasado.
-  - *Solución*: Edita el perfil del usuario y desactiva el interruptor de estado. Con eso, el usuario ya no podrá ingresar a la aplicación pero sus registros del pasado se guardarán con su nombre.
+* **Le di clic a "Eliminar Usuario" y el mensaje dice que es permanente. ¿De verdad se borra todo su historial de ventas?**
+  - *Causa*: El texto de advertencia de esa ventana es genérico y suena más grave de lo que realmente pasa.
+  - *Solución*: No te preocupes. Tanto el botón **Eliminar Usuario** como el interruptor de **Activo/Inactivo** hacen exactamente lo mismo por dentro: sólo desactivan la cuenta para que no pueda iniciar sesión. Ningún dato de ventas, órdenes o pagos se borra, y puedes reactivar al usuario después con el interruptor si lo necesitas.
+* **No me deja crear un usuario nuevo con un "Rol" (Administrador, Cajero, etc.).**
+  - *Causa*: SETH no usa roles predefinidos. Cada usuario se crea "en blanco" y sus permisos se activan uno por uno.
+  - *Solución*: Después de crear al usuario, entra a **Usuarios**, busca su fila y haz clic en el botón **Permisos** para activarle únicamente lo que necesita para su puesto.
+* **A un empleado le falta una opción en el menú de la izquierda (por ejemplo no ve "Pagos", "Sesión de Caja", "Gráficas de Ventas", "Proveedores", "Bitácora de Impresión" o "Usuarios").**
+  - *Causa*: No es un error del programa. Esas opciones sólo se muestran si el usuario tiene activado el permiso correspondiente.
+  - *Solución*: Pide a un administrador que entre a **Usuarios**, abra el botón **Permisos** de esa persona y active el permiso que le falta (por ejemplo `Ver Caja` para que le aparezca "Sesión de Caja"). Consulta la lista completa en [Permisos por Usuario](#permisos-por-usuario).
 
 ### B. Dudas sobre la Caja Chica y Dinero
 * **El sistema me arroja un error y no me deja hacer un cobro o registrar un abono.**
   - *Causa*: Intentaste cobrar con la caja cerrada.
   - *Solución*: Ve a **Sesión de Caja**, haz clic en **Abrir Turno** e introduce tu saldo inicial en efectivo.
-* **Me aparece una advertencia en rojo/naranja al querer cerrar el turno y no me deja dar clic en Confirmar Cierre.**
-  - *Causa*: El efectivo físico real que contaste en el cajón de dinero no coincide con el balance que calculó la computadora (Saldo Esperado). Para evitar cierres descuadrados sin justificación, el botón se bloquea.
-  - *Solución*: Escribe de forma obligatoria una explicación en el campo de notas (ejemplo: *"Falta de cambio de $20 pesos"* o *"Se compraron refrescos para el taller"*). En cuanto escribas cualquier texto que justifique la diferencia, el botón **Confirmar Cierre** se desbloqueará para que termines tu turno.
+* **Me aparece una advertencia en rojo/naranja al querer cerrar el turno.**
+  - *Causa*: El efectivo físico real que contaste en el cajón de dinero no coincide con el balance que calculó la computadora (Saldo Esperado).
+  - *Solución*: El sistema **no te bloquea** el cierre por esto — sólo te avisa. Aun así, siempre es buena práctica escribir en el campo de **Notas de cierre** una explicación breve (ejemplo: *"Falta de cambio de $20 pesos"* o *"Se compraron refrescos para el taller"*) antes de dar clic en **Confirmar Cierre**, para que quede constancia del motivo en el historial.
 * **Quiero agregar stock a un producto o plantilla pero el sistema me da error.**
   - *Causa*: Tienes la sesión de caja cerrada. Recuerda que al surtir inventario, el sistema registra de forma automática un gasto en la caja chica por el costo de la mercancía.
   - *Solución*: Abre el turno de la caja chica primero en **Sesión de Caja** y luego realiza el surtido de stock.

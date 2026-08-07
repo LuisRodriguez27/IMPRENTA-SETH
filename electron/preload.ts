@@ -1,6 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 contextBridge.exposeInMainWorld('api', {
+  // Configuración inicial (instalación sin usuarios)
+  bootstrapIsRequired: (): Promise<boolean> => ipcRenderer.invoke('bootstrap:isRequired'),
+  bootstrapCreateFirstUser: (data: unknown): Promise<unknown> =>
+    ipcRenderer.invoke('bootstrap:createFirstUser', data),
+
   // Usuarios
   getAllUsers: (): Promise<unknown> => ipcRenderer.invoke('users:getAll'),
   getUserById: (id: number): Promise<unknown> => ipcRenderer.invoke('users:getById', id),

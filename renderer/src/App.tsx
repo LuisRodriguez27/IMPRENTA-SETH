@@ -43,6 +43,7 @@ import { useThemeStore } from '@/store/theme'
 import { enable as enableDarkMode, disable as disableDarkMode } from 'darkreader'
 import UpdateBanner from './components/layout/UpdateBanner'
 import LicenseBlockScreen from './components/layout/LicenseBlockScreen'
+import { FirstRunSetup } from '@/features/auth/first-run'
 
 function AppWrapper() {
   // Initialize auth hook to check authentication status
@@ -92,8 +93,24 @@ function App() {
     }
   };
 
+  // Instalación nueva: la BD no tiene ningún usuario, así que no hay
+  // credenciales con las que entrar. Antes del login hay que crear el
+  // administrador (ver electron/services/bootstrapService.ts).
+  // null = todavía no se sabe; no se dibuja nada para no parpadear el login.
+  const [needsBootstrap, setNeedsBootstrap] = useState<boolean | null>(null);
+
+  const checkBootstrapStatus = async () => {
+    try {
+      setNeedsBootstrap(await window.api.bootstrapIsRequired());
+    } catch (e) {
+      console.error('Error verifying bootstrap status:', e);
+      setNeedsBootstrap(false);
+    }
+  };
+
   useEffect(() => {
     checkLicenseStatus();
+    checkBootstrapStatus();
   }, []);
 
   useEffect(() => {
@@ -187,6 +204,14 @@ function App() {
         onRetry={checkLicenseStatus}
       />
     );
+  }
+
+  if (needsBootstrap === null) {
+    return null;
+  }
+
+  if (needsBootstrap) {
+    return <FirstRunSetup onCompleted={() => setNeedsBootstrap(false)} />;
   }
 
   return (

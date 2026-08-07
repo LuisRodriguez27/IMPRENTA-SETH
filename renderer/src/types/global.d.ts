@@ -37,6 +37,16 @@ import {
 declare global {
   interface Window {
     api: {
+      // Configuración inicial (instalación sin usuarios)
+      bootstrapIsRequired: () => Promise<boolean>;
+      bootstrapCreateFirstUser: (data: { username: string; password: string }) => Promise<{
+        success: boolean;
+        message: string;
+        permissions?: number;
+        products?: number;
+        templates?: number;
+      }>;
+
       // Usuarios
       getAllUsers: () => Promise<User[]>;
       getUserById: (id: number) => Promise<User>;

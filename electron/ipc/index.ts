@@ -1,3 +1,4 @@
+import { registerBootstrapIpc } from './bootstrapIpc';
 import { registerUserIpc } from './userIpc';
 import { registerAuthIpc } from './authIpc';
 import { registerPermissionIpc } from './permissionIpc';
@@ -18,6 +19,7 @@ import { registerImageIpc } from './imageIpc';
 import { registerLicenseIpc } from './licenseIpc';
 
 export function registerIpcHandlers(): void {
+  registerBootstrapIpc();
   registerUserIpc();
   registerAuthIpc();
   registerPermissionIpc();

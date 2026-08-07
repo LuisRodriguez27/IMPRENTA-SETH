@@ -14,82 +14,34 @@
 // La antigua v1 (add_template_serial_number) se eliminó antes de esa
 // entrega porque su columna ya vive en el esquema base de schemaTables.ts,
 // así que en una BD nueva no hacía absolutamente nada.
+//
+// Nota: el catálogo de productos NO se siembra aquí. Depende del primer
+// usuario (queda como su autor), así que corre en bootstrapService.ts
+// cuando se crea ese usuario desde la pantalla de configuración inicial.
 
 import { PoolClient } from 'pg';
 import type { Db } from './types/db';
 import type { Migration } from './types/migrations';
-import { CATALOG_PRODUCTS, CATALOG_TEMPLATES } from './data/catalog';
+import { APP_PERMISSIONS } from './data/permissions';
 
 const MIGRATIONS: Migration[] = [
   {
     version: 1,
-    name: 'seed_catalogo_shiny_trodat',
+    name: 'seed_permisos',
     // Sin isApplied a propósito: una BD anterior al versionado no puede
-    // contener este catálogo, así que no hay estado previo que detectar.
-    // schema_migrations basta para que corra una sola vez.
+    // existir todavía. schema_migrations basta para que corra una sola vez.
     up: async (client: PoolClient) => {
-      // 1. Productos raíz del catálogo, capturando el id que asigna la BD.
-      //    Los productos van sin serial_number (NULL, no cadena vacía: la
-      //    columna tiene UNIQUE y varias cadenas vacías chocarían entre sí).
-      //    Por eso el id se lee del INSERT en lugar de re-consultar por
-      //    nombre: products.name se repite en el catálogo de origen
-      //    (COJINES DE REPUESTO aparece dos veces, con plantillas distintas).
-      //
-      //    El RETURNING sirve en los dos motores: en Postgres devuelve la
-      //    fila insertada, y en SQLite el traductor de db.ts lo elimina y
-      //    better-sqlite3 responde con lastInsertRowid.
-      const idByCsvId = new Map<number, number>();
-
-      for (const product of CATALOG_PRODUCTS) {
-        const { rows } = await client.query(
-          `INSERT INTO products (name, price, stock) VALUES ($1, $2, $3) RETURNING id`,
-          [product.name, product.price, 0]
-        );
-        const inserted = rows[0] as { id?: number; lastInsertRowid?: number } | undefined;
-        const realId = Number(inserted?.id ?? inserted?.lastInsertRowid);
-
-        if (!Number.isInteger(realId) || realId <= 0) {
-          throw new Error(`No se pudo obtener el id del producto "${product.name}" tras insertarlo`);
-        }
-        idByCsvId.set(product.csvId, realId);
-      }
-
-      // 2. Plantillas por lotes. Son ~990 filas: insertarlas una por una
-      //    alarga el primer arranque sin necesidad. 7 columnas x 100 filas =
-      //    700 parámetros por lote, dentro del límite de SQLite y de Postgres.
-      //    Se omiten active y package para que apliquen los DEFAULT del esquema.
-      const BATCH_SIZE = 100;
-      for (let i = 0; i < CATALOG_TEMPLATES.length; i += BATCH_SIZE) {
-        const batch = CATALOG_TEMPLATES.slice(i, i + BATCH_SIZE);
-        const params: unknown[] = [];
-
-        const tuples = batch.map((tpl) => {
-          const productId = idByCsvId.get(tpl.csvProductId);
-          if (!productId) {
-            throw new Error(`La plantilla "${tpl.name}" apunta al producto ${tpl.csvProductId}, que no se sembró`);
-          }
-          const base = params.length;
-          params.push(
-            productId,
-            tpl.name,
-            tpl.templateSerialNumber,
-            tpl.dimensions,
-            tpl.description,
-            tpl.finalPrice,
-            tpl.category
-          );
-          return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7})`;
-        });
-
+      // Los permisos son datos de referencia de la app: deben existir en
+      // cualquier instalación, aún antes de que haya usuarios a quién
+      // asignárselos. Por eso van en una migración y no en el bootstrap.
+      for (const permission of APP_PERMISSIONS) {
         await client.query(
-          `INSERT INTO product_templates
-             (product_id, name, template_serial_number, dimensions, description, final_price, category)
-           VALUES ${tuples.join(', ')}`,
-          params
+          `INSERT INTO permissions (name, description) VALUES ($1, $2)`,
+          [permission.name, permission.description]
         );
       }
 
-      console.log(`Catálogo sembrado: ${CATALOG_PRODUCTS.length} productos, ${CATALOG_TEMPLATES.length} plantillas.`);
+      console.log(`Permisos sembrados: ${APP_PERMISSIONS.length}.`);
     }
   }
 ];

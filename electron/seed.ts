@@ -2,6 +2,7 @@ import './env';
 import * as path from 'path';
 import * as bcrypt from 'bcryptjs';
 import db, { initDb } from './db';
+import { APP_PERMISSIONS } from './data/permissions';
 
 // Configuración
 const saltRounds = 10;
@@ -64,65 +65,13 @@ async function seed(): Promise<void> {
   // -------------------------
   // 3. Insertar permisos
   // -------------------------
-  const permissions: [string, string, boolean][] = [
-    // Usuarios y permisos
-    ['Gestionar Usuario', 'Permite crear, editar o desactivar usuarios', true],
-    ['Gestionar Permisos', 'Permite asignar o revocar permisos a los usuarios', true],
-
-    // Clientes
-    ['Crear Cliente', 'Permite registrar nuevos clientes', true],
-    ['Editar Cliente', 'Permite modificar datos de clientes', true],
-    ['Eliminar Cliente', 'Permite eliminar o desactivar clientes', true],
-
-    // Productos
-    ['Crear Producto', 'Permite registrar nuevos productos', true],
-    ['Editar Producto', 'Permite modificar información de productos', true],
-    ['Eliminar Producto', 'Permite eliminar o desactivar productos', true],
-
-    // Plantillas de productos
-    ['Crear Plantilla', 'Permite crear plantillas de productos', true],
-    ['Editar Plantilla', 'Permite modificar plantillas de productos', true],
-    ['Eliminar Plantilla', 'Permite eliminar plantillas de productos', true],
-
-    // Órdenes
-    ['Crear Órdenes', 'Permite registrar nuevas órdenes', true],
-    ['Editar Órdenes', 'Permite modificar órdenes', true],
-    ['Cancelar Órdenes', 'Permite cancelar órdenes', true],
-
-    // Presupuestos
-    ['Crear Presupuestos', 'Permite registrar nuevos presupuestos', true],
-    ['Eliminar Presupuestos', 'Permite eliminar presupuestos', true],
-    ['Editar Presupuestos', 'Permite editar los presupuestos registrados', true],
-
-    // Pagos
-    ['Ver Pagos', 'Permite ver los pagos registrados', true],
-    ['Registrar Pagos', 'Permite registrar pagos en órdenes', true],
-    ['Eliminar Pagos', 'Permite eliminar o anular pagos', true],
-
-    // Estadísticas
-    ['Estadisticas', 'Permite visualizar las estadisticas de ventas', true],
-
-    // Caja
-    ['Abrir Caja', 'Abre una caja', true],
-    ['Cerrar Caja', 'Cierra una caja', true],
-    ['Ver Caja', 'Puede ver los movimientos de la caja', true],
-    ['Registrar Egreso', 'Puede registrar egresos', true],
-    ['Reabrir Caja', 'Permite volver a abrir una sesión de caja cerrada', true],
-
-    // Proveedores / Mayoristas
-    ['Ver Mayoristas', 'Permite ver el módulo de mayoristas/proveedores', true],
-    ['Crear Orden Mayorista', 'Permite crear una orden para un mayorista', true],
-
-    // Bitácora de impresión
-    ['Ver Bitacora de Impresion', 'Permite ver la bitácora de impresión', true],
-    ['Gestionar Bitacora de Impresion', 'Permite crear, editar y eliminar registros de la bitácora de impresión', true],
-  ];
-
-  for (const perm of permissions) {
+  // La lista vive en electron/data/permissions.ts, compartida con la migración
+  // seed_permisos, para que dev y producción no se desincronicen.
+  for (const perm of APP_PERMISSIONS) {
     await db.execute(`
       INSERT INTO permissions (name, description, active)
       VALUES ($1, $2, $3)
-    `, perm);
+    `, [perm.name, perm.description, true]);
   }
 
   // -------------------------

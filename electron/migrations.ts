@@ -9,34 +9,87 @@
 //   2. Escribe toda la lógica usando `client.query()` (no db.xxx)
 //      para que quede dentro de la misma transacción.
 //   3. NUNCA modifiques o elimines migraciones ya aplicadas.
+//
+// La regla 3 aplica a partir de la primera entrega al cliente.
+// La antigua v1 (add_template_serial_number) se eliminó antes de esa
+// entrega porque su columna ya vive en el esquema base de schemaTables.ts,
+// así que en una BD nueva no hacía absolutamente nada.
 
 import { PoolClient } from 'pg';
 import type { Db } from './types/db';
 import type { Migration } from './types/migrations';
+import { CATALOG_PRODUCTS, CATALOG_TEMPLATES } from './data/catalog';
 
 const MIGRATIONS: Migration[] = [
   {
     version: 1,
-    name: 'add_template_serial_number',
-    isApplied: async (client: PoolClient) => {
-      try {
-        const { rows } = await client.query(`
-          SELECT 1 FROM information_schema.columns 
-          WHERE table_name = 'product_templates' AND column_name = 'template_serial_number'
-        `);
-        return rows.length > 0;
-      } catch (err) {
-        // En caso de SQLite u otro motor que no tenga information_schema, usamos PRAGMA
-        try {
-          const { rows } = await client.query(`PRAGMA table_info(product_templates)`);
-          return rows.some((row: any) => row.name === 'template_serial_number');
-        } catch {
-          return false;
-        }
-      }
-    },
+    name: 'seed_catalogo_shiny_trodat',
+    // Sin isApplied a propósito: una BD anterior al versionado no puede
+    // contener este catálogo, así que no hay estado previo que detectar.
+    // schema_migrations basta para que corra una sola vez.
     up: async (client: PoolClient) => {
-      await client.query(`ALTER TABLE product_templates ADD COLUMN template_serial_number VARCHAR(255)`);
+      // 1. Productos raíz del catálogo, capturando el id que asigna la BD.
+      //    Los productos van sin serial_number (NULL, no cadena vacía: la
+      //    columna tiene UNIQUE y varias cadenas vacías chocarían entre sí).
+      //    Por eso el id se lee del INSERT en lugar de re-consultar por
+      //    nombre: products.name se repite en el catálogo de origen
+      //    (COJINES DE REPUESTO aparece dos veces, con plantillas distintas).
+      //
+      //    El RETURNING sirve en los dos motores: en Postgres devuelve la
+      //    fila insertada, y en SQLite el traductor de db.ts lo elimina y
+      //    better-sqlite3 responde con lastInsertRowid.
+      const idByCsvId = new Map<number, number>();
+
+      for (const product of CATALOG_PRODUCTS) {
+        const { rows } = await client.query(
+          `INSERT INTO products (name, price, stock) VALUES ($1, $2, $3) RETURNING id`,
+          [product.name, product.price, 0]
+        );
+        const inserted = rows[0] as { id?: number; lastInsertRowid?: number } | undefined;
+        const realId = Number(inserted?.id ?? inserted?.lastInsertRowid);
+
+        if (!Number.isInteger(realId) || realId <= 0) {
+          throw new Error(`No se pudo obtener el id del producto "${product.name}" tras insertarlo`);
+        }
+        idByCsvId.set(product.csvId, realId);
+      }
+
+      // 2. Plantillas por lotes. Son ~990 filas: insertarlas una por una
+      //    alarga el primer arranque sin necesidad. 7 columnas x 100 filas =
+      //    700 parámetros por lote, dentro del límite de SQLite y de Postgres.
+      //    Se omiten active y package para que apliquen los DEFAULT del esquema.
+      const BATCH_SIZE = 100;
+      for (let i = 0; i < CATALOG_TEMPLATES.length; i += BATCH_SIZE) {
+        const batch = CATALOG_TEMPLATES.slice(i, i + BATCH_SIZE);
+        const params: unknown[] = [];
+
+        const tuples = batch.map((tpl) => {
+          const productId = idByCsvId.get(tpl.csvProductId);
+          if (!productId) {
+            throw new Error(`La plantilla "${tpl.name}" apunta al producto ${tpl.csvProductId}, que no se sembró`);
+          }
+          const base = params.length;
+          params.push(
+            productId,
+            tpl.name,
+            tpl.templateSerialNumber,
+            tpl.dimensions,
+            tpl.description,
+            tpl.finalPrice,
+            tpl.category
+          );
+          return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5}, $${base + 6}, $${base + 7})`;
+        });
+
+        await client.query(
+          `INSERT INTO product_templates
+             (product_id, name, template_serial_number, dimensions, description, final_price, category)
+           VALUES ${tuples.join(', ')}`,
+          params
+        );
+      }
+
+      console.log(`Catálogo sembrado: ${CATALOG_PRODUCTS.length} productos, ${CATALOG_TEMPLATES.length} plantillas.`);
     }
   }
 ];

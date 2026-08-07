@@ -8,6 +8,7 @@
   "scripts": {
     "postinstall": "",
     "rebuild": "electron-rebuild",
+    "catalog:gen": "node scripts/generate-catalog.js",
     "build:electron": "tsc",
     "build:renderer": "cd renderer && pnpm run build",
     "build": "pnpm run build:electron && pnpm run build:renderer",

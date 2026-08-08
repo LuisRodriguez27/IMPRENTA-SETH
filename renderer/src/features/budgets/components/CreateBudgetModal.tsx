@@ -9,6 +9,7 @@ import QuickCreateProductModal from '@/features/products/components/QuickCreateP
 import type { Product } from '@/features/products/types';
 import { ProductTemplatesApiService } from '@/features/productTemplates/ProductTemplatesApiService';
 import type { ProductTemplate } from '@/features/productTemplates/types';
+import { getTemplateDisplayName } from '@/features/productTemplates/types';
 import { extractErrorMessage } from '@/utils/errorHandling';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Calendar, DollarSign, Layers, Loader, Package, Plus, ReceiptText, Search, ShoppingBag, Trash2, X } from 'lucide-react';
@@ -113,7 +114,11 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
             return {
               type: 'template' as const,
               id: bp.template_id || 0,
-              name: bp.template_base_product_name ? `${bp.template_base_product_name} (Producto)` : (bp.product_name ? `${bp.product_name} (Producto)` : 'Producto'),
+              name: getTemplateDisplayName({
+                id: bp.template_id || 0,
+                name: bp.template_name || '',
+                description: bp.template_description || null
+              }),
               quantity: bp.quantity,
               unit_price: bp.unit_price,
               dimensions: bp.template_dimensions || undefined,
@@ -409,10 +414,11 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
     if (category === 'all' || category === 'templates') {
       templates.forEach(template => {
         const baseProduct = products.find(p => p.id === (template.productId ?? template.product_id));
-        const templateName = baseProduct ? `${baseProduct.name} (Producto)` : `Producto #${template.id}`;
+        const templateName = getTemplateDisplayName(template);
 
         const matchesSearch = !searchTerm ||
           templateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (baseProduct && baseProduct.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
           (template.description && template.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
           (template.dimensions && template.dimensions.toLowerCase().includes(searchTerm.toLowerCase())) ||
           (template.category && template.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -421,7 +427,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
         if (matchesSearch) {
           items.push({
             type: 'template',
-            item: { ...template, name: templateName, product_name: baseProduct?.name } as any
+            item: { ...template, name: templateName, product_name: baseProduct?.name ?? template.product_name }
           });
         }
       });
@@ -470,8 +476,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
       setSearchTerms(prev => ({ ...prev, [index]: `${product.name}${product.serial_number ? ` (${product.serial_number})` : ''}` }));
     } else {
       const template = item as ProductTemplate;
-      const baseProduct = products.find(p => p.id === (template.productId ?? template.product_id));
-      const templateName = baseProduct ? `${baseProduct.name} (Producto)` : `Producto #${template.id}`;
+      const templateName = getTemplateDisplayName(template);
 
       updateBudgetItem(index, {
         type: 'template',
@@ -911,7 +916,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
                                                 <div className="font-medium text-sm text-gray-900">
                                                   {filteredItem.type === 'product'
                                                     ? (filteredItem.item as Product).name
-                                                    : (filteredItem.item as ProductTemplate).description
+                                                    : getTemplateDisplayName(filteredItem.item as ProductTemplate)
                                                   }
                                                 </div>
                                                 {filteredItem.type === 'product' && (filteredItem.item as Product).serial_number && (

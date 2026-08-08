@@ -32,6 +32,7 @@ export interface BudgetProductRow {
   unit_price: number;
   total_price: number;
   product_name: string | null;
+  template_name: string | null;
   template_description: string | null;
 }
 

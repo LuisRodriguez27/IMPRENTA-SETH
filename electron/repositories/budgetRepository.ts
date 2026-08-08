@@ -45,7 +45,7 @@ class BudgetRepository {
 
     if (searchTerm && searchTerm.trim()) {
       const term = `%${searchTerm.trim()}%`;
-      searchCondition = `AND (CAST(b.id AS TEXT) ILIKE $${paramIndex} OR c.name ILIKE $${paramIndex} OR c.phone ILIKE $${paramIndex} OR EXISTS (SELECT 1 FROM budget_products bp LEFT JOIN products p ON bp.product_id = p.id LEFT JOIN product_templates pt ON bp.template_id = pt.id LEFT JOIN products pt_p ON pt.product_id = pt_p.id WHERE bp.budget_id = b.id AND (p.name ILIKE $${paramIndex} OR p.description ILIKE $${paramIndex} OR pt.description ILIKE $${paramIndex} OR pt_p.name ILIKE $${paramIndex})))`;
+      searchCondition = `AND (CAST(b.id AS TEXT) ILIKE $${paramIndex} OR c.name ILIKE $${paramIndex} OR c.phone ILIKE $${paramIndex} OR EXISTS (SELECT 1 FROM budget_products bp LEFT JOIN products p ON bp.product_id = p.id LEFT JOIN product_templates pt ON bp.template_id = pt.id LEFT JOIN products pt_p ON pt.product_id = pt_p.id WHERE bp.budget_id = b.id AND (p.name ILIKE $${paramIndex} OR p.description ILIKE $${paramIndex} OR pt.name ILIKE $${paramIndex} OR pt.description ILIKE $${paramIndex} OR pt_p.name ILIKE $${paramIndex})))`;
       searchParams = [term];
       paramIndex = 2;
     }
@@ -161,6 +161,7 @@ class BudgetRepository {
     return await db.getAll<BudgetProductRow>(`
       SELECT bp.*,
              p.name as product_name, p.serial_number, p.price as product_price, p.description as product_description,
+             pt.name as template_name,
              pt.dimensions as template_dimensions, pt.category as template_category, pt.model as template_model,
              pt.package as template_package, pt.pieces_per_pack as template_pieces_per_pack, pt.description as template_description,
              pt.final_price as template_final_price, u.username as template_created_by_username,

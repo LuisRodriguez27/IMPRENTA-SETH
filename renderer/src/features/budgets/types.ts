@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { getTemplateDisplayName } from '@/features/productTemplates/types';
 
 // Item de orden - puede ser producto o plantilla
 export const budgetItemSchema = z.object({
@@ -86,6 +87,7 @@ export interface BudgetProduct {
   product_description?: string;
 
   // Datos añadidos por JOIN con templates
+  template_name?: string;
   template_dimensions?: string;
   template_category?: string;
   template_model?: string;
@@ -137,8 +139,11 @@ export const getBudgetItemDisplayName = (budgetProduct: BudgetProduct): string =
   if (budgetProduct.product_id) {
     return budgetProduct.product_name || `Producto #${budgetProduct.product_id}`;
   } else if (budgetProduct.template_id) {
-    const baseName = budgetProduct.template_base_product_name || budgetProduct.product_name || 'Producto';
-    return `${baseName} (Producto)`;
+    return getTemplateDisplayName({
+      id: budgetProduct.template_id,
+      name: budgetProduct.template_name || '',
+      description: budgetProduct.template_description || null
+    });
   }
   return 'Item desconocido';
 };

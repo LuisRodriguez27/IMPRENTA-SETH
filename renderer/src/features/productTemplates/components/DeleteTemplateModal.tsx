@@ -3,6 +3,7 @@ import { Trash2, AlertTriangle, Loader, FileText, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ProductTemplatesApiService } from '../ProductTemplatesApiService';
 import type { ProductTemplate } from '../types';
+import { getTemplateDisplayName } from '../types';
 
 interface DeleteTemplateModalProps {
   isOpen: boolean;
@@ -84,7 +85,7 @@ const DeleteTemplateModal: React.FC<DeleteTemplateModalProps> = ({
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium text-gray-900 mb-1">
-                      {template.description || 'Sin descripción'}
+                      {getTemplateDisplayName(template)}
                     </h3>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Package size={14} />

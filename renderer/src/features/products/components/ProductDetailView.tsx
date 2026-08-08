@@ -2,6 +2,7 @@ import { Button, Input } from '@/components/ui';
 import TemplateStats from '@/features/productTemplates/components/TemplateStats';
 import { ProductTemplatesApiService } from '@/features/productTemplates/ProductTemplatesApiService';
 import type { ProductTemplate } from '@/features/productTemplates/types';
+import { getTemplateDisplayName } from '@/features/productTemplates/types';
 import DeleteTemplateModal from '@/features/productTemplates/components/DeleteTemplateModal';
 import { usePermissions } from '@/hooks/use-permissions';
 import {
@@ -561,7 +562,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                           variant="outline"
                           size="sm"
                           onClick={() => {
-                            setAddStockItem({ id: template.id, name: template.name || template.description || `Plantilla #${template.id}`, currentStock: template.stock ?? 0, purchasePrice: template.purchase_price ?? undefined });
+                            setAddStockItem({ id: template.id, name: getTemplateDisplayName(template), currentStock: template.stock ?? 0, purchasePrice: template.purchase_price ?? undefined });
                             setAddStockType('template');
                             setShowAddStockModal(true);
                           }}

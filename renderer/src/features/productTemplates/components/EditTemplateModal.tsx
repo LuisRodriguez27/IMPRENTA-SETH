@@ -119,7 +119,7 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
               <Package className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Editar Plantilla</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Editar Producto</h2>
               <p className="text-sm text-gray-500">
                 Producto: <span className="font-medium">{template.name || template.product_name}</span>
               </p>
@@ -148,7 +148,7 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
             {/* Nombre de la Plantilla */}
             <div>
               <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                Nombre de la Plantilla *
+                Nombre del Producto *
               </Label>
               <div className="mt-1 relative">
                 <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
@@ -434,7 +434,7 @@ const EditTemplateModal: React.FC<EditTemplateModalProps> = ({
               className="flex items-center gap-2"
             >
               {isSubmitting && <Loader className="animate-spin" size={16} />}
-              {isSubmitting ? 'Actualizando...' : 'Actualizar Plantilla'}
+              {isSubmitting ? 'Actualizando...' : 'Actualizar Producto'}
             </Button>
           </div>
         </form>

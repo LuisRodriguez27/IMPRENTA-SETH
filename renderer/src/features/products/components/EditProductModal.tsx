@@ -118,8 +118,8 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
               <ShoppingBag className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Editar Producto</h2>
-              <p className="text-sm text-gray-500">Modificar información del producto</p>
+              <h2 className="text-lg font-semibold text-gray-900">Editar Familia</h2>
+              <p className="text-sm text-gray-500">Modificar información de la familia</p>
             </div>
           </div>
           <Button
@@ -144,14 +144,14 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
             {/* Name */}
             <div className="md:col-span-2">
               <Label htmlFor='name' className='text-sm font-medium text-gray-700'>
-                Nombre del Producto *
+                Nombre de la Familia *
               </Label>
               <div className='mt-1 relative'>
                 <ShoppingBag className='absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400' size={16} />
                 <Input
                   id='name'
                   type='text'
-                  placeholder='Nombre del producto'
+                  placeholder='Nombre de la familia'
                   className='pl-10'
                   {...register('name')}
                 />
@@ -333,7 +333,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                 <FileText className="absolute left-3 top-3 text-gray-400" size={16} />
                 <textarea
                   id="description"
-                  placeholder="Información adicional del producto (opcional)"
+                  placeholder="Información adicional de la familia (opcional)"
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   rows={3}
                   {...register('description')}
@@ -361,7 +361,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
               className="flex items-center gap-2"
             >
               {isSubmitting && <Loader className="animate-spin" size={16} />}
-              {isSubmitting ? 'Actualizando...' : 'Actualizar Producto'}
+              {isSubmitting ? 'Actualizando...' : 'Actualizar Familia'}
             </Button>
           </div>
         </form>

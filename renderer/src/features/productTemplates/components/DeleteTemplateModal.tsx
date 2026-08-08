@@ -59,7 +59,7 @@ const DeleteTemplateModal: React.FC<DeleteTemplateModalProps> = ({
               <AlertTriangle className="h-6 w-6 text-red-600" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Eliminar Plantilla</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Eliminar Producto</h2>
               <p className="text-sm text-gray-500">
                 Esta acción no se puede deshacer
               </p>
@@ -120,10 +120,10 @@ const DeleteTemplateModal: React.FC<DeleteTemplateModalProps> = ({
                 <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
                 <div>
                   <h4 className="text-sm font-medium text-yellow-800 mb-1">
-                    ¿Estás seguro de que quieres eliminar esta plantilla?
+                    ¿Estás seguro de que quieres eliminar este producto?
                   </h4>
                   <p className="text-sm text-yellow-700">
-                    Esta acción eliminará permanentemente la plantilla. 
+                    Esta acción eliminará permanentemente el producto. 
                     No podrás recuperar estos datos después de la eliminación.
                   </p>
                 </div>
@@ -156,7 +156,7 @@ const DeleteTemplateModal: React.FC<DeleteTemplateModalProps> = ({
               ) : (
                 <>
                   <Trash2 size={16} />
-                  Eliminar Plantilla
+                  Eliminar Producto
                 </>
               )}
             </Button>

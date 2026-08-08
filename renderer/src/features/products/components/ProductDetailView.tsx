@@ -282,7 +282,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
           className="flex items-center gap-2"
         >
           <Edit3 size={16} />
-          Editar Producto
+          Editar Familia
         </Button>
       </div>
 
@@ -290,7 +290,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
       <div className="bg-white rounded-lg shadow p-6 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Información del Producto</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Información de la Familia</h2>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <Package className="text-gray-400" size={16} />
@@ -422,7 +422,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 Productos ({filteredTemplates.length})
               </h2>
               <p className="text-sm text-gray-600">
-                Configuraciones personalizadas para este producto
+                Configuraciones personalizadas para cada producto
               </p>
             </div>
             <Button
@@ -443,7 +443,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                 <Input
                   type="text"
-                  placeholder="Buscar plantillas..."
+                  placeholder="Buscar productos..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   className="pl-10"

@@ -93,8 +93,8 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({
               <ShoppingBag className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Nuevo Producto</h2>
-              <p className="text-sm text-gray-500">Crear un nuevo producto del catálogo</p>
+              <h2 className="text-lg font-semibold text-gray-900">Nueva Familia</h2>
+              <p className="text-sm text-gray-500">Crear un nueva familia del catálogo</p>
             </div>
           </div>
           <Button
@@ -119,14 +119,14 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({
             {/* Name */}
             <div className="md:col-span-2">
               <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                Nombre del Producto *
+                Nombre de la Familia *
               </Label>
               <div className="mt-1 relative">
                 <ShoppingBag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                 <Input
                   id="name"
                   type="text"
-                  placeholder="Ingresa el nombre del producto"
+                  placeholder="Ingresa el nombre de la familia"
                   className="pl-10"
                   {...register('name')}
                 />
@@ -308,7 +308,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({
                 <FileText className="absolute left-3 top-3 text-gray-400" size={16} />
                 <textarea
                   id="description"
-                  placeholder="Información adicional del producto (opcional)"
+                  placeholder="Información adicional de la familia (opcional)"
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                   rows={3}
                   {...register('description')}
@@ -336,7 +336,7 @@ const CreateProductModal: React.FC<CreateProductModalProps> = ({
               className="flex items-center gap-2"
             >
               {isSubmitting && <Loader className="animate-spin" size={16} />}
-              {isSubmitting ? 'Creando...' : 'Crear Producto'}
+              {isSubmitting ? 'Creando...' : 'Crear Familia'}
             </Button>
           </div>
         </form>

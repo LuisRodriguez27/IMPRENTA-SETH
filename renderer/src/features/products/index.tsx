@@ -452,7 +452,7 @@ const ProductsPage: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Gestión de Familias de Productos</h1>
           <p className="text-gray-600 mt-2">
-            Administra tu catálogo de productos personalizados
+            Administra tu catálogo de familias
           </p>
         </div>
         <div className="flex gap-2">
@@ -477,7 +477,7 @@ const ProductsPage: React.FC = () => {
             onClick={openCreateModal}
           >
             <Plus size={16} />
-            Nuevo Producto
+            Nueva Familia
           </Button>
         </div>
       </div>
@@ -496,7 +496,7 @@ const ProductsPage: React.FC = () => {
               )}
               <input
                 type="text"
-                placeholder="Buscar productos..."
+                placeholder="Buscar familias..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -516,7 +516,7 @@ const ProductsPage: React.FC = () => {
       <div className="bg-white rounded-lg shadow">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">
-            Productos ({pagination.total})
+            Familias ({pagination.total})
           </h2>
         </div>
         <div className="p-6">
@@ -529,11 +529,11 @@ const ProductsPage: React.FC = () => {
           ) : filteredProducts.length === 0 ? (
             <div className="text-center py-12">
               <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No hay productos</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No hay familias</h3>
               <p className="text-gray-500 mb-4">
                 {currentSearchTerm 
-                  ? `No se encontraron productos que coincidan con "${currentSearchTerm}"`
-                  : 'Comienza agregando tu primer producto al catálogo'
+                  ? `No se encontraron familias que coincidan con "${currentSearchTerm}"`
+                  : 'Comienza agregando tu primera familia al catálogo'
                 }
               </p>
               {!currentSearchTerm && (
@@ -542,7 +542,7 @@ const ProductsPage: React.FC = () => {
                   onClick={openCreateModal}
                 >
                   <Plus size={16} />
-                  Agregar Primer Producto
+                  Agregar Primer Familia
                 </Button>
               )}
             </div>
@@ -566,7 +566,7 @@ const ProductsPage: React.FC = () => {
                           </h3>
                           <span className="inline-flex items-center text-xs text-gray-500 mt-1">
                             <Layers size={12} className="mr-1" />
-                            {product.templates?.length || 0} {(product.templates?.length || 0) === 1 ? 'plantilla' : 'plantillas'}
+                            {product.templates?.length || 0} {(product.templates?.length || 0) === 1 ? 'producto' : 'productos'}
                           </span>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
@@ -695,7 +695,7 @@ const ProductsPage: React.FC = () => {
               {loadingMore && (
                 <div className="flex justify-center items-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
-                  <span className="ml-2 text-gray-600">Cargando más productos...</span>
+                  <span className="ml-2 text-gray-600">Cargando más familias...</span>
                 </div>
               )}
 
@@ -705,7 +705,7 @@ const ProductsPage: React.FC = () => {
                   <p className="text-gray-500">
                     {currentSearchTerm 
                       ? `Se encontraron ${pagination.total} resultado${pagination.total !== 1 ? 's' : ''} para "${currentSearchTerm}"`
-                      : `Has visto todos los productos (${pagination.total})`
+                      : `Has visto todas las familias (${pagination.total})`
                     }
                   </p>
                 </div>

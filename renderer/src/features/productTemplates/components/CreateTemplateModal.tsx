@@ -110,7 +110,7 @@ const CreateTemplateModal: React.FC<CreateTemplateModalProps> = ({
               <Package className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Nueva Plantilla</h2>
+              <h2 className="text-lg font-semibold text-gray-900">Nuevo Producto</h2>
               <p className="text-sm text-gray-500">
                 Crear producto para: <span className="font-medium">{product.name}</span>
               </p>
@@ -150,7 +150,7 @@ const CreateTemplateModal: React.FC<CreateTemplateModalProps> = ({
             {/* Nombre de la Plantilla */}
             <div>
               <Label htmlFor="name" className="text-sm font-medium text-gray-700">
-                Nombre de la Plantilla *
+                Nombre del Producto *
               </Label>
               <div className="mt-1 relative">
                 <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
@@ -437,7 +437,7 @@ const CreateTemplateModal: React.FC<CreateTemplateModalProps> = ({
               className="flex items-center gap-2"
             >
               {isSubmitting && <Loader className="animate-spin" size={16} />}
-              {isSubmitting ? 'Creando...' : 'Crear Plantilla'}
+              {isSubmitting ? 'Creando...' : 'Crear Producto'}
             </Button>
           </div>
         </form>

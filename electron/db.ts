@@ -47,11 +47,11 @@ function getKnex(): Knex {
     let dbPath: string;
     try {
       dbPath = isDev
-        ? path.join(process.cwd(), 'seth_database.db')
-        : path.join(app.getPath('userData'), 'seth_database.db');
+        ? path.join(process.cwd(), 'db/seth_database.db')
+        : path.join(app.getPath('userData'), 'db/seth_database.db');
     } catch (e) {
       // Si falla porque app no está lista en algún script de terminal, usar la raíz
-      dbPath = path.join(process.cwd(), 'seth_database.db');
+      dbPath = path.join(process.cwd(), 'db/seth_database.db');
     }
 
     knexInstance = knex({

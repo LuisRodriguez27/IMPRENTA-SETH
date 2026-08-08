@@ -6,7 +6,7 @@
   "author": "Luis Rodriguez",
   "license": "ISC",
   "scripts": {
-    "postinstall": "",
+    "postinstall": "electron-rebuild -f -w better-sqlite3",
     "rebuild": "electron-rebuild",
     "catalog:gen": "node scripts/generate-catalog.js",
     "build:electron": "tsc",

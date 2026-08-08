@@ -6,14 +6,14 @@ const config: { [key: string]: Knex.Config } = {
   development: {
     client: 'better-sqlite3',
     connection: {
-      filename: path.join(process.cwd(), 'seth_database.db'),
+      filename: path.join(process.cwd(), 'db/seth_database.db'),
     },
     useNullAsDefault: true,
   },
   production: {
     client: 'better-sqlite3',
     connection: {
-      filename: 'seth_database.db', // Se modificará dinámicamente en db.ts para usar el directorio de datos del usuario (userData)
+      filename: 'db/seth_database.db', // Se modificará dinámicamente en db.ts para usar el directorio de datos del usuario (userData)
     },
     useNullAsDefault: true,
   },

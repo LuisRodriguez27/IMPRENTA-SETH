@@ -55,6 +55,7 @@ export interface OrderProductRow {
   product_price: number | null;
   product_description: string | null;
   /** Joined desde product_templates */
+  template_name: string | null;
   template_dimensions: string | null;
   template_category: string | null;
   template_model: string | null;

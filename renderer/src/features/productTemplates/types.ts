@@ -60,3 +60,10 @@ export interface ProductTemplate {
   serial_number?: string | null;
   created_by_username?: string | null;
 }
+
+// Nombre a mostrar de una plantilla. El catálogo sembrado tiene plantillas sin
+// descripción, y `name` es nullable en la BD, por eso la cadena de respaldos.
+export const getTemplateDisplayName = (
+  template: Pick<ProductTemplate, 'id' | 'name' | 'description'>
+): string =>
+  template.name?.trim() || template.description?.trim() || `Plantilla #${template.id}`;

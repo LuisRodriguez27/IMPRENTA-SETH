@@ -4,6 +4,7 @@ import { Button } from '@/components/ui';
 import { Layers, Package, Search } from 'lucide-react';
 import type { Product } from '@/features/products/types';
 import type { ProductTemplate } from '@/features/productTemplates/types';
+import { getTemplateDisplayName } from '@/features/productTemplates/types';
 import type { FilteredItem, DropdownPosition } from '../hooks/useOrderItems';
 
 interface ItemSearchDropdownProps {
@@ -59,7 +60,7 @@ const ItemSearchDropdown: React.FC<ItemSearchDropdownProps> = ({
                     <div className="font-medium text-sm text-gray-900">
                       {filteredItem.type === 'product'
                         ? (filteredItem.item as Product).name
-                        : (filteredItem.item as ProductTemplate).description
+                        : getTemplateDisplayName(filteredItem.item as ProductTemplate)
                       }
                     </div>
                     {filteredItem.type === 'product' && (filteredItem.item as Product).serial_number && (
@@ -74,6 +75,11 @@ const ItemSearchDropdown: React.FC<ItemSearchDropdownProps> = ({
                         )}
                         {(filteredItem.item as ProductTemplate).dimensions && (
                           <span className="ml-2">{(filteredItem.item as ProductTemplate).dimensions}</span>
+                        )}
+                        {/* La descripción solo se repite aquí si no está haciendo de título */}
+                        {(filteredItem.item as ProductTemplate).name?.trim() &&
+                          (filteredItem.item as ProductTemplate).description?.trim() && (
+                          <span className="ml-2">{(filteredItem.item as ProductTemplate).description}</span>
                         )}
                       </div>
                     )}

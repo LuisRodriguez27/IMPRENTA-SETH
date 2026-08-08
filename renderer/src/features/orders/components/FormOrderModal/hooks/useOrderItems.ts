@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 
 import type { Product } from '@/features/products/types';
 import type { ProductTemplate } from '@/features/productTemplates/types';
+import { getTemplateDisplayName } from '@/features/productTemplates/types';
 import { ProductTemplatesApiService } from '@/features/productTemplates/ProductTemplatesApiService';
 import type { OrderFormItem } from '../../../types';
 
@@ -271,11 +272,11 @@ export const useOrderItems = (): UseOrderItemsReturn => {
     // Agregar plantillas si corresponde
     if (category === 'all' || category === 'templates') {
       templates.forEach(template => {
-        const baseProductName = template.product_name || 'Producto';
-        const templateName = `${baseProductName} (Producto)`;
+        const templateName = getTemplateDisplayName(template);
 
         const matchesSearch = !searchTerm ||
           templateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (template.product_name && template.product_name.toLowerCase().includes(searchTerm.toLowerCase())) ||
           (template.description && template.description.toLowerCase().includes(searchTerm.toLowerCase())) ||
           (template.dimensions && template.dimensions.toLowerCase().includes(searchTerm.toLowerCase())) ||
           (template.category && template.category.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -284,7 +285,7 @@ export const useOrderItems = (): UseOrderItemsReturn => {
         if (matchesSearch) {
           items.push({
             type: 'template',
-            item: { ...template, name: templateName, product_name: baseProductName } as any
+            item: { ...template, name: templateName }
           });
         }
       });
@@ -333,8 +334,7 @@ export const useOrderItems = (): UseOrderItemsReturn => {
       setSearchTerms(prev => ({ ...prev, [index]: `${product.name}${product.serial_number ? ` (${product.serial_number})` : ''}` }));
     } else {
       const template = item as ProductTemplate;
-      const baseProductName = template.product_name || 'Producto';
-      const templateName = `${baseProductName} (Producto)`;
+      const templateName = getTemplateDisplayName(template);
 
       updateOrderItem(index, {
         type: 'template',

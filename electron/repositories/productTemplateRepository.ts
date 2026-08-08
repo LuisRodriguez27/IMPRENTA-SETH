@@ -132,7 +132,7 @@ class ProductTemplateRepository {
 
   async searchByTerm(searchTerm: string) {
     const term = `%${searchTerm}%`;
-    const templates = await db.getAll<ProductTemplateRow>(`${this._selectQuery} WHERE pt.active = true AND (pt.description ILIKE $1 OR p.name ILIKE $1 OR p.serial_number ILIKE $1 OR pt.template_serial_number ILIKE $1 OR pt.category ILIKE $1 OR pt.model ILIKE $1 OR u.username ILIKE $1) ORDER BY pt.id DESC`, [term]);
+    const templates = await db.getAll<ProductTemplateRow>(`${this._selectQuery} WHERE pt.active = true AND (pt.name ILIKE $1 OR pt.description ILIKE $1 OR p.name ILIKE $1 OR p.serial_number ILIKE $1 OR pt.template_serial_number ILIKE $1 OR pt.category ILIKE $1 OR pt.model ILIKE $1 OR u.username ILIKE $1) ORDER BY pt.id DESC`, [term]);
     return templates.map((t) => new ProductTemplate(t));
   }
 
@@ -148,7 +148,7 @@ class ProductTemplateRepository {
       templates = raw.map((t) => new ProductTemplate(t));
     } else {
       const term = `%${searchTerm.trim()}%`;
-      const searchWhere = `pt.active = true AND (pt.description ILIKE $1 OR p.name ILIKE $1 OR p.serial_number ILIKE $1 OR pt.template_serial_number ILIKE $1 OR pt.category ILIKE $1 OR pt.model ILIKE $1 OR u.username ILIKE $1)`;
+      const searchWhere = `pt.active = true AND (pt.name ILIKE $1 OR pt.description ILIKE $1 OR p.name ILIKE $1 OR p.serial_number ILIKE $1 OR pt.template_serial_number ILIKE $1 OR pt.category ILIKE $1 OR pt.model ILIKE $1 OR u.username ILIKE $1)`;
       const countResult = await db.getOne<{ total: string }>(`SELECT COUNT(*) as total FROM product_templates pt JOIN products p ON pt.product_id = p.id LEFT JOIN users u ON pt.created_by = u.id WHERE ${searchWhere}`, [term]);
       total = parseInt(countResult!.total, 10) || 0;
       const raw = await db.getAll<ProductTemplateRow>(`${this._selectQuery} WHERE ${searchWhere} ORDER BY pt.id DESC LIMIT $2 OFFSET $3`, [term, limit, offset]);

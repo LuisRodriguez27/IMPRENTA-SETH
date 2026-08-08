@@ -9,6 +9,7 @@ import {
   type OrderFormItem,
   getOrderItemType
 } from '../../../types';
+import { getTemplateDisplayName } from '@/features/productTemplates/types';
 import type { UseClientSearchReturn } from '@/features/clients/hooks/useClientSearch';
 import type { UseOrderItemsReturn } from './useOrderItems';
 import { extractErrorMessage } from '@/utils/errorHandling';
@@ -104,11 +105,14 @@ export const useOrderForm = ({
             };
           } else {
             // Es una plantilla
-            const baseProductName = op.template_base_product_name || op.product_name || 'Producto';
             return {
               type: 'template' as const,
               id: op.template_id!,
-              name: `${baseProductName} (Producto)`,
+              name: getTemplateDisplayName({
+                id: op.template_id!,
+                name: op.template_name || '',
+                description: op.template_description || null
+              }),
               quantity: op.quantity,
               unit_price: op.unit_price,
               description: op.template_description,

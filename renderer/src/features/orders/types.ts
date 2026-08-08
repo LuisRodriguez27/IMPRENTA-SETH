@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { getTemplateDisplayName } from '@/features/productTemplates/types';
 
 // Enum para los estados de orden
 export const OrderStatus = {
@@ -131,6 +132,7 @@ export interface OrderProduct {
   product_description?: string;
 
   // Datos añadidos por JOIN con templates
+  template_name?: string;
   template_dimensions?: string;
   template_category?: string;
   template_model?: string;
@@ -188,8 +190,11 @@ export const getOrderItemDisplayName = (orderProduct: OrderProduct): string => {
   if (orderProduct.product_id) {
     return orderProduct.product_name || `Producto #${orderProduct.product_id}`;
   } else if (orderProduct.template_id) {
-    const baseName = orderProduct.template_base_product_name || orderProduct.product_name || 'Producto';
-    return baseName;
+    return getTemplateDisplayName({
+      id: orderProduct.template_id,
+      name: orderProduct.template_name || '',
+      description: orderProduct.template_description || null
+    });
   }
   return 'Item desconocido';
 };

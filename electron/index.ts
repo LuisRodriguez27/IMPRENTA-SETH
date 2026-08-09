@@ -1,5 +1,7 @@
-import { app, BrowserWindow, ipcMain, protocol, net, shell, Menu, clipboard } from 'electron';
+import { app, BrowserWindow, ipcMain, protocol, net, shell, Menu, clipboard, nativeImage } from 'electron';
 import * as path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
 import { spawn } from 'child_process';
 import { autoUpdater } from 'electron-updater';
 import * as log from 'electron-log';
@@ -160,6 +162,105 @@ function createWindow(): void {
 }
 
 
+
+// ── Renderizado de la nota a imagen ──────────────────────────────────────────
+//
+// Rasteriza el MISMO documento HTML que se manda a la impresora, usando el
+// motor de Chromium (`capturePage`) en una ventana oculta.
+//
+// Se hace aquí y no en el renderer con html2canvas porque html2canvas
+// reimplementa el layout por su cuenta y desalinea los campos respecto al
+// fondo. Con capturePage la imagen sale, por construcción, igual a la impresión.
+//
+// Recibe una página por elemento del arreglo y devuelve un PNG por página en
+// base64. El tamaño va en px CSS (21.6cm x 17cm a 96dpi = 816.38 x 642.52).
+ipcMain.handle('note:renderToImages', async (
+  _event,
+  pagesHtml: string[],
+  options: { width: number; height: number; scale?: number }
+): Promise<string[]> => {
+  if (!Array.isArray(pagesHtml) || pagesHtml.length === 0) {
+    throw new Error('No se recibió ninguna página que renderizar');
+  }
+
+  const scale = Math.max(1, Math.min(4, Math.round(options.scale ?? 2)));
+  const cssWidth = options.width;
+  const cssHeight = options.height;
+
+  const win = new BrowserWindow({
+    show: false,
+    useContentSize: true,
+    width: Math.round(cssWidth * scale),
+    height: Math.round(cssHeight * scale),
+    // Una ventana con `show: false` sólo rasteriza si se le pide pintar; sin
+    // esto capturePage puede devolver una imagen en blanco.
+    paintWhenInitiallyHidden: true,
+    webPreferences: {
+      // El HTML es generado por la propia app y sólo lleva estilos e imágenes
+      // embebidas en data URLs: no necesita Node ni acceso al preload.
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true,
+      // Evita que Chromium frene el render (y con él requestAnimationFrame)
+      // por tratarse de una ventana en segundo plano.
+      backgroundThrottling: false,
+      // Renderiza a `scale`x para que el PNG salga a esa resolución sin
+      // cambiar el layout, que se mantiene en px CSS.
+      zoomFactor: scale,
+    },
+  });
+
+  // El HTML lleva el fondo embebido en base64 y suele pasar de 2 MB, que es
+  // donde Chromium corta las data URL de navegación. Por eso va por archivo.
+  const tmpDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'seth-nota-'));
+
+  try {
+    const images: string[] = [];
+
+    for (const [i, pageHtml] of pagesHtml.entries()) {
+      const file = path.join(tmpDir, `pagina-${i + 1}.html`);
+      await fs.promises.writeFile(file, pageHtml, 'utf-8');
+
+      // loadFile resuelve al terminar de cargar y rechaza si falla.
+      await win.loadFile(file);
+
+      // Espera a que las imágenes embebidas estén decodificadas y a que el
+      // compositor haya pintado al menos un cuadro. Con tope de tiempo: si la
+      // ventana oculta no llegara a pintar, requestAnimationFrame no dispara y
+      // esto se quedaría colgado para siempre.
+      await Promise.race([
+        win.webContents.executeJavaScript(`
+          (async () => {
+            if (document.fonts && document.fonts.ready) await document.fonts.ready;
+            await Promise.all(Array.from(document.images).map(img =>
+              img.complete ? null : new Promise(r => { img.onload = img.onerror = r; })
+            ));
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+          })();
+        `),
+        new Promise(resolve => setTimeout(resolve, 3000)),
+      ]);
+
+      const image = await win.webContents.capturePage();
+      if (image.isEmpty()) {
+        throw new Error('La captura de la nota salió vacía');
+      }
+      images.push(image.toPNG().toString('base64'));
+    }
+
+    return images;
+  } finally {
+    win.destroy();
+    await fs.promises.rm(tmpDir, { recursive: true, force: true }).catch(() => { /* temporal */ });
+  }
+});
+
+// Copia un PNG (base64) al portapapeles del sistema.
+ipcMain.handle('note:copyImageToClipboard', (_event, pngBase64: string) => {
+  const image = nativeImage.createFromBuffer(Buffer.from(pngBase64, 'base64'));
+  if (image.isEmpty()) throw new Error('La imagen de la nota salió vacía');
+  clipboard.writeImage(image);
+});
 
 // Handlers IPC — WhatsApp
 ipcMain.handle('whatsapp:open', () => {

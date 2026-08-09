@@ -237,6 +237,14 @@ contextBridge.exposeInMainWorld('api', {
   // WhatsApp
   openWhatsApp: (): Promise<unknown> => ipcRenderer.invoke('whatsapp:open'),
 
+  // Nota a imagen — rasteriza el HTML de impresión con el motor de Chromium
+  renderNoteToImages: (
+    pagesHtml: string[],
+    options: { width: number; height: number; scale?: number }
+  ): Promise<string[]> => ipcRenderer.invoke('note:renderToImages', pagesHtml, options),
+  copyImageToClipboard: (pngBase64: string): Promise<void> =>
+    ipcRenderer.invoke('note:copyImageToClipboard', pngBase64),
+
   // Sistema de Licencias
   checkLicense: (): Promise<any> => ipcRenderer.invoke('license:check'),
   onLicenseStatus: (callback: (status: any) => void): (() => void) => {

@@ -1,267 +1,242 @@
-import { getOrderItemDisplayName, getOrderItemDescription, getOrderItemType } from '../types';
-import { formatDateMX, formatDateOnlyMX } from '@/utils/dateUtils';
+import notaImage from '@/assets/NOTA-IMPRESOS-SETh.jpg';
+import paidStampImage from '@/assets/SELLO-PAGADO.png';
+import {
+  getDay,
+  getMonth,
+  getYear,
+  getHours,
+  getDayUTC,
+  getMonthUTC,
+  getYearUTC,
+  money,
+  clientColorHex,
+  chunkNoteItems,
+  imageToBase64,
+  NOTE_COLORS as C,
+  type OrderNote,
+  type NoteItem,
+} from './orderNoteData';
 
-const getDay = (d: string) => formatDateMX(d, 'DD');
-const getMonth = (d: string) => formatDateMX(d, 'MM');
-const getYear = (d: string) => formatDateMX(d, 'YYYY');
-const getHours = (d: string) => formatDateMX(d, 'HH:mm');
-// Para estimated_delivery_date (UTC midnight) – no aplicar offset de timezone
-const getDayUTC = (d: string) => formatDateOnlyMX(d, 'DD');
-const getMonthUTC = (d: string) => formatDateOnlyMX(d, 'MM');
-const getYearUTC = (d: string) => formatDateOnlyMX(d, 'YYYY');
+// Re-exportado por compatibilidad: la implementación vive en orderNoteData.
+export { imageToBase64 };
 
-// ── Convierte una URL de imagen local a base64 ─────────────────────────────
-export const imageToBase64 = (url: string): Promise<string> =>
-	new Promise((resolve, reject) => {
-		const img = new Image();
-		img.crossOrigin = 'anonymous';
-		img.onload = () => {
-			const canvas = document.createElement('canvas');
-			canvas.width = img.width;
-			canvas.height = img.height;
-			canvas.getContext('2d')?.drawImage(img, 0, 0);
-			resolve(canvas.toDataURL('image/png'));
-		};
-		img.onerror = reject;
-		img.src = url;
-	});
+/** Proporción de la página de la nota: 21.6cm x 17cm. */
+export const PAGE_ASPECT = 21.6 / 17;
+
+// Escapa texto que viene de la base de datos antes de meterlo en el HTML.
+const esc = (v: unknown) =>
+  String(v ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 
 // ── Genera el HTML de UNA página de la nota ───────────────────────────────
+// Coordenadas trasladadas 1:1 desde la vista previa (lienzo 816 x 642.5px).
+// Equivalencia: clase Tailwind `N` = N * 0.25rem  (ej. left-138 = 34.5rem).
 export function buildPageHtml(params: {
-	chunkProducts: any[];
-	isLastPage: boolean;
-	pageBreak: boolean;
-	orderData: any;
-	paymentsData: any[];
-	totalPagos: number;
-	saldoPendiente: number;
-	hasPreferentialPrice: boolean;
-	base64Image: string;
-	base64SpecialPrice: string | null;
+  note: OrderNote;
+  items: NoteItem[];
+  isLastPage: boolean;
+  pageBreak: boolean;
+  base64Image: string;
+  base64Stamp: string | null;
 }): string {
-	const {
-		chunkProducts,
-		isLastPage,
-		pageBreak,
-		orderData,
-		paymentsData,
-		totalPagos,
-		saldoPendiente,
-		hasPreferentialPrice,
-		base64Image,
-		base64SpecialPrice,
-	} = params;
+  const { note, items, isLastPage, pageBreak, base64Image, base64Stamp } = params;
+  const circleColor = clientColorHex(note.clientColor);
 
-	return `
+  return `
     <div class="print-container" style="${pageBreak ? 'page-break-before: always;' : ''}">
-        ${hasPreferentialPrice ? `
-        <!-- Sello de precio especial -->
-        <div style="position: absolute; bottom: 4rem; right: 4.8rem; width: 6.5rem; background-color: rgb(220, 38, 38); color: white; font-weight: bold; font-size: 0.55rem; text-align: center; padding: 0.35rem 0.25rem; box-sizing: border-box; z-index: 10; line-height: 1.2;">
-          USTED HA ADQUIRIDO UN PRECIO ESPECIAL
+      ${note.hasPreferentialPrice ? `
+      <!-- Sello de precio especial · bottom-8 right-10 w-26 p-1.5 -->
+      <div style="position: absolute; bottom: 2rem; right: 2.5rem; width: 6.5rem; background-color: ${C.red600}; color: ${C.white}; font-weight: 700; font-size: 0.65rem; line-height: 1.2; text-align: center; padding: 0.375rem; box-sizing: border-box; z-index: 10;">
+        USTED HA ADQUIRIDO UN PRECIO ESPECIAL
+      </div>
+      ` : ''}
+
+      ${note.isSaldada && base64Stamp ? `
+      <!-- Sello de saldada · bottom-22 right-36 -->
+      <img src="${base64Stamp}" alt="Saldada" style="position: absolute; bottom: 5.5rem; right: 9rem; width: 7rem; height: auto; z-index: 10; opacity: 0.9; transform: rotate(25deg);" />
+      ` : ''}
+
+      <!-- Imagen de fondo -->
+      <img src="${base64Image}" alt="Fondo" class="background-image" />
+
+      <!-- Fecha de recibo · top-13 left-138 w-[110px] text-sm -->
+      <div style="position: absolute; top: 3.25rem; left: 34.5rem; width: 110px; text-align: right; font-size: 0.875rem; line-height: 1.25rem; font-weight: 700; color: ${C.black};">
+        <div style="display: flex; gap: 1rem;">
+          <span>${getDay(note.date)}</span>
+          <span>${getMonth(note.date)}</span>
+          <span>${getYear(note.date)}</span>
         </div>
-        ` : ''}
+      </div>
 
-        ${base64SpecialPrice ? `
-        <!-- Sello de saldada -->
-        <img src="${base64SpecialPrice}" alt="Saldada" style="position: absolute; top: 30rem; right: 2.5rem; width: 7rem; height: auto; z-index: 10; opacity: 0.9; transform: rotate(15deg);" />
-        ` : ''}
-
-        <!-- Imagen de fondo -->
-        <img src="${base64Image}" alt="Fondo" class="background-image" />
-
-        <!-- Fechas en dos columnas -->
-        <div style="position: absolute; top: 4rem; right: 1rem; font-size: 1rem; line-height: 1.25rem; font-weight: 700; color: rgb(0, 0, 0);">
-            <div style="display: flex; min-width: 255px; align-items: flex-start;">
-                <div style="text-align: right; width: 115px;">
-                    <div style="display: flex; gap: 1rem;">
-                        <span>${getDay(orderData.date)}</span>
-                        <span>${getMonth(orderData.date)}</span>
-                        <span>${getYear(orderData.date)}</span>
-                    </div>
-                </div>
-                ${orderData.estimated_delivery_date ? `
-                <div style="text-align: right; width: 100px;">
-                    <div style="display: flex; gap: 1.25rem;">
-                        <span>${getDayUTC(orderData.estimated_delivery_date)}</span>
-                        <span>${getMonthUTC(orderData.estimated_delivery_date)}</span>
-                        <span>${getYearUTC(orderData.estimated_delivery_date)}</span>
-                    </div>
-                </div>
-                ` : ''}
-            </div>
+      ${note.estimatedDeliveryDate ? `
+      <!-- Fecha de entrega · top-13 left-169 w-[100px] text-sm -->
+      <div style="position: absolute; top: 3.25rem; left: 42.25rem; width: 100px; text-align: right; font-size: 0.875rem; line-height: 1.25rem; font-weight: 700; color: ${C.black};">
+        <div style="display: flex; gap: 1.25rem;">
+          <span>${getDayUTC(note.estimatedDeliveryDate)}</span>
+          <span>${getMonthUTC(note.estimatedDeliveryDate)}</span>
+          <span>${getYearUTC(note.estimatedDeliveryDate)}</span>
         </div>
+      </div>
+      ` : ''}
 
-        <!-- Hora de la orden -->
-        <div style="position: absolute; top: 7.5rem; right: 14.5rem; font-size: 1rem; font-weight: 700; color: rgb(0,0,0);">
-            ${getHours(orderData.date)}
-        </div>
+      <!-- Hora · top-32 right-55 (sin negrita, igual que el preview) -->
+      <div style="position: absolute; top: 8rem; right: 13.75rem; font-size: 1rem; line-height: 1.5; font-weight: 400; color: ${C.black};">
+        ${getHours(note.date)}
+      </div>
 
-        <!-- Cliente -->
-        <div style="position: absolute; top: 7.5rem; left: 6.25rem; width: 18rem; font-size: 1.25rem; line-height: 1; font-weight: 700; color: rgb(0, 0, 0); display: flex; align-items: center; gap: 0.5rem;">
-            ${orderData.client?.color
-			? `<div style="width: 1rem; height: 1rem; border-radius: 9999px; background-color: ${orderData.client.color === 'green' ? '#22c55e' :
-				orderData.client.color === 'yellow' ? '#eab308' :
-					orderData.client.color === 'red' ? '#ef4444' : 'transparent'
-			}; flex-shrink: 0;"></div>`
-			: ''}
-            <span style="font-size: calc(1em - 2px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; width: 100%;">
-                ${orderData.client?.name || 'Cliente no especificado'}
-            </span>
-        </div>
+      <!-- Cliente · top-32 left-25 w-[288px] text-xl -->
+      <div style="position: absolute; top: 8rem; left: 6.25rem; width: 288px; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; color: ${C.black}; display: flex; align-items: center; gap: 0.5rem;">
+        ${circleColor ? `<div style="width: 1rem; height: 1rem; border-radius: 9999px; background-color: ${circleColor}; flex-shrink: 0;"></div>` : ''}
+        <span style="font-size: calc(1em - 2px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          ${esc(note.clientName)}
+        </span>
+      </div>
 
-        <!-- Teléfono -->
-        <div style="position: absolute; top: 7.5rem; left: 38.75rem; width: 9.5rem; font-size: 1.25rem; line-height: 1; font-weight: 700; color: rgb(0, 0, 0); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-            ${orderData.client?.phone || ''}
-        </div>
+      <!-- Teléfono · top-32 left-[620px] w-[152px] text-xl -->
+      <div style="position: absolute; top: 8rem; left: 620px; width: 152px; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; color: ${C.black};">
+        <span style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${esc(note.clientPhone)}</span>
+      </div>
 
-        <!-- Productos en formato de tabla -->
-        <div style="position: absolute; top: 9rem; left: 2rem; right: 2.5rem; color: rgb(0, 0, 0);">
-            <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0.5rem; font-size: 1rem; line-height: 1; font-weight: 600; margin-bottom: 0.5rem; border-bottom: 1px solid rgb(156, 163, 175); padding-bottom: 0.25rem;">
-                <div style="grid-column: span 1 / span 1; text-align: center;">Cant.</div>
-                <div style="grid-column: span 7 / span 7; text-align: left;">Producto</div>
-                <div style="grid-column: span 2 / span 2; text-align: right;">P. Unitario</div>
-                <div style="grid-column: span 2 / span 2; text-align: right;">Total</div>
-            </div>
-            ${chunkProducts.map(product => `
-                <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0.5rem; margin-bottom: 0.5rem; font-size: 1rem; line-height: 1.5rem; padding-top: 0.25rem; padding-bottom: 0.25rem;">
-                    <div style="grid-column: span 1 / span 1; text-align: center;">${product.quantity}</div>
-                    <div style="grid-column: span 7 / span 7; padding-left: 0.25rem;">
-                        <div style="font-weight: 500;">
-                          ${getOrderItemDisplayName(product)}
-                        </div>
-                        <div>
-                          ${getOrderItemDescription(product)
-					? `<div style="font-size: 0.875rem; color: rgb(70, 80, 90); margin-top: -0.2rem; line-height: 1;">
-                                ${getOrderItemDescription(product)}
-                               </div>`
-					: ''}
-                        </div>
-                    </div>
-                    <div style="grid-column: span 2 / span 2; text-align: right; font-weight: 500;">${product.unit_price.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                    <div style="grid-column: span 2 / span 2; text-align: right; font-weight: 500;">${product.total_price.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                </div>
-            `).join('')}
+      <!-- Productos · top-42 left-6 right-6 bottom-40, recortado para que la
+           tabla no se derrame sobre la zona de totales -->
+      <div style="position: absolute; top: 10.5rem; left: 1.5rem; right: 1.5rem; bottom: 10rem; overflow: hidden; color: ${C.black};">
+        ${items.map(item => `
+        <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0.5rem; margin-bottom: 0.5rem; font-size: 1rem; line-height: 1.5; padding-top: 0.25rem; padding-bottom: 0.25rem;">
+          <div style="grid-column: span 1 / span 1; text-align: center;">${esc(item.quantity)}</div>
+          <div style="grid-column: span 8 / span 8; padding-left: 0.25rem;">
+            <div style="font-weight: 500;${item.preserveLineBreaks ? ' white-space: pre-wrap;' : ''}">${esc(item.name)}</div>
+            ${item.description
+      ? `<div style="font-size: 0.875rem; line-height: 1.25; color: ${C.gray700}; margin-top: -0.5rem;">${esc(item.description)}</div>`
+      : ''}
+          </div>
+          <div style="grid-column: span 1 / span 1; margin-left: 1.5rem; text-align: right; font-weight: 500;">$${money(item.unitPrice)}</div>
+          <div style="grid-column: span 2 / span 2; text-align: right; font-weight: 500;">$${money(item.totalPrice)}</div>
         </div>
+        `).join('')}
+      </div>
 
-        ${isLastPage && orderData.description ? `
-        <!-- Descripción de la orden -->
-        <div style="position: absolute; bottom: 8.8rem; left: 5rem; right: 3rem; font-size: 1rem; color: rgb(153, 27, 27); font-weight: 700; padding: 0.5rem; border-radius: 0.25rem; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; line-height: 1.2em; max-height: 4.2em;">
-            ${orderData.description}
+      ${isLastPage && note.description ? `
+      <!-- Descripción · bottom-37 left-20 right-10 p-2 text-sm -->
+      <div style="position: absolute; bottom: 9.25rem; left: 5rem; right: 2.5rem; font-size: 0.875rem; line-height: 1.25rem; color: ${C.red800}; padding: 0.5rem; border-radius: 0.25rem;">
+        <div style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: break-word;">
+          ${esc(note.description)}
         </div>
-        ` : ''}
+      </div>
+      ` : ''}
 
-        <div>
-            <!-- Número de Orden en la parte inferior derecha -->
-            <div style="position: absolute; bottom: 2.2rem; right: 5rem; font-size: 1.25rem; line-height: 1; font-weight: 700; color: rgb(220, 38, 38); text-align: center;">
-                No. ${orderData.id}
-            </div>
-        </div>
+      <!-- Folio · bottom-22 right-18 text-xl -->
+      <div style="position: absolute; bottom: 5.5rem; right: 4.5rem; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; color: ${C.red600};">
+        <div style="text-align: center;">No. ${esc(note.folio)}</div>
+      </div>
 
-        <!-- Mensaje de agradecimiento y usuario -->
-        <div style="position: absolute; bottom: 6.5rem; left: 12.5rem; font-size: 1rem; line-height: 1; font-weight: 700; color: rgb(3, 105, 161);">
-            LE ATENDIÓ ${orderData.user?.username || ''}
-        </div>
+      <!-- Le atendió · bottom-28 left-6 -->
+      <div style="position: absolute; bottom: 7rem; left: 1.5rem; font-size: 1rem; line-height: 1.5;">
+        <div style="color: ${C.blue900}; font-weight: 700;">${esc(note.attendedByLine)}</div>
+      </div>
 
-        <!-- Método de pago -->
-        <div style="position: absolute; bottom: 5.5rem; left: 17.5rem; font-size: 1rem; line-height: 1;">
-            ${paymentsData.length > 0 ? `Pago realizado con: ${paymentsData[0]?.descripcion || ''}` : ''}
-        </div>
+      <!-- Método de pago · bottom-29 left-90 -->
+      <div style="position: absolute; bottom: 7.25rem; left: 22.5rem; font-size: 1rem; line-height: 1.5; color: ${C.black};">
+        ${esc(note.paymentLine)}
+      </div>
 
-        <!-- Pagos -->
-        <div style="position: absolute; bottom: 2.75rem; left: 11rem; width: 8rem; height: 2rem; display: flex; align-items: center; justify-content: center; color: rgb(21, 128, 61); font-weight: 700; font-size: 1.5rem; line-height: 1;">
-            ${paymentsData.length > 0 ? `$${totalPagos.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : ''}
-        </div>
+      <!-- Pagos · bottom-16 left-43 w-33 h-8 text-xl -->
+      <div style="position: absolute; bottom: 4rem; left: 10.75rem; width: 8.25rem; height: 2rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; color: ${C.green700};">
+        ${note.showPagos ? `$${money(note.totalPagos)}` : ''}
+      </div>
 
-        <!-- Saldo -->
-        <div style="position: absolute; bottom: 2.75rem; left: 20rem; width: 8rem; height: 2rem; display: flex; align-items: center; justify-content: center; font-weight: 700; color: rgb(220, 38, 38); font-size: 1.5rem; line-height: 1;">
-            $${saldoPendiente.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </div>
+      <!-- Saldo · bottom-16 left-80 w-33 h-8 text-xl -->
+      <div style="position: absolute; bottom: 4rem; left: 20rem; width: 8.25rem; height: 2rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; color: ${C.red600};">
+        $${money(note.saldoPendiente)}
+      </div>
 
-        <!-- Total -->
-        <div style="position: absolute; bottom: 2.75rem; left: 29rem; width: 8rem; height: 2rem; display: flex; align-items: center; justify-content: center; color: rgb(0, 0, 0); font-weight: 700; font-size: 1.5rem; line-height: 1;">
-            $${orderData.total.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </div>
+      <!-- Total · bottom-16 left-116 w-33 h-8 text-xl -->
+      <div style="position: absolute; bottom: 4rem; left: 29rem; width: 8.25rem; height: 2rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; color: ${C.black};">
+        $${money(note.total)}
+      </div>
     </div>`;
 }
 
 // ── CSS compartido para impresión y captura de imagen ─────────────────────
 export const PRINT_STYLES = `
-    * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-        color-adjust: exact !important;
-        font-family: Arial, sans-serif !important;
-    }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    font-family: Arial, sans-serif !important;
+    /* Igual que el preflight de Tailwind, para que los anchos con padding
+       midan lo mismo aquí que en la vista previa. */
+    box-sizing: border-box;
+  }
+  html {
+    font-size: 16px !important;
+  }
+  @page {
+    size: 21.6cm 17cm landscape;
+    margin: 0;
+  }
+  @media print {
     html {
-        font-size: 16px !important;
+      font-size: 16px !important;
     }
-    @page {
-        size: 21.6cm 17cm landscape;
-        margin: 0;
-    }
-    @media print {
-        html {
-            font-size: 16px !important;
-        }
-        html, body {
-            width: 21.6cm !important;
-            height: auto !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            overflow: visible !important;
-        }
-        .print-container {
-            width: 21.6cm !important;
-            height: 17cm !important;
-            position: relative !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            overflow: hidden !important;
-        }
-        .background-image {
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 100% !important;
-            height: 100% !important;
-            object-fit: cover !important;
-            z-index: -1 !important;
-        }
-    }
-    body {
-        width: 21.6cm;
-        margin: 0;
-        padding: 0;
-        font-family: Arial, sans-serif;
+    html, body {
+      width: 21.6cm !important;
+      height: auto !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: visible !important;
     }
     .print-container {
-        width: 21.6cm;
-        height: 17cm;
-        position: relative;
-        overflow: hidden;
+      width: 21.6cm !important;
+      height: 17cm !important;
+      position: relative !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
     }
     .background-image {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: -1;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      z-index: -1 !important;
     }
+  }
+  body {
+    width: 21.6cm;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+  }
+  .print-container {
+    width: 21.6cm;
+    height: 17cm;
+    position: relative;
+    overflow: hidden;
+  }
+  .background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+  }
 `;
 
-// ── Builds the complete printable HTML document ───────────────────────────
-export function buildPrintHtml(params: {
-	orderId: number;
-	pagesHtml: string;
-}): string {
-	return `<!DOCTYPE html>
+// ── Documento imprimible completo ─────────────────────────────────────────
+export function buildPrintHtml(params: { title: string; pagesHtml: string }): string {
+  return `<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Orden #${params.orderId}</title>
+    <title>${esc(params.title)}</title>
     <style>${PRINT_STYLES}</style>
 </head>
 <body>
@@ -270,42 +245,52 @@ export function buildPrintHtml(params: {
 </html>`;
 }
 
-// ── Función principal: prepara base64s y genera HTML de todas las páginas ──
-export async function prepareOrderHtml(
-	orderData: any,
-	productsData: any[],
-	paymentsData: any[],
-	notaImageUrl: string,
-	specialPriceImageUrl: string
-): Promise<{ pagesHtml: string; firstPageHtml: string }> {
-	const ITEMS_PER_PAGE = 5;
-	const chunks: any[][] = [];
-	for (let i = 0; i < productsData.length; i += ITEMS_PER_PAGE) {
-		chunks.push(productsData.slice(i, i + ITEMS_PER_PAGE));
-	}
-	if (chunks.length === 0) chunks.push([]);
+// ── Prepara base64s y genera el HTML de cada página por separado ──────────
+export async function prepareNotePages(note: OrderNote): Promise<string[]> {
+  const chunks = chunkNoteItems(note.items);
 
-	const totalPagos = paymentsData.reduce((s, p) => s + p.amount, 0);
-	const saldoPendiente = orderData.total - totalPagos;
-	const isSaldada = saldoPendiente <= 0.01;
+  // El fondo se recorta de antemano a la proporción de la página. Ver el
+  // comentario de `imageToBase64`: es lo que hace que la captura para WhatsApp
+  // salga igual que la impresión pese a que html2canvas ignora `object-fit`.
+  const base64Image = await imageToBase64(notaImage, PAGE_ASPECT);
+  const base64Stamp = note.isSaldada ? await imageToBase64(paidStampImage) : null;
 
-	const hasPreferentialPrice = productsData.some(product => {
-		const type = getOrderItemType(product);
-		const originalPrice = type === 'product' ? product.product_price : product.template_final_price;
-		return originalPrice !== undefined && originalPrice !== null &&
-			Math.abs(Number(product.unit_price) - Number(originalPrice)) > 0.01;
-	});
+  return chunks.map((chunk, i) =>
+    buildPageHtml({
+      note,
+      items: chunk,
+      isLastPage: i === chunks.length - 1,
+      pageBreak: i > 0,
+      base64Image,
+      base64Stamp,
+    })
+  );
+}
 
-	const base64Image = await imageToBase64(notaImageUrl);
-	const base64SpecialPrice = isSaldada ? await imageToBase64(specialPriceImageUrl) : null;
+// ── Función principal para impresión ──────────────────────────────────────
+export async function prepareNoteHtml(note: OrderNote): Promise<{ pagesHtml: string }> {
+  const pages = await prepareNotePages(note);
+  return { pagesHtml: pages.join('') };
+}
 
-	const commonParams = { orderData, paymentsData, totalPagos, saldoPendiente, hasPreferentialPrice, base64Image, base64SpecialPrice };
+// ─────────────────────────────────────────────────────────────────────────
+// Captura a imagen (WhatsApp)
+//
+// La imagen se rasteriza en el proceso principal con `capturePage`, sobre el
+// mismo documento que se manda a la impresora. Aquí sólo se arma un documento
+// completo por página y se exponen sus dimensiones.
+// ─────────────────────────────────────────────────────────────────────────
 
-	const pagesHtml = chunks.map((chunk, i) =>
-		buildPageHtml({ chunkProducts: chunk, isLastPage: i === chunks.length - 1, pageBreak: i > 0, ...commonParams })
-	).join('');
+/** 21.6cm x 17cm a 96dpi: el tamaño exacto de la página impresa. */
+export const PAGE_WIDTH_PX = 816.38;
+export const PAGE_HEIGHT_PX = 642.52;
 
-	const firstPageHtml = buildPageHtml({ chunkProducts: chunks[0], isLastPage: chunks.length === 1, pageBreak: false, ...commonParams });
-
-	return { pagesHtml, firstPageHtml };
+/** Un documento HTML independiente por página, listo para rasterizar. */
+export function buildNoteDocumentsForCapture(title: string, pagesHtml: string[]): string[] {
+  return pagesHtml.map((pageHtml, i) =>
+    buildPrintHtml({
+      title: pagesHtml.length > 1 ? `${title} (${i + 1}/${pagesHtml.length})` : title,
+      pagesHtml: pageHtml,
+    })
+  );
 }

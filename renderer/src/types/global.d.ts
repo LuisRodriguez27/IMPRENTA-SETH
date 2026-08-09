@@ -229,6 +229,15 @@ declare global {
       openExternal: (url: string) => Promise<void>;
       openWhatsApp: () => Promise<void>;
 
+      // Nota a imagen — rasteriza el HTML de impresión con el motor de Chromium.
+      // Recibe un documento HTML completo por página y devuelve un PNG en base64
+      // por cada una. `width`/`height` van en px CSS.
+      renderNoteToImages: (
+        pagesHtml: string[],
+        options: { width: number; height: number; scale?: number }
+      ) => Promise<string[]>;
+      copyImageToClipboard: (pngBase64: string) => Promise<void>;
+
       // Sistema de Licencias
       checkLicense: () => Promise<{
         success: boolean;

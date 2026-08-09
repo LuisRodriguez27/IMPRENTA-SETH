@@ -2,7 +2,7 @@ import { useState } from 'react';
 import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import cotizacionImage from '@/assets/COTIZACION.jpg';
+import cotizacionImage from '@/assets/COTIZACION-IMPRESOS-SETh.jpg';
 import { getBudgetItemDisplayName, getBudgetItemDescription, getBudgetItemType, type Budget } from '../types';
 import { formatDateMX } from '@/utils/dateUtils';
 

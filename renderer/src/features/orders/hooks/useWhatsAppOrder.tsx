@@ -2,7 +2,7 @@ import { useState } from 'react';
 import html2canvas from 'html2canvas';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import notaImage from '@/assets/NOTA.jpg';
+import notaImage from '@/assets/NOTA-IMPRESOS-SETh.jpg';
 import paidStampImage from '@/assets/SELLO-PAGADO.png';
 import { getOrderItemDisplayName, getOrderItemDescription, getOrderItemType } from '../types';
 import { formatDateMX, formatDateOnlyMX } from '@/utils/dateUtils';
@@ -181,7 +181,7 @@ export function useWhatsAppOrder() {
 
         <!-- Agradecimiento -->
         <div style="position:absolute;bottom:124px;left:200px;font-size:16px;line-height:1;font-weight:700;color:rgb(3,105,161);">
-          GRACIAS POR SU COMPRA. LE ATENDIÓ ${orderData.user?.username || ''}
+          LE ATENDIÓ ${orderData.user?.username || ''}
         </div>
 
         <!-- Método de pago -->

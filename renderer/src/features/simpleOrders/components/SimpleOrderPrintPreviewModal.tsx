@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui';
 import { X, Printer } from 'lucide-react';
 import { toast } from 'sonner';
-import notaImage from '@/assets/NOTA.jpg';
+import notaImage from '@/assets/NOTA-IMPRESOS-SETh.jpg';
 import { formatDateMX } from '@/utils/dateUtils';
 import { type SimpleOrder } from '../types';
 

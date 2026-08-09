@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui';
 import { X, Printer } from 'lucide-react';
 import { toast } from 'sonner';
-import notaImage from '@/assets/NOTA.jpg';
+import notaImage from '@/assets/NOTA-IMPRESOS-SETh.jpg';
 import paidStampImage from '@/assets/SELLO-PAGADO.png';
 import { getOrderItemDisplayName, getOrderItemDescription, getOrderItemType } from '../types';
 import { formatDateMX, formatDateOnlyMX } from '@/utils/dateUtils';
@@ -254,7 +254,7 @@ const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
 
                     <div className='absolute bottom-29 left-50'>
                       <div className='text-blue-900 font-bold'>
-                        GRACIAS POR SU COMPRA. LE ATENDIÓ {orderData.user?.username || ''}
+                        LE ATENDIÓ {orderData.user?.username || ''}
                       </div>
                     </div>
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui';
 import { X, Printer } from 'lucide-react';
 import { toast } from 'sonner';
-import cotizacionImage from '@/assets/COTIZACION.jpg';
+import cotizacionImage from '@/assets/COTIZACION-IMPRESOS-SETh.jpg';
 import { getBudgetItemDescription, getBudgetItemDisplayName, getBudgetItemType, type Budget } from '../types';
 import { formatDateMX } from '@/utils/dateUtils';
 import ClientColorIndicator from '../../clients/components/ClientColorIndicator';

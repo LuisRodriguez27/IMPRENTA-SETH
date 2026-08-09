@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Image as ImageIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
+import { getImageSrc } from '@/utils/imageUtils';
 
 interface ProductImageCarouselProps {
   images?: string[] | null;
@@ -90,7 +91,7 @@ const ProductImageCarousel: React.FC<ProductImageCarouselProps> = ({
               className="flex-[0_0_100%] min-w-0 h-full flex items-center justify-center"
             >
               <img
-                src={`imagenes://${imgPath}`}
+                src={getImageSrc(imgPath)}
                 alt={`${productName} ${index + 1}`}
                 className="w-full h-full object-cover"
                 loading="lazy"

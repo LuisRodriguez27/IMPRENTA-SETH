@@ -15,6 +15,10 @@ export interface ExpensesRow {
   date: string;
   active: boolean;
   supplier_order_id: number | null;
+
+  // Añadidos por el JOIN con users
+  user_username?: string | null;
+  edited_by_username?: string | null;
 }
 
 // ─── Input / DTO types ─────────────────────────────────────────────────────

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { ProductsApiService } from '../ProductsApiService';
 import { ProductTemplatesApiService } from '@/features/productTemplates/ProductTemplatesApiService';
 import { useAuth } from '@/hooks/use-auth';
+import { extractErrorMessage } from '@/utils/errorHandling';
 import { toast } from 'sonner';
 
 interface AddStockModalProps {
@@ -106,9 +107,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({
       handleClose();
     } catch (err: any) {
       console.error('Error adding stock:', err);
-      // Extraer el mensaje de error de Electron
-      const errMsg = err.message || 'Error al agregar stock';
-      setError(errMsg.replace('Error: ', ''));
+      setError(extractErrorMessage(err));
     } finally {
       setLoading(false);
     }

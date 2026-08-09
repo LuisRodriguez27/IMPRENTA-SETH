@@ -178,11 +178,18 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
     }
   };
 
-  const handleImageAdded = async (relativePath: string) => {
-    if (!product) return;
+  const handleImagesAdded = async (paths: string[]) => {
+    if (!product || paths.length === 0) return;
     try {
       const currentImages = product.images || [];
-      const updatedImages = [...currentImages, relativePath];
+      // Se guarda la ruta original del archivo en la PC; si ya está referenciada
+      // no se agrega otra vez (no se generan duplicados).
+      const nuevas = paths.filter((p) => !currentImages.includes(p));
+      if (nuevas.length === 0) {
+        toast.info('Esa imagen ya está en la galería del producto.');
+        return;
+      }
+      const updatedImages = [...currentImages, ...nuevas];
 
       const updatedProduct = await ProductsApiService.update(product.id, {
          name: product.name,
@@ -197,15 +204,16 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
       if (onProductUpdated) onProductUpdated(updatedProduct);
     } catch (err) {
       console.error(err);
-      toast.error('La imagen se subió pero no se pudo asociar al producto en la BD');
+      toast.error('No se pudo asociar la imagen al producto en la BD');
     }
   };
 
-  const handleImageDeleted = async (relativePath: string) => {
+  // Sólo quita la referencia: el archivo original del cliente no se toca
+  const handleImageDeleted = async (storedPath: string) => {
     if (!product) return;
     try {
       const currentImages = product.images || [];
-      const updatedImages = currentImages.filter(img => img !== relativePath);
+      const updatedImages = currentImages.filter(img => img !== storedPath);
 
       const updatedProduct = await ProductsApiService.update(product.id, {
          name: product.name,
@@ -400,7 +408,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
             <ImageGallery
               productId={product.id}
               images={product.images}
-              onImageAdded={handleImageAdded}
+              onImagesAdded={handleImagesAdded}
               onImageDeleted={handleImageDeleted}
             />
           </div>

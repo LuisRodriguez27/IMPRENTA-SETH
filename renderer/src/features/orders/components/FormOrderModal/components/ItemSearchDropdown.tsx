@@ -5,6 +5,7 @@ import { Layers, Package, Search } from 'lucide-react';
 import type { Product } from '@/features/products/types';
 import type { ProductTemplate } from '@/features/productTemplates/types';
 import { getTemplateDisplayName } from '@/features/productTemplates/types';
+import { getActiveProductPrice, getActiveTemplatePrice } from '@/utils/priceUtils';
 import type { FilteredItem, DropdownPosition } from '../hooks/useOrderItems';
 
 interface ItemSearchDropdownProps {
@@ -92,8 +93,8 @@ const ItemSearchDropdown: React.FC<ItemSearchDropdownProps> = ({
                 </div>
                 <div className="text-sm font-semibold text-green-600">
                   ${filteredItem.type === 'product'
-                    ? (filteredItem.item as Product).price.toFixed(2)
-                    : (filteredItem.item as ProductTemplate).final_price.toFixed(2)
+                    ? getActiveProductPrice(filteredItem.item as Product).price.toFixed(2)
+                    : getActiveTemplatePrice(filteredItem.item as ProductTemplate).price.toFixed(2)
                   }
                 </div>
               </div>

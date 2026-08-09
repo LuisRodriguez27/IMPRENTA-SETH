@@ -4,6 +4,7 @@ import { spawn } from 'child_process';
 import { autoUpdater } from 'electron-updater';
 import * as log from 'electron-log';
 import * as http from 'http';
+import { pathToFileURL } from 'url';
 import './env';
 
 import { initDb } from './db';
@@ -234,32 +235,29 @@ app.whenReady().then(async () => {
   // ← Inicializar la DB explícitamente (ya no se llama automáticamente al importar)
   await initDb();
 
-  const baseImagePath = imageService.getBasePath() as string;
-
+  // Las imágenes se leen desde la ruta original en la PC del cliente.
+  // `resolveImagePath` valida la extensión y resuelve las rutas relativas antiguas.
   if (protocol.handle) {
     // Para Electron >= 25 (el usado es v37)
     protocol.handle('imagenes', (request: Request) => {
-      const urlPath = request.url.replace(/^imagenes:\/\//i, '');
-      const absolutePath = path.normalize(path.join(baseImagePath, decodeURIComponent(urlPath)));
-
-      // Prevenir directory traversal
-      if (!absolutePath.startsWith(path.normalize(baseImagePath))) {
+      try {
+        const absolutePath = imageService.resolveImagePath(imageService.parseImageUrl(request.url));
+        return net.fetch(pathToFileURL(absolutePath).toString());
+      } catch (e) {
+        log.warn('[IMAGENES] Acceso denegado:', (e as Error).message);
         return new Response('Acceso denegado', { status: 403 });
       }
-
-      return net.fetch('file://' + absolutePath);
     });
   } else {
     // Compatibilidad para versiones legacy como solicitado
     protocol.registerFileProtocol('imagenes', (request, callback) => {
-      const urlPath = request.url.replace(/^imagenes:\/\//i, '');
-      const absolutePath = path.normalize(path.join(baseImagePath, decodeURIComponent(urlPath)));
-
-      if (!absolutePath.startsWith(path.normalize(baseImagePath))) {
+      try {
+        const absolutePath = imageService.resolveImagePath(imageService.parseImageUrl(request.url));
+        callback({ path: absolutePath });
+      } catch (e) {
+        log.warn('[IMAGENES] Acceso denegado:', (e as Error).message);
         callback({ error: -3 }); // Acceso denegado (ERR_ACCESS_DENIED)
-        return;
       }
-      callback({ path: absolutePath });
     });
   }
 

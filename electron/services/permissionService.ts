@@ -4,6 +4,14 @@ import Permission from '../domain/permission';
 import db from '../db';
 import type { AssignPermissionData, CreatePermissionData, UpdatePermissionData } from '../types/permission';
 
+/**
+ * Usuario administrador fundador: el que se crea en la Configuración inicial.
+ * Nace con todos los permisos y no se le pueden quitar, porque el sistema no
+ * tiene recuperación de contraseña ni roles: dejarlo sin "Gestionar Permisos"
+ * bloquearía la administración de la instalación de forma irreversible.
+ */
+export const FOUNDING_ADMIN_USER_ID = 1;
+
 class PermissionService {
   async getAllPermissions() {
     try {
@@ -131,6 +139,9 @@ class PermissionService {
       const { userId, permissionId } = data;
       if (!userId || userId <= 0) throw new Error('ID de usuario inválido');
       if (!permissionId || permissionId <= 0) throw new Error('ID de permiso inválido');
+      if (Number(userId) === FOUNDING_ADMIN_USER_ID) {
+        throw new Error('No se pueden quitar permisos al usuario administrador inicial. Es la cuenta que garantiza el acceso al sistema.');
+      }
 
       const transaction = db.transaction(async () => {
         const user = await userRepository.findById(userId);

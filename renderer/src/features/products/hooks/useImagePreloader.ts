@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { getImageSrc } from '@/utils/imageUtils';
 import type { Product } from '../types';
 
 /**
@@ -6,13 +7,13 @@ import type { Product } from '../types';
  * personalizado de Electron `imagenes://`.
  *
  * La estrategia es:
- *  1. Recopilar todas las rutas relativas de imágenes de todos los productos.
- *  2. Crear objetos `Image` con `src = imagenes://<ruta>`.
+ *  1. Recopilar las rutas de imágenes guardadas de todos los productos.
+ *  2. Crear objetos `Image` con `src = imagenes://local/<ruta codificada>`.
  *  3. El browser (Chromium) los guardará en caché, por lo que cuando el usuario
  *     abra la vista detallada o el carrusel de la lista, las imágenes ya estarán
- *     disponibles sin necesidad de otra solicitud de red.
+ *     disponibles sin volver a leerlas del disco.
  *
- * Para no saturar la red NAS al inicio, la precarga se hace de forma escalonada:
+ * Para no saturar el disco al inicio, la precarga se hace de forma escalonada:
  *  - Se procesan BATCH_SIZE imágenes cada BATCH_INTERVAL_MS.
  */
 
@@ -50,7 +51,7 @@ export function useImagePreloader(products: Product[]) {
       const batch = allPaths.slice(index, index + BATCH_SIZE);
       for (const path of batch) {
         const img = new Image();
-        img.src = `imagenes://${path}`;
+        img.src = getImageSrc(path);
         imgRefs.current.push(img);
       }
       index += BATCH_SIZE;

@@ -10,6 +10,7 @@ import type { Product } from './types';
 import type { ProductTemplate } from '@/features/productTemplates/types';
 import { usePermissions } from '@/hooks/use-permissions';
 import { formatDateMX, nowISO } from '@/utils/dateUtils';
+import { getActiveProductPrice } from '@/utils/priceUtils';
 
 const ProductsPage: React.FC = () => {
   const [products, setProducts] = useState<(Product & { templates?: ProductTemplate[] })[]>([]);
@@ -598,20 +599,9 @@ const ProductsPage: React.FC = () => {
                         )}
 
                         {(() => {
-                          let activePrice = product.price;
-                          let isPromo = false;
-                          let isDiscount = false;
-
-                          if (product.promo_price !== null && product.promo_price !== undefined && product.promo_price < product.price) {
-                            activePrice = product.promo_price;
-                            isPromo = true;
-                          }
-
-                          if (product.discount_price !== null && product.discount_price !== undefined && product.discount_price < activePrice) {
-                            activePrice = product.discount_price;
-                            isPromo = false;
-                            isDiscount = true;
-                          }
+                          const { price: activePrice, kind } = getActiveProductPrice(product);
+                          const isPromo = kind === 'promo';
+                          const isDiscount = kind === 'discount';
 
                           if (isPromo || isDiscount) {
                             return (

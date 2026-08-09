@@ -92,9 +92,9 @@ declare global {
       updateProduct: (id: number, data: EditProductForm) => Promise<Product>;
       deleteProduct: (id: number) => Promise<void>;
 
-      // Imágenes en NAS
-      uploadImage: (productId: number, buffer: Uint8Array | ArrayBuffer, originalName: string) => Promise<{ success: boolean; relativePath: string }>;
-      deleteImage: (relativePath: string) => Promise<{ success: boolean; message?: string }>;
+      // Imágenes (se guarda la ruta original del archivo en la PC del cliente)
+      selectImages: () => Promise<{ success: boolean; paths: string[]; canceled: boolean }>;
+      imageExists: (storedPath: string) => Promise<boolean>;
 
       // Funciones avanzadas de productos
       getProductWithTemplates: (productId: number) => Promise<Product & { templates: ProductTemplate[] }>;

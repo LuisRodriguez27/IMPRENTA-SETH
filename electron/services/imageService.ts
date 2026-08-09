@@ -1,93 +1,134 @@
 import '../env';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { v4 as uuidv4 } from 'uuid';
-import * as mime from 'mime-types';
+import type { BrowserWindow } from 'electron';
 
-interface UploadResult { success: boolean; relativePath?: string; }
-interface DeleteResult { success: boolean; message: string; }
+interface SelectResult { success: boolean; paths: string[]; canceled: boolean; }
 
+/** Extensiones permitidas: el protocolo `imagenes://` sólo sirve archivos de imagen. */
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.avif', '.tif', '.tiff', '.ico'];
+
+const URL_PREFIX = 'imagenes://local/';
+
+/**
+ * Las imágenes NO se copian ni se suben a ningún lado: el cliente elige el archivo
+ * desde donde ya lo tiene en su PC (Descargas, Documentos, un USB, etc.) y en la
+ * base de datos se guarda esa misma ruta absoluta. Así no se generan duplicados
+ * y el archivo original siempre es el único que existe.
+ */
 class ImageService {
-  getBasePath(): string {
+  /**
+   * Carpeta usada únicamente para resolver rutas relativas antiguas (imágenes que
+   * se habían copiado al NAS o a la carpeta local en versiones anteriores).
+   */
+  getLegacyBasePath(): string {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { app } = require('electron');
-    const isDev = !app.isPackaged;
 
-    if (isDev) {
-      return process.env.DEV_BASE_PATH || path.normalize(path.join(app.getPath('userData'), 'dev_images'));
-    }
+    const configured = process.env.IMAGES_PATH ? process.env.IMAGES_PATH.trim() : null;
+    if (configured) return path.normalize(configured);
 
-    const ip = process.env.NAS_IP ? process.env.NAS_IP.trim() : null;
-    const nasPath = process.env.NAS_PATH ? process.env.NAS_PATH.trim() : null;
-
-    if (ip && nasPath) {
-      const cleanNasPath = nasPath.replace(/^[/\\]+/, '');
-      return path.normalize(`\\\\${ip}\\${cleanNasPath}`);
-    }
-
-    return process.env.BASE_PATH || 'C:\\NAS\\Imagenes';
-  }
-
-  async uploadImage(productId: number, buffer: Buffer, originalName: string): Promise<UploadResult> {
     try {
-      if (!buffer || buffer.length === 0) throw new Error('El archivo está vacío o es inválido.');
-      const mimeType = mime.lookup(originalName) as string | false;
-      if (!mimeType || !mimeType.startsWith('image/')) throw new Error('El archivo proporcionado no es una imagen válida.');
-      if (!productId) throw new Error('El ID del producto es obligatorio.');
-
-      const basePath = this.getBasePath();
-      const ext = path.extname(originalName) || `.${mime.extension(mimeType) || 'jpg'}`;
-      const uniqueName = `${uuidv4()}${ext}`;
-      const relativePath = `producto_${productId}_${uniqueName}`;
-
-      const absoluteFolder = path.normalize(basePath);
-      const absolutePathTmp = path.normalize(path.join(basePath, `${relativePath}.tmp`));
-      const absolutePathFinal = path.normalize(path.join(basePath, relativePath));
-
-      if (!absolutePathTmp.startsWith(absoluteFolder)) throw new Error('Intento de salto de directorio bloqueado.');
-
-      await fs.ensureDir(absoluteFolder);
-      await fs.writeFile(absolutePathTmp, buffer);
-
-      const stats = await fs.stat(absolutePathTmp);
-      if (stats.size !== buffer.length) {
-        await fs.remove(absolutePathTmp);
-        throw new Error('La validación de tamaño del archivo ha fallado (posible error de red con el NAS).');
-      }
-
-      await fs.rename(absolutePathTmp, absolutePathFinal);
-      return { success: true, relativePath };
-    } catch (error) {
-      const err = error as NodeJS.ErrnoException;
-      console.error('Error en el proceso de subida de imagen al NAS:', err.message);
-      if (err.code === 'ENOENT' || err.code === 'ETIMEDOUT' || err.code === 'ENOTDIR') {
-        throw new Error(`Fallo de conexión/acceso con el NAS: ${err.message}`);
-      }
-      throw error;
+      return app.isPackaged
+        ? path.normalize(path.join(app.getPath('userData'), 'images'))
+        : path.normalize(path.join(process.cwd(), 'images'));
+    } catch (_e) {
+      return path.normalize(path.join(process.cwd(), 'images'));
     }
   }
 
-  async deleteImage(relativePath: string): Promise<DeleteResult> {
-    try {
-      if (!relativePath) throw new Error('Se requiere la ruta relativa de la imagen a eliminar.');
-      const basePath = this.getBasePath();
-      const absolutePath = path.normalize(path.join(basePath, relativePath));
+  isAllowedImage(filePath: string): boolean {
+    return ALLOWED_EXTENSIONS.includes(path.extname(filePath).toLowerCase());
+  }
 
-      if (!absolutePath.startsWith(path.normalize(basePath))) throw new Error('Intento de salto de directorio bloqueado.');
+  /**
+   * Abre el explorador de archivos del sistema para que el cliente escoja una o
+   * varias imágenes. Devuelve las rutas absolutas tal cual están en su PC.
+   */
+  async selectImages(parentWindow?: BrowserWindow | null): Promise<SelectResult> {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { dialog } = require('electron');
 
-      const exists = await fs.pathExists(absolutePath);
-      if (!exists) return { success: false, message: 'El archivo indicado para eliminar no existe.' };
+    const options = {
+      title: 'Seleccionar imágenes',
+      buttonLabel: 'Usar imagen',
+      properties: ['openFile', 'multiSelections', 'dontAddToRecent'] as const,
+      filters: [
+        { name: 'Imágenes', extensions: ALLOWED_EXTENSIONS.map((e) => e.replace('.', '')) }
+      ]
+    };
 
-      await fs.remove(absolutePath);
-      return { success: true, message: 'Archivo eliminado correctamente.' };
-    } catch (error) {
-      const err = error as NodeJS.ErrnoException;
-      console.error('Error al eliminar la imagen del NAS:', err.message);
-      if (err.code === 'ENOENT' || err.code === 'ETIMEDOUT') {
-        throw new Error(`Fallo de conexión/acceso con el NAS: ${err.message}`);
-      }
-      throw error;
+    const result = parentWindow
+      ? await dialog.showOpenDialog(parentWindow, options)
+      : await dialog.showOpenDialog(options);
+
+    if (result.canceled || !result.filePaths || result.filePaths.length === 0) {
+      return { success: false, paths: [], canceled: true };
     }
+
+    const paths: string[] = [];
+    for (const filePath of result.filePaths) {
+      const normalized = path.normalize(filePath);
+      if (!this.isAllowedImage(normalized)) {
+        throw new Error(`El archivo "${path.basename(normalized)}" no es una imagen válida.`);
+      }
+      if (!(await fs.pathExists(normalized))) {
+        throw new Error(`No se encontró el archivo "${path.basename(normalized)}".`);
+      }
+      if (!paths.includes(normalized)) paths.push(normalized);
+    }
+
+    return { success: true, paths, canceled: false };
+  }
+
+  /** Comprueba si el archivo original sigue existiendo en la ruta guardada. */
+  async imageExists(storedPath: string): Promise<boolean> {
+    try {
+      return await fs.pathExists(this.resolveImagePath(storedPath));
+    } catch (_e) {
+      return false;
+    }
+  }
+
+  /**
+   * Convierte lo que está guardado en la BD en una ruta absoluta del disco.
+   * Acepta rutas absolutas (formato actual) y nombres relativos antiguos, que se
+   * resuelven contra la carpeta heredada sin permitir salir de ella.
+   */
+  resolveImagePath(storedPath: string): string {
+    if (!storedPath || !storedPath.trim()) throw new Error('Ruta de imagen vacía.');
+
+    const cleaned = storedPath.trim();
+    let absolutePath: string;
+
+    if (path.isAbsolute(cleaned)) {
+      absolutePath = path.normalize(cleaned);
+    } else {
+      const base = path.normalize(this.getLegacyBasePath());
+      absolutePath = path.normalize(path.join(base, cleaned));
+      if (absolutePath !== base && !absolutePath.startsWith(base + path.sep)) {
+        throw new Error('Intento de salto de directorio bloqueado.');
+      }
+    }
+
+    if (!this.isAllowedImage(absolutePath)) {
+      throw new Error('El archivo solicitado no es una imagen permitida.');
+    }
+
+    return absolutePath;
+  }
+
+  /** Extrae la ruta guardada desde una URL `imagenes://local/<ruta codificada>`. */
+  parseImageUrl(url: string): string {
+    let raw = url.replace(/^imagenes:\/\/(local\/)?/i, '');
+    const queryIndex = raw.search(/[?#]/);
+    if (queryIndex !== -1) raw = raw.slice(0, queryIndex);
+    return decodeURIComponent(raw);
+  }
+
+  /** Construye la URL del protocolo a partir de la ruta guardada. */
+  buildImageUrl(storedPath: string): string {
+    return `${URL_PREFIX}${encodeURIComponent(storedPath)}`;
   }
 }
 

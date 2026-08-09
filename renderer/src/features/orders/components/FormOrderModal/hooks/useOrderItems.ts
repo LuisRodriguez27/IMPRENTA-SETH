@@ -4,6 +4,7 @@ import type { Product } from '@/features/products/types';
 import type { ProductTemplate } from '@/features/productTemplates/types';
 import { getTemplateDisplayName } from '@/features/productTemplates/types';
 import { ProductTemplatesApiService } from '@/features/productTemplates/ProductTemplatesApiService';
+import { getActiveProductPrice, getActiveTemplatePrice } from '@/utils/priceUtils';
 import type { OrderFormItem } from '../../../types';
 
 export interface FilteredItem {
@@ -327,7 +328,7 @@ export const useOrderItems = (): UseOrderItemsReturn => {
         type: 'product',
         id: product.id,
         name: product.name,
-        unit_price: product.price,
+        unit_price: getActiveProductPrice(product).price,
         description: product.description,
         serial_number: product.serial_number
       });
@@ -340,7 +341,7 @@ export const useOrderItems = (): UseOrderItemsReturn => {
         type: 'template',
         id: template.id,
         name: templateName,
-        unit_price: template.final_price,
+        unit_price: getActiveTemplatePrice(template).price,
         description: template.description || undefined,
         dimensions: template.dimensions || undefined,
         category: template.category || undefined,

@@ -8,15 +8,20 @@ export function extractErrorMessage(error: any): string {
     return 'Ha ocurrido un error inesperado';
   }
 
-  // Patron para errores de IPC de Electron: "Error invoking remote method 'method:name': Error: mensaje real"
-  const ipcErrorMatch = error.message.match(/Error invoking remote method.*?: Error: (.+)/);
-  
+  let message = String(error.message);
+
+  // Errores de IPC de Electron. El prefijo puede o no traer "Error:" intermedio:
+  //   "Error invoking remote method 'products:addStock': Error: mensaje real"
+  //   "Error invoking remote method 'products:addStock': mensaje real"
+  const ipcErrorMatch = message.match(/Error invoking remote method\s+'[^']*':\s*(.+)/s);
   if (ipcErrorMatch) {
-    return ipcErrorMatch[1]; // Retornar solo el mensaje real
+    message = ipcErrorMatch[1];
   }
 
-  // Si no es un error de IPC, devolver el mensaje tal como está
-  return error.message;
+  // Quitar los "Error:" que se acumulan al re-lanzar entre capas.
+  message = message.replace(/^(?:Error:\s*)+/, '').trim();
+
+  return message || 'Ha ocurrido un error inesperado';
 }
 
 /**

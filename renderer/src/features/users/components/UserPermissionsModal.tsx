@@ -35,6 +35,11 @@ const UserPermissionsModal: React.FC<UserPermissionsModalProps> = ({
   const [userPermissions, setUserPermissions] = useState<Permission[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
 
+  // El administrador fundador (#1) conserva siempre todos sus permisos: no hay
+  // recuperación de contraseña, así que quitárselos dejaría la instalación sin
+  // forma de administrarse. El backend lo rechaza; aquí sólo evitamos ofrecerlo.
+  const isFoundingAdmin = user?.id === 1;
+
   useEffect(() => {
     if (user && isOpen) {
       fetchData();
@@ -106,6 +111,10 @@ const UserPermissionsModal: React.FC<UserPermissionsModalProps> = ({
 
   const handleDeselectAll = async () => {
     if (!user || isLoading) return;
+    if (isFoundingAdmin) {
+      setError('No se pueden quitar permisos al usuario administrador inicial.');
+      return;
+    }
 
     try {
       setIsSelectingAll(true);
@@ -148,6 +157,11 @@ const UserPermissionsModal: React.FC<UserPermissionsModalProps> = ({
     if (!user) return;
 
     const hasPermission = userPermissions.some(up => up.id === permission.id);
+
+    if (hasPermission && isFoundingAdmin) {
+      setError('No se pueden quitar permisos al usuario administrador inicial.');
+      return;
+    }
 
     try {
       setIsUpdatingPermission(permission.id);
@@ -294,7 +308,8 @@ const UserPermissionsModal: React.FC<UserPermissionsModalProps> = ({
                       size="sm"
                       variant="outline"
                       onClick={handleDeselectAll}
-                      disabled={isSelectingAll || isUpdatingPermission !== null || noneFilteredSelected()}
+                      disabled={isFoundingAdmin || isSelectingAll || isUpdatingPermission !== null || noneFilteredSelected()}
+                      title={isFoundingAdmin ? 'El administrador inicial conserva todos sus permisos' : undefined}
                       className="text-xs flex-1 sm:flex-initial"
                     >
                       {isSelectingAll ? (
@@ -310,6 +325,16 @@ const UserPermissionsModal: React.FC<UserPermissionsModalProps> = ({
                 )}
               </div>
             </div>
+
+            {isFoundingAdmin && (
+              <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-xs text-amber-800">
+                  Este es el <strong>usuario administrador inicial</strong>. Conserva todos sus permisos
+                  de forma permanente para garantizar que siempre exista una cuenta capaz de administrar
+                  el sistema; el programa no tiene recuperación de contraseña.
+                </p>
+              </div>
+            )}
 
             {/* Permissions List */}
             <div className="space-y-2 overflow-y-auto mt-2 flex-1 min-h-0 pr-1">
@@ -338,7 +363,7 @@ const UserPermissionsModal: React.FC<UserPermissionsModalProps> = ({
                           id={`permission-${permission.id}`}
                           checked={hasPermission}
                           onCheckedChange={() => handlePermissionToggle(permission)}
-                          disabled={isUpdating || isSelectingAll}
+                          disabled={isUpdating || isSelectingAll || (isFoundingAdmin && hasPermission)}
                         />
                         <div className="flex-1">
                           <Label

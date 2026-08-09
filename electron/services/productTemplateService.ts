@@ -4,6 +4,7 @@ import type { TemplateData } from '../types/productTemplate';
 import db from '../db';
 import cashSessionRepository from '../repositories/cashSessionRepository';
 import expensesRepository from '../repositories/expensesRepository';
+import authRepository from '../repositories/authRepository';
 
 
 class ProductTemplateService {
@@ -68,7 +69,8 @@ class ProductTemplateService {
         piecesPerPack: pzas !== undefined && pzas !== null ? parseInt(String(pzas), 10) : null,
         description: data.description?.trim() || null,
         template_serial_number: data.template_serial_number?.trim() || null,
-        created_by: data.created_by ? parseInt(String(data.created_by)) : null
+        created_by: data.created_by ? parseInt(String(data.created_by)) : null,
+        stock: data.stock !== undefined && data.stock !== null && data.stock !== '' ? parseFloat(String(data.stock)) : 0
       });
       if (!template) throw new Error('Error al crear plantilla');
       return template.toPlainObject();
@@ -102,6 +104,23 @@ class ProductTemplateService {
         ? parseFloat(String(data.stock))
         : existingTemplate.stock;
 
+      // Igual que "Surtir": subir stock con costo es una compra y debe quedar
+      // como egreso en el turno de caja.
+      const stockDelta = finalStock - (existingTemplate.stock ?? 0);
+      const unitCost = data.purchase_price !== undefined && data.purchase_price !== null && data.purchase_price !== ''
+        ? parseFloat(String(data.purchase_price))
+        : (existingTemplate.purchase_price ?? 0);
+      const stockCost = stockDelta > 0 && unitCost > 0 ? stockDelta * unitCost : 0;
+
+      let activeSessionId: number | null = null;
+      if (stockCost > 0) {
+        const activeSession = await cashSessionRepository.getActive();
+        if (!activeSession) {
+          throw new Error('No hay una sesión de caja activa. Debes abrir la caja antes de aumentar el stock, porque la entrada de mercancía se registra como gasto.');
+        }
+        activeSessionId = activeSession.id;
+      }
+
       const updated = await productTemplateRepository.update(templateId, {
         product_id: parseInt(String(productId)),
         name: data.name?.trim() || null,
@@ -118,6 +137,16 @@ class ProductTemplateService {
         stock: finalStock
       });
       if (!updated) throw new Error('Error al actualizar plantilla');
+
+      if (stockCost > 0 && activeSessionId !== null) {
+        await expensesRepository.create({
+          cash_session_id: activeSessionId,
+          user_id: authRepository.currentSession.getUserId() ?? 0,
+          amount: stockCost,
+          description: `Adición de stock: +${stockDelta} pzas de ${data.name?.trim() || existingTemplate.name || `Plantilla #${templateId}`} (desde edición de producto)`,
+          date: new Date().toISOString()
+        });
+      }
 
       const updatedTemplate = await productTemplateRepository.findById(templateId);
       if (!updatedTemplate) throw new Error('Error: no se pudo recuperar la plantilla actualizada');

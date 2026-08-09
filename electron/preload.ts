@@ -227,10 +227,9 @@ contextBridge.exposeInMainWorld('api', {
     ipcRenderer.invoke('printLogs:updateCheckboxes', id, data),
   deletePrintLog: (id: number): Promise<unknown> => ipcRenderer.invoke('printLogs:delete', id),
 
-  // Imágenes en NAS
-  uploadImage: (productId: number, buffer: unknown, originalName: string): Promise<unknown> =>
-    ipcRenderer.invoke('upload-image', productId, buffer, originalName),
-  deleteImage: (relativePath: string): Promise<unknown> => ipcRenderer.invoke('delete-image', relativePath),
+  // Imágenes (se referencia la ruta original en la PC, no se copian archivos)
+  selectImages: (): Promise<unknown> => ipcRenderer.invoke('images:select'),
+  imageExists: (storedPath: string): Promise<unknown> => ipcRenderer.invoke('images:exists', storedPath),
 
   // Abrir URL en el navegador predeterminado del sistema
   openExternal: (url: string): Promise<unknown> => ipcRenderer.invoke('shell:openExternal', url),

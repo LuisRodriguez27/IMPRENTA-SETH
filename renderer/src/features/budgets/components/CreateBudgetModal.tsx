@@ -20,6 +20,7 @@ import { calculateBudgetTotal, type CreateBudgetForm, createBudgetItemFromFormIt
 import { toast } from 'sonner';
 import BudgetPrintPreviewModal from './BudgetPrintPreviewModal';
 import { BudgetApiService } from '../BudgetApiService';
+import { getActiveProductPrice, getActiveTemplatePrice } from '@/utils/priceUtils';
 
 interface CreateBudgetModalProps {
   isOpen: boolean;
@@ -469,7 +470,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
         type: 'product',
         id: product.id,
         name: product.name,
-        unit_price: product.price,
+        unit_price: getActiveProductPrice(product).price,
         description: product.description,
         serial_number: product.serial_number
       });
@@ -482,7 +483,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
         type: 'template',
         id: template.id,
         name: templateName,
-        unit_price: template.final_price,
+        unit_price: getActiveTemplatePrice(template).price,
         description: template.description || undefined,
         dimensions: template.dimensions || undefined,
         category: template.category || undefined,
@@ -769,7 +770,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
                                 ? 'bg-blue-100 text-blue-800'
                                 : 'bg-purple-100 text-purple-800'
                               }`}>
-                              {item.type === 'product' ? 'Producto' : 'Plantilla'}
+                              {item.type === 'product' ? 'Familia' : 'Producto'}
                             </span>
                             {item.id > 0 && (
                               <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">
@@ -839,7 +840,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
                                 className="text-xs px-2 py-1 h-7"
                               >
                                 <Package size={12} className="mr-1" />
-                                Productos ({products.length})
+                                Familias ({products.length})
                               </Button>
                               <Button
                                 type="button"
@@ -852,7 +853,7 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
                                 className="text-xs px-2 py-1 h-7"
                               >
                                 <Layers size={12} className="mr-1" />
-                                Familias ({templates.length})
+                                Productos ({templates.length})
                               </Button>
                             </div>
 
@@ -940,8 +941,8 @@ export const CreateBudgetModal: React.FC<CreateBudgetModalProps> = ({
                                           <div className="flex items-center gap-2">
                                             <div className="text-sm font-semibold text-green-600">
                                               ${filteredItem.type === 'product'
-                                                ? (filteredItem.item as Product).price.toFixed(2)
-                                                : (filteredItem.item as ProductTemplate).final_price.toFixed(2)
+                                                ? getActiveProductPrice(filteredItem.item as Product).price.toFixed(2)
+                                                : getActiveTemplatePrice(filteredItem.item as ProductTemplate).price.toFixed(2)
                                               }
                                             </div>
                                           </div>

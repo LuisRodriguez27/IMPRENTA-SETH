@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { AlertCircle, DollarSign, Plus, Search, ShoppingCart, Printer } from 'lucide-react';
 import { toast } from 'sonner';
@@ -57,6 +58,24 @@ const SimpleOrdersPage: React.FC = () => {
   const [selectedPayment, setSelectedPayment] = useState<SimpleOrderPayment | null>(null);
   const [filterStatus, setFilterStatus] = useState<'all'|'pending'|'paid'>('all');
   const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
+  // El menú se dibuja con un portal porque la tabla vive dentro de contenedores
+  // con overflow; posicionado en absolute quedaba recortado y no se veía.
+  const [dropdownAnchor, setDropdownAnchor] = useState<{ top: number; right: number } | null>(null);
+
+  const closeDropdown = useCallback(() => {
+    setOpenDropdownId(null);
+    setDropdownAnchor(null);
+  }, []);
+
+  const toggleDropdown = useCallback((orderId: number, button: HTMLElement) => {
+    if (openDropdownId === orderId) {
+      closeDropdown();
+      return;
+    }
+    const rect = button.getBoundingClientRect();
+    setDropdownAnchor({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+    setOpenDropdownId(orderId);
+  }, [openDropdownId, closeDropdown]);
 
   const observerRef = useRef<IntersectionObserver | null>(null);
   const lastOrderElementRef = useCallback((node: HTMLTableRowElement) => {
@@ -425,86 +444,88 @@ const SimpleOrdersPage: React.FC = () => {
 
                       {/* Botón de tres puntos en pantallas medianas/pequeñas (como 1366px) */}
                       <div className="2xl:hidden flex justify-center">
-                        <div className="relative">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenDropdownId(openDropdownId === order.id ? null : order.id);
-                            }}
-                            className="p-1.5 rounded text-gray-400 hover:text-gray-700 bg-gray-50 hover:bg-gray-100"
-                            title="Acciones"
-                          >
-                            <MoreVertical size={16} />
-                          </button>
-                          
-                          {openDropdownId === order.id && (
-                            <>
-                              {/* Backdrop invisible para cerrar al hacer clic fuera */}
-                              <div 
-                                className="fixed inset-0 z-30" 
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setOpenDropdownId(null);
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleDropdown(order.id, e.currentTarget);
+                          }}
+                          className="p-1.5 rounded text-gray-400 hover:text-gray-700 bg-gray-50 hover:bg-gray-100"
+                          title="Acciones"
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+
+                        {openDropdownId === order.id && dropdownAnchor && createPortal(
+                          <>
+                            {/* Backdrop invisible para cerrar al hacer clic fuera */}
+                            <div
+                              className="fixed inset-0 z-[60]"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                closeDropdown();
+                              }}
+                            />
+
+                            <div
+                              className="fixed w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-[61] origin-top-right text-left"
+                              style={{ top: dropdownAnchor.top, right: dropdownAnchor.right }}
+                            >
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedOrderId(order.id);
+                                  setShowEditModal(true);
+                                  closeDropdown();
                                 }}
-                              />
-                              
-                              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-40 origin-top-right text-left">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedOrderId(order.id);
-                                    setShowEditModal(true);
-                                    setOpenDropdownId(null);
-                                  }}
-                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                >
-                                  <Pencil size={14} className="text-gray-400" />
-                                  Editar Orden
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedOrderId(order.id);
-                                    setShowPrintModal(true);
-                                    setOpenDropdownId(null);
-                                  }}
-                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                >
-                                  <Printer size={14} className="text-gray-400" />
-                                  Imprimir Orden
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setSelectedOrderId(order.id);
-                                    setShowPaymentsListModal(true);
-                                    setOpenDropdownId(null);
-                                  }}
-                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                >
-                                  <Eye size={14} className="text-gray-400" />
-                                  Ver Pagos
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    handleAddPayment(order.id);
-                                    setOpenDropdownId(null);
-                                  }}
-                                  disabled={order.balance <= 0}
-                                  className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 ${
-                                    order.balance <= 0 
-                                      ? 'text-gray-300 cursor-not-allowed' 
-                                      : 'text-gray-700 hover:bg-gray-100'
-                                  }`}
-                                >
-                                  <Plus size={14} className={order.balance <= 0 ? 'text-gray-200' : 'text-gray-400'} />
-                                  Agregar Pago
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
+                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              >
+                                <Pencil size={14} className="text-gray-400" />
+                                Editar Orden
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedOrderId(order.id);
+                                  setShowPrintModal(true);
+                                  closeDropdown();
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              >
+                                <Printer size={14} className="text-gray-400" />
+                                Imprimir Orden
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedOrderId(order.id);
+                                  setShowPaymentsListModal(true);
+                                  closeDropdown();
+                                }}
+                                className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              >
+                                <Eye size={14} className="text-gray-400" />
+                                Ver Pagos
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleAddPayment(order.id);
+                                  closeDropdown();
+                                }}
+                                disabled={order.balance <= 0}
+                                className={`w-full text-left px-4 py-2 text-sm flex items-center gap-2 ${
+                                  order.balance <= 0
+                                    ? 'text-gray-300 cursor-not-allowed'
+                                    : 'text-gray-700 hover:bg-gray-100'
+                                }`}
+                              >
+                                <Plus size={14} className={order.balance <= 0 ? 'text-gray-200' : 'text-gray-400'} />
+                                Agregar Pago
+                              </button>
+                            </div>
+                          </>,
+                          document.body
+                        )}
                       </div>
                     </td>
                   </tr>

@@ -4,6 +4,7 @@ import type { ProductData } from '../types/product';
 import db from '../db';
 import cashSessionRepository from '../repositories/cashSessionRepository';
 import expensesRepository from '../repositories/expensesRepository';
+import authRepository from '../repositories/authRepository';
 
 
 class ProductService {
@@ -29,7 +30,7 @@ class ProductService {
     }
   }
 
-  async createProduct({ name, serial_number, price, promo_price, discount_price, purchase_price, description, images }: ProductData) {
+  async createProduct({ name, serial_number, price, promo_price, discount_price, purchase_price, description, images, stock }: ProductData) {
     try {
       if (!name) throw new Error('El nombre del producto es requerido');
       if (name.trim().length < 1) throw new Error('El nombre del producto no puede estar vacío');
@@ -46,7 +47,8 @@ class ProductService {
         promo_price: promo_price !== undefined && promo_price !== null && promo_price !== '' ? parseFloat(String(promo_price)) : null,
         discount_price: discount_price !== undefined && discount_price !== null && discount_price !== '' ? parseFloat(String(discount_price)) : null,
         purchase_price: purchase_price !== undefined && purchase_price !== null && purchase_price !== '' ? parseFloat(String(purchase_price)) : null,
-        description: description?.trim() || null, images: Array.isArray(images) ? images : []
+        description: description?.trim() || null, images: Array.isArray(images) ? images : [],
+        stock: stock !== undefined && stock !== null && stock !== '' ? parseFloat(String(stock)) : 0
       });
       return product.toPlainObject();
     } catch (error) {
@@ -72,9 +74,27 @@ class ProductService {
         if (await productRepository.existsBySerialNumber(serial_number.trim(), productId)) throw new Error('Ya existe otro producto con este número de serie');
       }
 
-      const finalStock = (stock !== undefined && stock !== null && stock !== '') 
-        ? parseFloat(String(stock)) 
+      const finalStock = (stock !== undefined && stock !== null && stock !== '')
+        ? parseFloat(String(stock))
         : existingProduct.stock;
+
+      // Subir stock desde la edición es una entrada de mercancía igual que
+      // "Surtir Stock": si tiene costo, debe quedar como egreso de caja para que
+      // el arqueo del turno cuadre.
+      const stockDelta = finalStock - existingProduct.stock;
+      const unitCost = purchase_price !== undefined && purchase_price !== null && purchase_price !== ''
+        ? parseFloat(String(purchase_price))
+        : (existingProduct.purchase_price ?? 0);
+      const stockCost = stockDelta > 0 && unitCost > 0 ? stockDelta * unitCost : 0;
+
+      let activeSessionId: number | null = null;
+      if (stockCost > 0) {
+        const activeSession = await cashSessionRepository.getActive();
+        if (!activeSession) {
+          throw new Error('No hay una sesión de caja activa. Debes abrir la caja antes de aumentar el stock, porque la entrada de mercancía se registra como gasto.');
+        }
+        activeSessionId = activeSession.id;
+      }
 
       const updated = await productRepository.update(productId, {
         name: name.trim(), serial_number: serial_number?.trim() || null, price: numericPrice,
@@ -85,6 +105,16 @@ class ProductService {
         stock: finalStock
       });
       if (!updated) throw new Error('Error al actualizar producto');
+
+      if (stockCost > 0 && activeSessionId !== null) {
+        await expensesRepository.create({
+          cash_session_id: activeSessionId,
+          user_id: authRepository.currentSession.getUserId() ?? 0,
+          amount: stockCost,
+          description: `Adición de stock: +${stockDelta} pzas de ${name.trim()} (desde edición de familia)`,
+          date: new Date().toISOString()
+        });
+      }
 
       const updatedProduct = await productRepository.findById(productId);
       if (!updatedProduct) throw new Error('Error: no se pudo recuperar el producto actualizado');

@@ -111,7 +111,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   );
 
   const openDeleteTemplateModal = (template: ProductTemplate) => {
-    if (!checkPermission("Eliminar Plantilla")) {
+    if (!checkPermission("Eliminar Producto")) {
       return;
     }
     setTemplateToDelete(template);
@@ -124,14 +124,14 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   };
 
   const openCreateTemplateModal = () => {
-    if (!checkPermission("Crear Plantilla")) {
+    if (!checkPermission("Crear Producto")) {
       return;
     }
     setShowCreateTemplateModal(true);
   };
 
   const openEditTemplateModal = (template: ProductTemplate) => {
-    if (!checkPermission("Editar Plantilla")) {
+    if (!checkPermission("Editar Producto")) {
       return;
     }
     setSelectedTemplate(template);
@@ -161,7 +161,7 @@ const ProductDetailView: React.FC<ProductDetailViewProps> = ({
   };
 
   const openEditProductModal = () => {
-    if (!checkPermission("Editar Producto")) {
+    if (!checkPermission("Editar Familia")) {
       return;
     }
     setShowEditProductModal(true);

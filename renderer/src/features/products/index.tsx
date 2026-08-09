@@ -173,14 +173,14 @@ const ProductsPage: React.FC = () => {
   };
 
   const openCreateModal = () => {
-    if (!checkPermission("Crear Producto")) {
+    if (!checkPermission("Crear Familia")) {
       return;
     }
     setShowCreateModal(true);
   };
 
   const openEditModal = (product: Product) => {
-    if (!checkPermission("Editar Producto")) {
+    if (!checkPermission("Editar Familia")) {
       return;
     }
     setSelectedProduct(product);
@@ -188,7 +188,7 @@ const ProductsPage: React.FC = () => {
   };
 
   const openDeleteModal = (product: Product) => {
-    if (!checkPermission("Eliminar Producto")) {
+    if (!checkPermission("Eliminar Familia")) {
       return;
     }
     setSelectedProduct(product);

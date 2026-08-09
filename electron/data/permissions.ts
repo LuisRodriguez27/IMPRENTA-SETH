@@ -21,14 +21,14 @@ export const APP_PERMISSIONS: AppPermission[] = [
   { name: 'Eliminar Cliente', description: 'Permite eliminar o desactivar clientes' },
 
   // Productos
-  { name: 'Crear Producto', description: 'Permite registrar nuevos productos' },
-  { name: 'Editar Producto', description: 'Permite modificar información de productos' },
-  { name: 'Eliminar Producto', description: 'Permite eliminar o desactivar productos' },
+  { name: 'Crear Familia', description: 'Permite registrar nuevas familias de productos' },
+  { name: 'Editar Familia', description: 'Permite modificar información de familias de productos' },
+  { name: 'Eliminar Familia', description: 'Permite eliminar o desactivar familias de productos' },
 
   // Plantillas de productos
-  { name: 'Crear Plantilla', description: 'Permite crear plantillas de productos' },
-  { name: 'Editar Plantilla', description: 'Permite modificar plantillas de productos' },
-  { name: 'Eliminar Plantilla', description: 'Permite eliminar plantillas de productos' },
+  { name: 'Crear Producto', description: 'Permite crear productos' },
+  { name: 'Editar Producto', description: 'Permite modificar productos' },
+  { name: 'Eliminar Producto', description: 'Permite eliminar productos' },
 
   // Órdenes
   { name: 'Crear Órdenes', description: 'Permite registrar nuevas órdenes' },

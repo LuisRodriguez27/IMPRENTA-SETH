@@ -138,7 +138,7 @@ const ProductTemplatesPage: React.FC = () => {
 
   const openDeleteModal = (template: ProductTemplate) => {
     // Validar permiso antes de proceder
-    if (!checkPermission("Eliminar Plantilla")) {
+    if (!checkPermission("Eliminar Producto")) {
       return;
     }
     setTemplateToDelete(template);

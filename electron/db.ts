@@ -2,7 +2,9 @@ import knex, { Knex } from 'knex';
 import { types } from 'pg';
 import { AsyncLocalStorage } from 'async_hooks';
 import * as path from 'path';
+import * as fs from 'fs';
 import { app } from 'electron';
+import * as log from 'electron-log';
 import { runMigrations } from './migrations';
 import type { Db, DbExecuteResult } from './types/db';
 
@@ -52,6 +54,15 @@ function getKnex(): Knex {
     } catch (e) {
       // Si falla porque app no está lista en algún script de terminal, usar la raíz
       dbPath = path.join(process.cwd(), 'db/seth_database.db');
+    }
+
+    // SQLite no crea directorios: abre el archivo o falla. En la app empaquetada
+    // `userData/db/` no existe en una instalación nueva, así que toda consulta
+    // reventaba con "Cannot open database because the directory does not exist".
+    try {
+      fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    } catch (e) {
+      log.error('No se pudo crear el directorio de la base de datos:', dbPath, e);
     }
 
     knexInstance = knex({
@@ -450,7 +461,11 @@ export async function initDb(): Promise<void> {
       console.log('✅ Base de datos PG Inicializada');
     }
   } catch (e) {
+    // No relanzamos para no dejar la app sin ventana, pero esto tiene que quedar
+    // en main.log: si el esquema no se creó, todo lo demás falla después con
+    // errores que no apuntan a la causa real (ej. "licencia no encontrada").
     console.error('❌ Error inicializando DB:', e);
+    log.error('❌ Error inicializando DB:', e);
   }
 }
 

@@ -183,6 +183,24 @@ class LicenseService {
           });
         }
 
+        if (result.resultado === 'hardware_already_registered_elsewhere') {
+          return await handleLicenseFailure({
+            success: false,
+            status: 'invalid_config',
+            clientCode,
+            hardwareId,
+            deviceName,
+            message: 'Este equipo ya está registrado bajo otro código de cliente. Contacte a soporte para liberarlo antes de activarlo con este código.'
+          });
+        }
+
+        if (result.resultado === 'rate_limited') {
+          // Throttle temporal del servidor, no un problema de licencia:
+          // se resuelve con la caché local en lugar de bloquear al usuario.
+          console.warn('Validación online limitada por rate limit. Usando caché local.');
+          return await this.checkOfflineLicense(hardwareId, deviceName);
+        }
+
         if (result.resultado === 'suspended') {
           await saveLocalLicense(clientCode, result.client_status || 'demo', true);
           return await handleLicenseFailure({

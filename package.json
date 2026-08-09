@@ -17,7 +17,11 @@
     "dev": "tsc && concurrently -k --success first \"tsc -w\" \"pnpm run dev:electron\" \"cd renderer && pnpm run dev\"",
     "dist": "pnpm run build && electron-builder",
     "dist:win": "pnpm run build && electron-builder --win",
-    "dist:git": "pnpm run build && electron-builder --win -p always"
+    "dist:git": "pnpm run build && electron-builder --win -p always",
+    "dist:win:linux": "pnpm run build && electron-builder install-app-deps --platform=win32 --arch=x64 && electron-builder --win -c.npmRebuild=false",
+    "dist:git:linux": "pnpm run build && electron-builder install-app-deps --platform=win32 --arch=x64 && electron-builder --win -c.npmRebuild=false -p always",
+    "deps:local": "electron-builder install-app-deps",
+    "verify:native": "node scripts/verify-native.js"
   },
   "keywords": [],
   "packageManager": "pnpm@10.29.1",

@@ -1,4 +1,3 @@
-import '../env';
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import type { BrowserWindow } from 'electron';
@@ -8,8 +7,6 @@ interface SelectResult { success: boolean; paths: string[]; canceled: boolean; }
 /** Extensiones permitidas: el protocolo `imagenes://` sólo sirve archivos de imagen. */
 const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg', '.avif', '.tif', '.tiff', '.ico'];
 
-const URL_PREFIX = 'imagenes://local/';
-
 /**
  * Las imágenes NO se copian ni se suben a ningún lado: el cliente elige el archivo
  * desde donde ya lo tiene en su PC (Descargas, Documentos, un USB, etc.) y en la
@@ -17,26 +14,6 @@ const URL_PREFIX = 'imagenes://local/';
  * y el archivo original siempre es el único que existe.
  */
 class ImageService {
-  /**
-   * Carpeta usada únicamente para resolver rutas relativas antiguas (imágenes que
-   * se habían copiado al NAS o a la carpeta local en versiones anteriores).
-   */
-  getLegacyBasePath(): string {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { app } = require('electron');
-
-    const configured = process.env.IMAGES_PATH ? process.env.IMAGES_PATH.trim() : null;
-    if (configured) return path.normalize(configured);
-
-    try {
-      return app.isPackaged
-        ? path.normalize(path.join(app.getPath('userData'), 'images'))
-        : path.normalize(path.join(process.cwd(), 'images'));
-    } catch (_e) {
-      return path.normalize(path.join(process.cwd(), 'images'));
-    }
-  }
-
   isAllowedImage(filePath: string): boolean {
     return ALLOWED_EXTENSIONS.includes(path.extname(filePath).toLowerCase());
   }
@@ -91,24 +68,17 @@ class ImageService {
   }
 
   /**
-   * Convierte lo que está guardado en la BD en una ruta absoluta del disco.
-   * Acepta rutas absolutas (formato actual) y nombres relativos antiguos, que se
-   * resuelven contra la carpeta heredada sin permitir salir de ella.
+   * Valida lo que está guardado en la BD y devuelve la ruta del disco a leer.
+   * Sólo se aceptan rutas absolutas: son las que devuelve el explorador cuando
+   * el cliente elige el archivo.
    */
   resolveImagePath(storedPath: string): string {
     if (!storedPath || !storedPath.trim()) throw new Error('Ruta de imagen vacía.');
 
-    const cleaned = storedPath.trim();
-    let absolutePath: string;
+    const absolutePath = path.normalize(storedPath.trim());
 
-    if (path.isAbsolute(cleaned)) {
-      absolutePath = path.normalize(cleaned);
-    } else {
-      const base = path.normalize(this.getLegacyBasePath());
-      absolutePath = path.normalize(path.join(base, cleaned));
-      if (absolutePath !== base && !absolutePath.startsWith(base + path.sep)) {
-        throw new Error('Intento de salto de directorio bloqueado.');
-      }
+    if (!path.isAbsolute(absolutePath)) {
+      throw new Error('La ruta de la imagen debe ser absoluta.');
     }
 
     if (!this.isAllowedImage(absolutePath)) {
@@ -124,11 +94,6 @@ class ImageService {
     const queryIndex = raw.search(/[?#]/);
     if (queryIndex !== -1) raw = raw.slice(0, queryIndex);
     return decodeURIComponent(raw);
-  }
-
-  /** Construye la URL del protocolo a partir de la ruta guardada. */
-  buildImageUrl(storedPath: string): string {
-    return `${URL_PREFIX}${encodeURIComponent(storedPath)}`;
   }
 }
 

@@ -1,16 +1,19 @@
-import { getOrderItemType, getOrderItemDisplayName, getOrderItemDescription } from '../types';
 import { formatDateMX, formatDateOnlyMX } from '@/utils/dateUtils';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Modelo único de la nota.
 //
-// Tanto las órdenes normales como las órdenes rápidas se imprimen sobre el mismo
-// formato físico, así que comparten posiciones y plantilla. Lo único que cambia
-// son los datos: aquí se normalizan a `OrderNote` con un adaptador por tipo, y
-// de ahí salen las tres salidas, todas sobre las mismas posiciones:
-//   • Vista previa    → components/OrderNotePage.tsx
-//   • Impresión       → utils/buildOrderPageHtml.ts
-//   • Imagen WhatsApp → hooks/useWhatsAppOrder.tsx (captura ese mismo HTML)
+// Órdenes, órdenes rápidas y cotizaciones se imprimen sobre el mismo formato
+// físico (21.6cm x 17cm): mismo encabezado, misma fila de CLIENTE, misma tabla y
+// el mismo bloque de horario. Lo único que cambia es la imagen de fondo y qué
+// campos aplican.
+//
+// Cada feature aporta su adaptador (`orderToNote`, `simpleOrderToNote`,
+// `budgetToNote`) y de ahí salen las tres salidas, todas con las mismas
+// posiciones:
+//   • Vista previa    → NotePage.tsx
+//   • Impresión       → buildNoteHtml.ts
+//   • Imagen WhatsApp → useNoteWhatsApp.tsx (rasteriza ese mismo HTML)
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Helpers de fecha ──────────────────────────────────────────────────────
@@ -27,7 +30,7 @@ export const getYearUTC = (d: string) => formatDateOnlyMX(d, 'YYYY');
 export const money = (n: number) =>
 	n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-// ── Paleta de la nota ─────────────────────────────────────────────────────
+// ── Paleta ────────────────────────────────────────────────────────────────
 // Equivalentes sRGB exactos de los tokens de Tailwind v4 que usa la vista
 // previa. Se guardan en hex y no en oklch() a propósito, para que cualquier
 // rasterizador los entienda: hay librerías de captura que no parsean oklch.
@@ -36,7 +39,7 @@ export const NOTE_COLORS = {
 	white: '#fff',
 	/** text-red-600 — folio, saldo y sello de precio especial */
 	red600: '#e7000b',
-	/** text-red-800 — descripción de la orden */
+	/** text-red-800 — descripción */
 	red800: '#9f0712',
 	/** text-green-700 — monto pagado */
 	green700: '#008236',
@@ -67,25 +70,42 @@ export interface NoteItem {
 	preserveLineBreaks?: boolean;
 }
 
-export interface OrderNote {
-	/** Se imprime como "No. {folio}" */
+/** Recuadros de anticipo y resta. `null` en formatos que no los llevan. */
+export interface NotePayments {
+	paid: number;
+	balance: number;
+	/** Si false, el recuadro del anticipo va vacío. */
+	hasPayments: boolean;
+}
+
+export interface Note {
+	/** Imagen del formato: nota u hoja de cotización. */
+	background: string;
+	/** Se imprime como "No. {folio}". Vacío no dibuja nada. */
 	folio: string;
 	date: string;
+	/** La nota lleva hora junto al cliente; la cotización no. */
+	showTime: boolean;
 	estimatedDeliveryDate: string | null;
 	clientName: string;
+	/** Vacío no dibuja nada. */
 	clientPhone: string;
 	clientColor: string | null;
-	/** Línea completa, ya redactada */
+	/** Línea ya redactada. Vacía no dibuja nada. */
 	attendedByLine: string;
-	/** Línea completa, ya redactada; vacía si no hay pagos */
+	/** Línea ya redactada. Vacía no dibuja nada. */
 	paymentLine: string;
+	/** Vacía no dibuja nada. */
 	description: string;
 	items: NoteItem[];
-	totalPagos: number;
-	saldoPendiente: number;
+	/** `null` en formatos sin recuadros de anticipo y resta. */
+	payments: NotePayments | null;
 	total: number;
-	/** Si false, el recuadro de pagos va vacío */
-	showPagos: boolean;
+	/**
+	 * Cuando viene, el total se dibuja dentro de un recuadro con esta etiqueta.
+	 * Lo usa la cotización, cuyo formato no trae el recuadro impreso.
+	 */
+	totalLabel: string | null;
 	isSaldada: boolean;
 	hasPreferentialPrice: boolean;
 }
@@ -100,93 +120,6 @@ export function chunkNoteItems(items: NoteItem[], itemsPerPage: number = ITEMS_P
 	}
 	if (chunks.length === 0) chunks.push([]);
 	return chunks;
-}
-
-// ── Adaptador: orden normal ───────────────────────────────────────────────
-export function orderToNote(
-	orderData: any,
-	productsData: any[],
-	paymentsData: any[]
-): OrderNote {
-	const totalPagos = paymentsData.reduce((sum, payment) => sum + Number(payment.amount), 0);
-	const saldoPendiente = orderData.total - totalPagos;
-
-	const hasPreferentialPrice = productsData.some(product => {
-		const type = getOrderItemType(product);
-		const originalPrice = type === 'product'
-			? product.product_price
-			: product.template_final_price;
-
-		return originalPrice !== undefined && originalPrice !== null &&
-			Math.abs(Number(product.unit_price) - Number(originalPrice)) > 0.01;
-	});
-
-	return {
-		folio: `${orderData.id}`,
-		date: orderData.date,
-		estimatedDeliveryDate: orderData.estimated_delivery_date ?? null,
-		clientName: orderData.client?.name || 'Cliente no especificado',
-		clientPhone: orderData.client?.phone || '',
-		clientColor: orderData.client?.color ?? null,
-		attendedByLine: `LE ATENDIÓ ${orderData.user?.username || ''}`,
-		paymentLine: paymentsData.length > 0
-			? `Pago realizado con: ${paymentsData[0]?.descripcion || ''}`
-			: '',
-		description: orderData.description || '',
-		items: productsData.map(product => ({
-			quantity: product.quantity,
-			name: getOrderItemDisplayName(product),
-			description: getOrderItemDescription(product) || '',
-			unitPrice: product.unit_price,
-			totalPrice: product.total_price,
-		})),
-		totalPagos,
-		saldoPendiente,
-		total: orderData.total,
-		showPagos: paymentsData.length > 0,
-		isSaldada: saldoPendiente <= 0.01,
-		hasPreferentialPrice,
-	};
-}
-
-// ── Adaptador: orden rápida ───────────────────────────────────────────────
-// Es una orden de un solo concepto: sin fecha de entrega, sin color de cliente,
-// sin descripción y sin sellos. El teléfono va concatenado al nombre.
-export function simpleOrderToNote(orderData: any): OrderNote {
-	const paymentsData = orderData.payments || [];
-	const totalPagos = paymentsData.reduce((sum: number, payment: any) => sum + Number(payment.amount), 0);
-	const saldoPendiente = Math.max(0, orderData.total - totalPagos);
-
-	const clientName = `${orderData.client_name || 'Cliente de Mostrador'}${orderData.client_phone ? ` - ${orderData.client_phone}` : ''}`;
-
-	return {
-		folio: `R-${orderData.id}`,
-		date: orderData.date,
-		estimatedDeliveryDate: null,
-		clientName,
-		clientPhone: '',
-		clientColor: null,
-		attendedByLine: `LE ATENDIÓ ${orderData.user?.username || ''}`,
-		paymentLine: paymentsData.length > 0
-			? `Pago realizado con: ${paymentsData[0]?.descripcion || ''}`
-			: '',
-		description: '',
-		items: [{
-			quantity: 1,
-			name: orderData.concept,
-			description: '',
-			unitPrice: orderData.total,
-			totalPrice: orderData.total,
-			preserveLineBreaks: true,
-		}],
-		totalPagos,
-		saldoPendiente,
-		total: orderData.total,
-		showPagos: paymentsData.length > 0,
-		// Las órdenes rápidas no llevan sellos.
-		isSaldada: false,
-		hasPreferentialPrice: false,
-	};
 }
 
 // ── Convierte una URL de imagen local a base64 ────────────────────────────

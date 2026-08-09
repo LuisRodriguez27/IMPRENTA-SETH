@@ -1,8 +1,7 @@
 import React from 'react';
-import notaImage from '@/assets/NOTA-IMPRESOS-SETh.jpg';
 import paidStampImage from '@/assets/SELLO-PAGADO.png';
-import ClientColorIndicator from '../../clients/components/ClientColorIndicator';
-import type { ClientColor } from '../../clients/types';
+import ClientColorIndicator from '../clients/components/ClientColorIndicator';
+import type { ClientColor } from '../clients/types';
 import {
   getDay,
   getMonth,
@@ -12,12 +11,12 @@ import {
   getMonthUTC,
   getYearUTC,
   money,
-  type OrderNote,
+  type Note,
   type NoteItem,
-} from '../utils/orderNoteData';
+} from './noteData';
 
-interface OrderNotePageProps {
-  note: OrderNote;
+interface NotePageProps {
+  note: Note;
   items: NoteItem[];
   isLastPage: boolean;
 }
@@ -28,18 +27,18 @@ interface OrderNotePageProps {
  * El lienzo mide 816 x 642.5px, exactamente lo mismo que la página impresa
  * (21.6cm x 17cm a 96dpi con root font-size 16px). Gracias a eso 1px de aquí
  * equivale a 1px del papel y las posiciones se trasladan sin conversión a
- * `buildOrderPageHtml.ts`, donde cada campo lleva anotada su clase Tailwind.
+ * `buildNoteHtml.ts`, donde cada campo lleva anotada su clase Tailwind.
  *
  * Si mueves un campo aquí, muévelo también allá.
  */
-const OrderNotePage: React.FC<OrderNotePageProps> = ({ note, items, isLastPage }) => {
+const NotePage: React.FC<NotePageProps> = ({ note, items, isLastPage }) => {
   return (
     <div
       className="relative border border-gray-300 shadow-lg bg-cover bg-center bg-no-repeat"
       style={{
         width: '816px',
         height: '642.5px',
-        backgroundImage: `url(${notaImage})`,
+        backgroundImage: `url(${note.background})`,
       }}
     >
       {/* Sello de precio especial */}
@@ -89,9 +88,11 @@ const OrderNotePage: React.FC<OrderNotePageProps> = ({ note, items, isLastPage }
       )}
 
       {/* Hora */}
-      <div className="absolute top-32 right-55">
-        {getHours(note.date)}
-      </div>
+      {note.showTime && (
+        <div className="absolute top-32 right-55">
+          {getHours(note.date)}
+        </div>
+      )}
 
       {/* Cliente */}
       <div className="absolute top-32 left-25 w-[288px] text-xl font-bold text-black flex items-center gap-2">
@@ -105,9 +106,11 @@ const OrderNotePage: React.FC<OrderNotePageProps> = ({ note, items, isLastPage }
 
       {/* Teléfono — el `truncate` va en el span y no en el contenedor, igual que
           en el HTML de impresión, para que ambos midan lo mismo. */}
-      <div className="absolute top-32 left-[620px] w-[152px] text-xl font-bold text-black">
-        <span className="block truncate">{note.clientPhone}</span>
-      </div>
+      {note.clientPhone && (
+        <div className="absolute top-32 left-[620px] w-[152px] text-xl font-bold text-black">
+          <span className="block truncate">{note.clientPhone}</span>
+        </div>
+      )}
 
       {/* Productos — `bottom-40` + `overflow-hidden` recortan la tabla para que
           no se derrame sobre la zona de totales. */}
@@ -135,7 +138,7 @@ const OrderNotePage: React.FC<OrderNotePageProps> = ({ note, items, isLastPage }
         ))}
       </div>
 
-      {/* Descripción de la orden */}
+      {/* Descripción */}
       {isLastPage && note.description && (
         <div className="absolute bottom-37 left-20 right-10 text-sm text-red-800 p-2 rounded">
           <div className="line-clamp-4 break-words">
@@ -145,36 +148,51 @@ const OrderNotePage: React.FC<OrderNotePageProps> = ({ note, items, isLastPage }
       )}
 
       {/* Folio */}
-      <div className="absolute bottom-22 right-18 text-xl font-bold text-red-600">
-        <div className="text-center">No. {note.folio}</div>
-      </div>
+      {note.folio && (
+        <div className="absolute bottom-22 right-18 text-xl font-bold text-red-600">
+          <div className="text-center">No. {note.folio}</div>
+        </div>
+      )}
 
       {/* Le atendió */}
-      <div className="absolute bottom-28 left-6">
-        <div className="text-blue-900 font-bold">{note.attendedByLine}</div>
-      </div>
+      {note.attendedByLine && (
+        <div className="absolute bottom-28 left-6">
+          <div className="text-blue-900 font-bold">{note.attendedByLine}</div>
+        </div>
+      )}
 
       {/* Método de pago */}
-      <div className="absolute bottom-29 left-90">
-        <div>{note.paymentLine}</div>
-      </div>
+      {note.paymentLine && (
+        <div className="absolute bottom-29 left-90">
+          <div>{note.paymentLine}</div>
+        </div>
+      )}
 
-      {/* Pagos */}
-      <div className="absolute bottom-16 left-43 w-33 h-8 flex items-center justify-center text-green-700 font-bold text-xl">
-        {note.showPagos ? `$${money(note.totalPagos)}` : ''}
-      </div>
-
-      {/* Saldo */}
-      <div className="absolute bottom-16 left-80 w-33 h-8 flex items-center justify-center text-red-600 font-bold text-xl">
-        ${money(note.saldoPendiente)}
-      </div>
+      {/* Anticipo y resta */}
+      {note.payments && (
+        <>
+          <div className="absolute bottom-16 left-43 w-33 h-8 flex items-center justify-center text-green-700 font-bold text-xl">
+            {note.payments.hasPayments ? `$${money(note.payments.paid)}` : ''}
+          </div>
+          <div className="absolute bottom-16 left-80 w-33 h-8 flex items-center justify-center text-red-600 font-bold text-xl">
+            ${money(note.payments.balance)}
+          </div>
+        </>
+      )}
 
       {/* Total */}
-      <div className="absolute bottom-16 left-116 w-33 h-8 flex items-center justify-center text-black font-bold text-xl">
-        ${money(note.total)}
-      </div>
+      {note.totalLabel ? (
+        <div className="absolute bottom-16 left-116 w-33 h-8 flex flex-col items-center justify-center font-bold text-red-600 border-2 border-red-600 bg-white box-border">
+          <div style={{ fontSize: '0.625rem', lineHeight: 1 }}>{note.totalLabel}</div>
+          <div style={{ fontSize: '1.125rem', lineHeight: 1.2 }}>${money(note.total)}</div>
+        </div>
+      ) : (
+        <div className="absolute bottom-16 left-116 w-33 h-8 flex items-center justify-center text-black font-bold text-xl">
+          ${money(note.total)}
+        </div>
+      )}
     </div>
   );
 };
 
-export default OrderNotePage;
+export default NotePage;

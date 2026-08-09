@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui';
 import { X, Printer } from 'lucide-react';
 import { toast } from 'sonner';
-import { prepareNoteHtml, buildPrintHtml } from '@/features/orders/utils/buildOrderPageHtml';
-import { simpleOrderToNote, chunkNoteItems } from '@/features/orders/utils/orderNoteData';
-import OrderNotePage from '@/features/orders/components/OrderNotePage';
+import { prepareNoteHtml, buildPrintHtml } from '@/features/notes/buildNoteHtml';
+import { chunkNoteItems } from '@/features/notes/noteData';
+import NotePage from '@/features/notes/NotePage';
+import { simpleOrderToNote } from '../utils/simpleOrderNote';
 import { type SimpleOrder } from '../types';
 
 interface SimpleOrderPrintPreviewModalProps {
@@ -103,7 +104,7 @@ const SimpleOrderPrintPreviewModal: React.FC<SimpleOrderPrintPreviewModalProps> 
           <div className="flex flex-col items-center gap-8">
             {pages.map((items, index) => (
               <div key={index} className="flex justify-center">
-                <OrderNotePage
+                <NotePage
                   note={note}
                   items={items}
                   isLastPage={index === pages.length - 1}

@@ -1,4 +1,3 @@
-import notaImage from '@/assets/NOTA-IMPRESOS-SETh.jpg';
 import paidStampImage from '@/assets/SELLO-PAGADO.png';
 import {
   getDay,
@@ -13,14 +12,15 @@ import {
   chunkNoteItems,
   imageToBase64,
   NOTE_COLORS as C,
-  type OrderNote,
+  type Note,
   type NoteItem,
-} from './orderNoteData';
+} from './noteData';
 
-// Re-exportado por compatibilidad: la implementación vive en orderNoteData.
 export { imageToBase64 };
 
-/** Proporción de la página de la nota: 21.6cm x 17cm. */
+/** 21.6cm x 17cm a 96dpi: el tamaño exacto de la página impresa. */
+export const PAGE_WIDTH_PX = 816.38;
+export const PAGE_HEIGHT_PX = 642.52;
 export const PAGE_ASPECT = 21.6 / 17;
 
 // Escapa texto que viene de la base de datos antes de meterlo en el HTML.
@@ -31,11 +31,11 @@ const esc = (v: unknown) =>
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 
-// ── Genera el HTML de UNA página de la nota ───────────────────────────────
+// ── Genera el HTML de UNA página ──────────────────────────────────────────
 // Coordenadas trasladadas 1:1 desde la vista previa (lienzo 816 x 642.5px).
 // Equivalencia: clase Tailwind `N` = N * 0.25rem  (ej. left-138 = 34.5rem).
 export function buildPageHtml(params: {
-  note: OrderNote;
+  note: Note;
   items: NoteItem[];
   isLastPage: boolean;
   pageBreak: boolean;
@@ -82,10 +82,12 @@ export function buildPageHtml(params: {
       </div>
       ` : ''}
 
+      ${note.showTime ? `
       <!-- Hora · top-32 right-55 (sin negrita, igual que el preview) -->
       <div style="position: absolute; top: 8rem; right: 13.75rem; font-size: 1rem; line-height: 1.5; font-weight: 400; color: ${C.black};">
         ${getHours(note.date)}
       </div>
+      ` : ''}
 
       <!-- Cliente · top-32 left-25 w-[288px] text-xl -->
       <div style="position: absolute; top: 8rem; left: 6.25rem; width: 288px; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; color: ${C.black}; display: flex; align-items: center; gap: 0.5rem;">
@@ -95,10 +97,12 @@ export function buildPageHtml(params: {
         </span>
       </div>
 
+      ${note.clientPhone ? `
       <!-- Teléfono · top-32 left-[620px] w-[152px] text-xl -->
       <div style="position: absolute; top: 8rem; left: 620px; width: 152px; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; color: ${C.black};">
         <span style="display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${esc(note.clientPhone)}</span>
       </div>
+      ` : ''}
 
       <!-- Productos · top-42 left-6 right-6 bottom-40, recortado para que la
            tabla no se derrame sobre la zona de totales -->
@@ -127,39 +131,54 @@ export function buildPageHtml(params: {
       </div>
       ` : ''}
 
+      ${note.folio ? `
       <!-- Folio · bottom-22 right-18 text-xl -->
       <div style="position: absolute; bottom: 5.5rem; right: 4.5rem; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; color: ${C.red600};">
         <div style="text-align: center;">No. ${esc(note.folio)}</div>
       </div>
+      ` : ''}
 
+      ${note.attendedByLine ? `
       <!-- Le atendió · bottom-28 left-6 -->
       <div style="position: absolute; bottom: 7rem; left: 1.5rem; font-size: 1rem; line-height: 1.5;">
         <div style="color: ${C.blue900}; font-weight: 700;">${esc(note.attendedByLine)}</div>
       </div>
+      ` : ''}
 
+      ${note.paymentLine ? `
       <!-- Método de pago · bottom-29 left-90 -->
       <div style="position: absolute; bottom: 7.25rem; left: 22.5rem; font-size: 1rem; line-height: 1.5; color: ${C.black};">
         ${esc(note.paymentLine)}
       </div>
+      ` : ''}
 
+      ${note.payments ? `
       <!-- Pagos · bottom-16 left-43 w-33 h-8 text-xl -->
       <div style="position: absolute; bottom: 4rem; left: 10.75rem; width: 8.25rem; height: 2rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; color: ${C.green700};">
-        ${note.showPagos ? `$${money(note.totalPagos)}` : ''}
+        ${note.payments.hasPayments ? `$${money(note.payments.paid)}` : ''}
       </div>
 
       <!-- Saldo · bottom-16 left-80 w-33 h-8 text-xl -->
       <div style="position: absolute; bottom: 4rem; left: 20rem; width: 8.25rem; height: 2rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; color: ${C.red600};">
-        $${money(note.saldoPendiente)}
+        $${money(note.payments.balance)}
       </div>
+      ` : ''}
 
       <!-- Total · bottom-16 left-116 w-33 h-8 text-xl -->
+      ${note.totalLabel ? `
+      <div style="position: absolute; bottom: 4rem; left: 29rem; width: 8.25rem; height: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; color: ${C.red600}; border: 2px solid ${C.red600}; background-color: ${C.white}; box-sizing: border-box;">
+        <div style="font-size: 0.625rem; line-height: 1;">${esc(note.totalLabel)}</div>
+        <div style="font-size: 1.125rem; line-height: 1.2;">$${money(note.total)}</div>
+      </div>
+      ` : `
       <div style="position: absolute; bottom: 4rem; left: 29rem; width: 8.25rem; height: 2rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; line-height: 1.75rem; font-weight: 700; color: ${C.black};">
         $${money(note.total)}
       </div>
+      `}
     </div>`;
 }
 
-// ── CSS compartido para impresión y captura de imagen ─────────────────────
+// ── CSS compartido ────────────────────────────────────────────────────────
 export const PRINT_STYLES = `
   * {
     -webkit-print-color-adjust: exact !important;
@@ -246,13 +265,12 @@ export function buildPrintHtml(params: { title: string; pagesHtml: string }): st
 }
 
 // ── Prepara base64s y genera el HTML de cada página por separado ──────────
-export async function prepareNotePages(note: OrderNote): Promise<string[]> {
+export async function prepareNotePages(note: Note): Promise<string[]> {
   const chunks = chunkNoteItems(note.items);
 
   // El fondo se recorta de antemano a la proporción de la página. Ver el
-  // comentario de `imageToBase64`: es lo que hace que la captura para WhatsApp
-  // salga igual que la impresión pese a que html2canvas ignora `object-fit`.
-  const base64Image = await imageToBase64(notaImage, PAGE_ASPECT);
+  // comentario de `imageToBase64`.
+  const base64Image = await imageToBase64(note.background, PAGE_ASPECT);
   const base64Stamp = note.isSaldada ? await imageToBase64(paidStampImage) : null;
 
   return chunks.map((chunk, i) =>
@@ -268,22 +286,10 @@ export async function prepareNotePages(note: OrderNote): Promise<string[]> {
 }
 
 // ── Función principal para impresión ──────────────────────────────────────
-export async function prepareNoteHtml(note: OrderNote): Promise<{ pagesHtml: string }> {
+export async function prepareNoteHtml(note: Note): Promise<{ pagesHtml: string }> {
   const pages = await prepareNotePages(note);
   return { pagesHtml: pages.join('') };
 }
-
-// ─────────────────────────────────────────────────────────────────────────
-// Captura a imagen (WhatsApp)
-//
-// La imagen se rasteriza en el proceso principal con `capturePage`, sobre el
-// mismo documento que se manda a la impresora. Aquí sólo se arma un documento
-// completo por página y se exponen sus dimensiones.
-// ─────────────────────────────────────────────────────────────────────────
-
-/** 21.6cm x 17cm a 96dpi: el tamaño exacto de la página impresa. */
-export const PAGE_WIDTH_PX = 816.38;
-export const PAGE_HEIGHT_PX = 642.52;
 
 /** Un documento HTML independiente por página, listo para rasterizar. */
 export function buildNoteDocumentsForCapture(title: string, pagesHtml: string[]): string[] {

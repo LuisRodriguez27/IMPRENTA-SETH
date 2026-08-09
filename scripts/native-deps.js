@@ -1,24 +1,33 @@
-// Descarga el binario nativo de better-sqlite3 para Windows.
-// Uso: pnpm run deps:win  (desde la raíz del proyecto)
+// Descarga el binario nativo de better-sqlite3 para una plataforma concreta.
 //
-// Existe porque `electron-builder install-app-deps --platform=win32` no siempre
-// reemplaza el .node cuando se compila desde Linux: termina sin error y deja el
-// binario de Linux que dejó el postinstall, así que el instalador sale roto sin
-// ninguna señal. Esto va directo al grano y pide el precompilado exacto.
+//   pnpm run deps:win     -> binario de Windows (para compilar el instalador)
+//   pnpm run deps:local   -> binario de esta máquina (para volver a pnpm dev)
 //
-// Para volver a desarrollar en Linux: pnpm run deps:local
+// Existe porque `electron-builder install-app-deps` no siempre reemplaza el
+// .node: termina sin error y deja el que ya estaba, en cualquiera de las dos
+// direcciones. Si quedó el de Linux, el instalador de Windows sale roto sin
+// ninguna señal; si quedó el de Windows, `pnpm dev` no arranca en Linux.
+// Esto pide el precompilado exacto y no depende de que algo lo detecte.
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
 const ROOT = process.cwd(); // ejecutar desde la raíz del proyecto
 
-// pnpm no coloca los paquetes en node_modules/<nombre> sino en el store .pnpm,
-// con node_modules/<nombre> como enlace. Se acepta cualquiera de los dos.
+function arg(name, fallback) {
+  const hit = process.argv.slice(2).find((a) => a.startsWith(`--${name}=`));
+  return hit ? hit.split('=')[1] : fallback;
+}
+
+const platform = arg('platform', process.platform);
+const arch = arg('arch', process.arch);
+
+// pnpm no coloca los paquetes en node_modules/<nombre> sino en su store, con
+// node_modules/<nombre> como enlace. Se acepta cualquiera de los dos.
 function findPackageDir() {
   const direct = path.join(ROOT, 'node_modules/better-sqlite3');
-  // realpath a propósito: con pnpm esto es un enlace al store, y resolver
-  // prebuild-install desde el enlace no encuentra las dependencias hermanas.
+  // realpath a propósito: resolver prebuild-install desde el enlace no
+  // encuentra las dependencias hermanas dentro del store de pnpm.
   if (fs.existsSync(path.join(direct, 'package.json'))) return fs.realpathSync(direct);
 
   const store = path.join(ROOT, 'node_modules/.pnpm');
@@ -38,8 +47,7 @@ function electronVersion() {
   }
   const root = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   const declared = (root.devDependencies || {}).electron || (root.dependencies || {}).electron;
-  if (!declared) return null;
-  return declared.replace(/^[\^~]/, '');
+  return declared ? declared.replace(/^[\^~]/, '') : null;
 }
 
 const pkgDir = findPackageDir();
@@ -54,8 +62,6 @@ if (!target) {
   process.exit(1);
 }
 
-// Se invoca el bin por ruta en vez de con npx: pnpm guarda las dependencias en
-// su store virtual y npx no las resuelve desde el directorio del paquete.
 let prebuildBin;
 try {
   prebuildBin = require.resolve('prebuild-install/bin.js', { paths: [pkgDir] });
@@ -64,26 +70,32 @@ try {
   process.exit(1);
 }
 
-const args = [
-  prebuildBin,
-  '--runtime=electron',
-  `--target=${target}`,
-  '--platform=win32',
-  '--arch=x64',
-  '--force'
-];
-
-console.log(`Descargando better-sqlite3 para Windows x64 (Electron ${target})...`);
+console.log(`Descargando better-sqlite3 para ${platform}-${arch} (Electron ${target})...`);
 
 try {
-  execFileSync(process.execPath, args, { cwd: pkgDir, stdio: 'inherit' });
+  execFileSync(
+    process.execPath,
+    [
+      prebuildBin,
+      '--runtime=electron',
+      `--target=${target}`,
+      `--platform=${platform}`,
+      `--arch=${arch}`,
+      '--force'
+    ],
+    { cwd: pkgDir, stdio: 'inherit' }
+  );
 } catch (e) {
   console.error('');
-  console.error('✖ Falló la descarga del binario precompilado.');
-  console.error('  Revisa que exista un prebuild para Electron ' + target + ' en:');
+  console.error(`✖ Falló la descarga del binario para ${platform}-${arch}.`);
+  console.error(`  Revisa que exista un prebuild para Electron ${target} en:`);
   console.error('  https://github.com/WiseLibs/better-sqlite3/releases');
   process.exit(1);
 }
 
 console.log('');
-console.log('Listo. Verifica con: pnpm run verify:native');
+if (platform === 'win32') {
+  console.log('Listo. Verifica con: pnpm run verify:native');
+} else {
+  console.log('Listo. Ya puedes correr: pnpm dev');
+}

@@ -20,8 +20,8 @@
     "dist:git": "pnpm run build && electron-builder --win -p always",
     "dist:win:linux": "pnpm run build && pnpm run deps:win && electron-builder --win -c.npmRebuild=false && pnpm run verify:native",
     "dist:git:linux": "pnpm run build && pnpm run deps:win && electron-builder --win -c.npmRebuild=false -p always && pnpm run verify:native",
-    "deps:win": "node scripts/deps-win.js",
-    "deps:local": "electron-builder install-app-deps",
+    "deps:win": "node scripts/native-deps.js --platform=win32 --arch=x64",
+    "deps:local": "node scripts/native-deps.js",
     "verify:native": "node scripts/verify-native.js"
   },
   "keywords": [],

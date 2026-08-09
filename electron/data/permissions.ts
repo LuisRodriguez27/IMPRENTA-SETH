@@ -47,6 +47,8 @@ export const APP_PERMISSIONS: AppPermission[] = [
 
   // Estadísticas
   { name: 'Estadisticas', description: 'Permite visualizar las estadisticas de ventas' },
+  { name: 'Estadisticas: Filtros', description: 'Permite aplicar filtros para visualizar las estadisticas' },
+  { name: 'Estadisticas: Hoy', description: 'Permite visualizar la grafica de el dia de hoy' },
 
   // Caja
   { name: 'Abrir Caja', description: 'Abre una caja' },

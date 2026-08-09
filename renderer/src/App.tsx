@@ -38,7 +38,7 @@ const queryClient = new QueryClient({
   }
 })
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useThemeStore } from '@/store/theme'
 import { enable as enableDarkMode, disable as disableDarkMode } from 'darkreader'
 import UpdateBanner from './components/layout/UpdateBanner'
@@ -69,7 +69,12 @@ function App() {
     deviceName: '',
   });
 
+  // Candado para que un doble clic en "Reintentar" no encime dos consultas.
+  const licenseCheckInFlightRef = useRef(false);
+
   const checkLicenseStatus = async () => {
+    if (licenseCheckInFlightRef.current) return;
+    licenseCheckInFlightRef.current = true;
     try {
       const res = await window.api.checkLicense();
       setLicense({
@@ -90,6 +95,8 @@ function App() {
         deviceName: '',
         message: 'No se pudo comunicar con el servicio de licencias.',
       });
+    } finally {
+      licenseCheckInFlightRef.current = false;
     }
   };
 
@@ -111,6 +118,21 @@ function App() {
   useEffect(() => {
     checkLicenseStatus();
     checkBootstrapStatus();
+  }, []);
+
+  // La revalidación cada 24 h la agenda el proceso principal (ipc/licenseIpc.ts)
+  // y empuja el resultado por aquí.
+  useEffect(() => {
+    return window.api.onLicenseStatus((status) => {
+      setLicense({
+        success: status.success,
+        status: status.status,
+        clientCode: status.clientCode,
+        hardwareId: status.hardwareId,
+        deviceName: status.deviceName,
+        message: status.message,
+      });
+    });
   }, []);
 
   useEffect(() => {

@@ -19,6 +19,13 @@ export interface LicenseStatus {
   deviceName: string;
 }
 
+// Días que un cliente 'activo' puede operar sin validar contra Supabase.
+// Margen amplio a propósito: en el plan gratuito el proyecto se pausa por
+// inactividad, y una imprenta cerrada por vacaciones no debe volver a una
+// app bloqueada. Es el techo de cuánto tarda en surtir efecto un bloqueo
+// remoto (is_blocked / is_suspended) sobre un equipo que se mantenga offline.
+const MAX_OFFLINE_DAYS = 30;
+
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_KEY || '';
 const clientCode = process.env.CLIENT_LICENSE_CODE || 'SETH-CLI-DEFAULT';
@@ -391,20 +398,20 @@ class LicenseService {
         };
       }
 
-      // Active state offline validation: check 5 days rule
+      // Active state offline validation: check MAX_OFFLINE_DAYS rule
       if (localLic.status === 'activo') {
         const lastValDate = new Date(localLic.last_online_validation);
         const timeDiff = new Date().getTime() - lastValDate.getTime();
         const daysDiff = timeDiff / (1000 * 3600 * 24);
 
-        if (daysDiff > 5) {
+        if (daysDiff > MAX_OFFLINE_DAYS) {
           return await handleLicenseFailure({
             success: false,
             status: 'validation_required',
             clientCode,
             hardwareId,
             deviceName,
-            message: 'Se requiere conexión a internet para verificar la licencia (límite de 5 días offline alcanzado).'
+            message: `Se requiere conexión a internet para verificar la licencia (límite de ${MAX_OFFLINE_DAYS} días offline alcanzado).`
           });
         }
 

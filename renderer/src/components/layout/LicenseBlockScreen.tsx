@@ -65,7 +65,7 @@ export default function LicenseBlockScreen({
         return {
           icon: <WifiOff className="w-16 h-16 text-blue-500" />,
           title: 'Verificación de Licencia Requerida',
-          description: message || 'Límite de 5 días de uso offline alcanzado.',
+          description: message || 'Límite de 30 días de uso offline alcanzado.',
           advice: 'Para continuar operando de forma segura, se requiere conectar el equipo a internet al menos una vez para sincronizar la licencia.',
         };
       case 'no_license':

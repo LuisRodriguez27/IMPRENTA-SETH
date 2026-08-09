@@ -239,6 +239,13 @@ contextBridge.exposeInMainWorld('api', {
 
   // Sistema de Licencias
   checkLicense: (): Promise<any> => ipcRenderer.invoke('license:check'),
+  onLicenseStatus: (callback: (status: any) => void): (() => void) => {
+    const handler = (_event: unknown, status: any) => callback(status);
+    ipcRenderer.on('license:status', handler);
+    // Devuelve la baja del listener para que React pueda limpiarlo al desmontar
+    // sin arrastrarse los de otros suscriptores.
+    return () => { ipcRenderer.removeListener('license:status', handler); };
+  },
 
   // Actualizaciones automáticas
   updater: {

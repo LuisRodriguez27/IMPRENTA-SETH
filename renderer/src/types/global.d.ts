@@ -239,6 +239,19 @@ declare global {
         hardwareId: string;
         deviceName: string;
       }>;
+      // Revalidación periódica empujada desde el proceso principal.
+      // Devuelve la función para dar de baja el listener.
+      onLicenseStatus: (
+        callback: (status: {
+          success: boolean;
+          status: 'demo' | 'activo' | 'suspended' | 'blocked' | 'expired' | 'limit_exceeded' | 'invalid_config' | 'validation_required' | 'no_license';
+          clientCode: string;
+          daysRemaining?: number;
+          message?: string;
+          hardwareId: string;
+          deviceName: string;
+        }) => void
+      ) => () => void;
 
 
       // Actualizaciones automáticas

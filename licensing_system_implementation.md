@@ -42,7 +42,7 @@ graph TD
     P -- Sí --> F
     P -- No --> L
     
-    O -- No --> Q{¿Sincronización Offline > 5 Días?}
+    O -- No --> Q{¿Sincronización Offline > 30 Días?}
     Q -- Sí --> R[Bloquear App - Requiere Internet]
     Q -- No --> L
 ```
@@ -101,7 +101,7 @@ Ubicado en [LicenseBlockScreen.tsx](file:///home/luis/Projects/IMPRENTA-SETH/ren
   - **Equipo Bloqueado**: Equipo específico deshabilitado por el administrador.
   - **Periodo de Prueba Expirado**: Alerta para regularización y pago de licencia.
   - **Límite de Equipos Superado**: Solicitud de incremento de equipos permitidos.
-  - **Conexión Requerida**: Notificación de límite de 5 días sin internet alcanzado.
+  - **Conexión Requerida**: Notificación de límite de 30 días sin internet alcanzado.
 - Incluye un botón para copiar el **ID de Hardware (UUID)** al portapapeles con confirmación visual de micro-animaciones, facilitando el soporte remoto.
 - Incluye un disparador de "Reintentar Verificación" para consultar de inmediato el servidor sin necesidad de reiniciar la aplicación.
 
@@ -165,7 +165,7 @@ sequenceDiagram
 ### Reglas Críticas del Primer Inicio:
 1. **Obligatoriedad de Internet**: Un nuevo dispositivo **siempre** requiere conectividad a internet en su primer inicio. Esto es indispensable para registrar su Hardware ID en la nube de Supabase y validar que el cliente tiene cupos disponibles. Si no tiene internet en el primer arranque, la aplicación se bloquea mostrando el mensaje de registro pendiente (`no_license`).
 2. **Consumo de Cupo**: Al registrarse con éxito, el dispositivo consume permanentemente 1 cupo de los permitidos por el límite `max_devices` del cliente.
-3. **Persistencia Local**: Una vez registrado con éxito online, el backend escribe en el SQLite local los datos de la licencia (`local_licenses`) y el dispositivo (`local_devices`). A partir de ese momento, la PC puede operar sin conexión (hasta un máximo de 5 días offline continuos antes de exigir una re-validación online).
+3. **Persistencia Local**: Una vez registrado con éxito online, el backend escribe en el SQLite local los datos de la licencia (`local_licenses`) y el dispositivo (`local_devices`). A partir de ese momento, la PC puede operar sin conexión (hasta un máximo de 30 días offline continuos antes de exigir una re-validación online).
 
 ---
 

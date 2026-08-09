@@ -11,6 +11,7 @@ import { initDb } from './db';
 import authService from './services/authService';
 import imageService from './services/imageService';
 import { registerIpcHandlers } from './ipc';
+import { startLicenseRevalidation } from './ipc/licenseIpc';
 
 // ── Tipos IPC — organizados por agregado ─────────────────────────────────────
 
@@ -263,6 +264,7 @@ app.whenReady().then(async () => {
 
   createWindow();
   initWhatsApp(); // Arrancar WhatsApp Web en memoria al inicio
+  startLicenseRevalidation();
 
   // Revisar actualizaciones al arrancar (solo en producción)
   if (app.isPackaged) {

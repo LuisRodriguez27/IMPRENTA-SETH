@@ -18,8 +18,9 @@
     "dist": "pnpm run build && electron-builder",
     "dist:win": "pnpm run build && electron-builder --win",
     "dist:git": "pnpm run build && electron-builder --win -p always",
-    "dist:win:linux": "pnpm run build && electron-builder install-app-deps --platform=win32 --arch=x64 && electron-builder --win -c.npmRebuild=false",
-    "dist:git:linux": "pnpm run build && electron-builder install-app-deps --platform=win32 --arch=x64 && electron-builder --win -c.npmRebuild=false -p always",
+    "dist:win:linux": "pnpm run build && pnpm run deps:win && electron-builder --win -c.npmRebuild=false && pnpm run verify:native",
+    "dist:git:linux": "pnpm run build && pnpm run deps:win && electron-builder --win -c.npmRebuild=false -p always && pnpm run verify:native",
+    "deps:win": "node scripts/deps-win.js",
     "deps:local": "electron-builder install-app-deps",
     "verify:native": "node scripts/verify-native.js"
   },

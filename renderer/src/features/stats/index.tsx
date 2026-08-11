@@ -564,9 +564,13 @@ const StatsPage: React.FC = () => {
               <span className="text-sm text-blue-500 capitalize text-center">
                 {getPeriodLabel()}
               </span>
-              {paymentMethod !== 'all' && (
+              {paymentMethod !== 'all' ? (
                 <span className="text-xs text-blue-600 text-center mt-2 max-w-lg bg-blue-100 p-2 rounded-md">
                   Nota: El total refleja la suma del valor completo de las órdenes que incluyen este método de pago, no solo el monto parcial abonado.
+                </span>
+              ) : (
+                <span className="text-xs text-amber-700 text-center mt-2 max-w-lg bg-amber-100 border border-amber-200 p-2 rounded-md">
+                  Nota: Este monto no es el dinero que entró físicamente. Es la suma del total de las órdenes del periodo, incluyendo las que aún no están liquidadas.
                 </span>
               )}
             </div>
